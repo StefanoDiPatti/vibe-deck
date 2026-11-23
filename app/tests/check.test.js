@@ -1,4 +1,3 @@
-// Controllo della configurazione: errori fatti apposta in una cartella temporanea.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -81,8 +80,6 @@ test('lo schema delle pagine conosce tutti i campi usati dalle pagine predefinit
       ['windows', 'linux'].forEach(function (o) { if (t[o]) act(t[o].action, f + ' ' + o); });
     });
   });
-  // e i tipi di azione dello schema sono quelli che il server sa eseguire
-  // (solo quelli del progetto: i plugin installati aggiungono i loro "<plugin>.<azione>")
   const handlers = require('../server/actions').BUILTIN.concat(['page']).filter(function (t) { return t !== 'shell'; }).sort();
   assert.deepStrictEqual(types.slice().sort(), handlers);
   assert.deepStrictEqual(bad, []);

@@ -1,4 +1,3 @@
-// Logger minimale con livelli. LOG_LEVEL=debug|info|warn|error
 const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };
 
 function threshold() {

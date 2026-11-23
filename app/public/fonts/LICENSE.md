@@ -1,17 +1,17 @@
-# Font dell'orario del salvaschermo
+# Screensaver clock fonts
 
-Ridotti alle sole cifre e ai due punti (fontTools: `instancer` per il peso, `subset` per i caratteri), uno per tema.
-Tutti sotto **SIL Open Font License 1.1** (testo qui sotto), presi da [google/fonts](https://github.com/google/fonts).
+Reduced to digits and the colon only (fontTools: `instancer` for the weight, `subset` for the characters), one per theme.
+All under the **SIL Open Font License 1.1** (text below), taken from [google/fonts](https://github.com/google/fonts).
 
-| File | Font | Peso | Tema | Copyright |
+| File | Font | Weight | Theme | Copyright |
 |---|---|---|---|---|
-| clock-classic.ttf | Outfit | 200 | Classico | Copyright 2021 The Outfit Project Authors (https://github.com/Outfitio/Outfit-Fonts) |
+| clock-classic.ttf | Outfit | 200 | Classic | Copyright 2021 The Outfit Project Authors (https://github.com/Outfitio/Outfit-Fonts) |
 | clock-material.ttf | Nunito | 300 | Material | Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito) |
 | clock-neon.ttf | Orbitron | 600 | Neon Elgato | Copyright 2018 The Orbitron Project Authors (https://github.com/theleagueof/orbitron), with Reserved Font Name: "Orbitron" |
-| clock-brutal.ttf | Archivo Black | 400 | Neo-brutalista | Copyright 2017 The Archivo Black Project Authors (https://github.com/Omnibus-Type/ArchivoBlack) |
+| clock-brutal.ttf | Archivo Black | 400 | Neo-brutalist | Copyright 2017 The Archivo Black Project Authors (https://github.com/Omnibus-Type/ArchivoBlack) |
 
-I file sono "Modified Versions" ai sensi della licenza (sottoinsieme di caratteri): per questo la famiglia
-dentro i file è rinominata (VDClockClassic, VDClockMaterial, VDClockNeon, VDClockBrutal) e non usa i nomi originali.
+The files are "Modified Versions" under the license (character subset): that is why the family name
+inside the files is renamed (VDClockClassic, VDClockMaterial, VDClockNeon, VDClockBrutal) and does not use the original names.
 
 ---
 

@@ -1,18 +1,7 @@
-// Crea un plugin con un widget nuovo, pronto da modificare:
-//   npm run new:widget -- meteo
-//
-//   plugins/meteo/index.js        server: un'azione ("meteo.saluta") e due rotte (/api/plugins/meteo/...)
-//   plugins/meteo/public/meteo.js tablet (ES5): il widget "meteo" e un'icona
-//   plugins/meteo/public/meteo.css stile del widget
-//   plugins/meteo/pages/meteo.json una pagina con il widget e un pulsante (la attivi dal pannello)
-//   plugins/meteo/home.json        il widget nel catalogo della HOME (nome, icona, misure)
-//
-// Dopo: riavvia la dock (il codice del server dei plugin si carica all'avvio).
 const fs = require('fs');
 const path = require('path');
 const plugins = require('../server/plugins');
 
-// widget del progetto: i nomi non si possono riusare (letti da public/js/widgets.js)
 function builtinWidgets() {
   const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'widgets.js'), 'utf8');
   const m = /var TYPES = \{([^}]*)\}/.exec(js);
@@ -23,16 +12,11 @@ function fill(text, name) {
   return text.replace(/__NOME__/g, name).replace(/__TITOLO__/g, name.toUpperCase());
 }
 
-const SERVER = `// Plugin "__NOME__": codice del server. Creato con npm run new:widget.
-// Dopo una modifica a questo file riavvia la dock (icona vicino all'orologio > Riavvia).
-// ctx: { name, dir, dataDir, ensureDataDir(), config, log, platform, paths, execute(azione), route(fn) }
-
-let tocchi = 0;
+const SERVER = `let tocchi = 0;
 
 module.exports = {
   description: 'Widget di esempio: ora del PC e un contatore',
 
-  // Azioni per i pulsanti: { "type": "__NOME__.saluta", "nome": "Ste" }
   actions: {
     saluta: async function (azione, ctx) {
       ctx.log.info('saluta premuto');
@@ -40,8 +24,6 @@ module.exports = {
     }
   },
 
-  // Rotte, col codice d'accesso del tablet: GET /api/plugins/__NOME__/dati, POST /api/plugins/__NOME__/tocca
-  // ctx.route(fn): quello che fn restituisce arriva al tablet (D.api.get/post), un errore diventa un avviso rosso.
   routes: function (router, ctx) {
     router.get('/dati', ctx.route(function () {
       return { ora: new Date().toLocaleTimeString('it-IT'), tocchi: tocchi };
@@ -54,16 +36,11 @@ module.exports = {
 };
 `;
 
-const CLIENT = `/* Plugin "__NOME__": widget del tablet. Creato con npm run new:widget.
- * ES5 per il browser di Android 4: var e function, niente let/const, frecce, fetch, Promise, classList.
- * Salva e il tablet si ricarica da solo. */
-(function () {
+const CLIENT = `(function () {
   'use strict';
 
-  // icona del plugin: path SVG in un riquadro 24x24 (usala con "icon": "__NOME__")
   Icons.register('__NOME__', 'M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 5h-2v6l5 3 1-1.7-4-2.3V7z');
 
-  // il widget: { "widget": "__NOME__" } in una pagina
   Widgets.register('__NOME__', function (root, tile, app) {
     var H = Widgets.helpers;
     D.addClass(root, 'w-__NOME__');
@@ -89,10 +66,9 @@ const CLIENT = `/* Plugin "__NOME__": widget del tablet. Creato con npm run new:
     }
 
     load();
-    // ogni 5 s se il tablet è usato, ogni 30 s a riposo (risparmia batteria)
     var timer = D.every(5000, 30000, load);
     return {
-      update: function (state) {},          // stato del PC (/api/state), ogni pochi secondi
+      update: function (state) {},
       resize: function (w, h) { ora.style.fontSize = Math.round(Math.min(w / 6, h / 3)) + 'px'; },
       destroy: function () { D.stop(timer); }
     };
@@ -100,29 +76,22 @@ const CLIENT = `/* Plugin "__NOME__": widget del tablet. Creato con npm run new:
 })();
 `;
 
-const STYLE = `/* Plugin "__NOME__": stile del widget. Niente flexbox (browser di Android 4). */
-.w-__NOME__ .pl-__NOME__-ora { margin-top: 10px; text-align: center; font-weight: bold; font-size: 40px; }
+const STYLE = `.w-__NOME__ .pl-__NOME__-ora { margin-top: 10px; text-align: center; font-weight: bold; font-size: 40px; }
 .w-__NOME__ .pl-__NOME__-info { margin-top: 6px; text-align: center; color: #8b9bab; font-size: 15px; }
 `;
 
-const HOME = `// Plugin "__NOME__": come compare il widget nel catalogo della HOME (pannello di controllo > HOME).
-// Si rilegge da solo: salva e ricarica il pannello.
-{
+const HOME = `{
   "__NOME__": {
     "label": "__TITOLO__",
     "icon": "__NOME__",
     "description": "Ora del PC e un contatore",
-    // misura proposta quando lo aggiungi, e la più piccola che si legge ancora (in celle)
     "w": 2, "h": 2,
     "minW": 2, "minH": 1
-    // "props": { ... } = campi in più per la tile (li legge il widget in tile.<campo>)
   }
 }
 `;
 
-const PAGE = `// Pagina del plugin "__NOME__". Compare nel pannello di controllo: aggiungila alla barra da lì.
-// Per cambiarla senza toccare il plugin copiala in config/pages/__NOME__.json.
-{
+const PAGE = `{
   "id": "__NOME__",
   "title": "__TITOLO__",
   "icon": "__NOME__",

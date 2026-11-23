@@ -1,14 +1,3 @@
-#!/usr/bin/env node
-// Avvio automatico, identico su Windows e Linux:
-//  1. controlla la versione di Node
-//  2. installa le dipendenze se mancano o sono cambiate
-//  3. crea .env (con codice di accesso casuale) e la configurazione personale
-//  4. al primo avvio propone: regola firewall, collegamento sul desktop, avvio automatico
-//  5. avvia il server e lo riavvia se va in crash
-//
-// Opzioni:  --setup      ripete le domande del primo avvio
-//           --prepare    prepara tutto ma non avvia il server (alias: --no-server)
-//           --service    avvio in background (icona di Windows): niente domande
 'use strict';
 
 const fs = require('fs');
@@ -31,7 +20,6 @@ const EXIT_PORT_IN_USE = 3;
 function say(msg) { console.log('  ' + msg); }
 function title(msg) { console.log('\n== ' + msg); }
 
-// ---------------------------------------------------------------- 1. Node
 function checkNode() {
   const major = parseInt(process.versions.node.split('.')[0], 10);
   if (major >= 18) return;
@@ -42,7 +30,6 @@ function checkNode() {
   process.exit(1);
 }
 
-// ---------------------------------------------------------------- 2. dipendenze
 function depsHash() {
   const h = crypto.createHash('sha1');
   ['package.json', 'package-lock.json'].forEach(function (f) {
@@ -59,7 +46,6 @@ function installDeps() {
   title('Installo le dipendenze (solo la prima volta o dopo un aggiornamento)');
   const hasLock = fs.existsSync(path.join(ROOT, 'package-lock.json'));
   const args = [hasLock ? 'ci' : 'install', '--omit=dev', '--no-audit', '--no-fund'];
-  // Su Windows npm è uno script .cmd: serve la shell (argomenti fissi, nessun input esterno)
   const r = IS_WIN
     ? spawnSync('npm ' + args.join(' '), { cwd: ROOT, stdio: 'inherit', shell: true })
     : spawnSync('npm', args, { cwd: ROOT, stdio: 'inherit' });
@@ -70,7 +56,6 @@ function installDeps() {
   fs.writeFileSync(STAMP, want);
 }
 
-// ---------------------------------------------------------------- 3. .env e config
 function randomToken() {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const bytes = crypto.randomBytes(8);
@@ -104,11 +89,10 @@ function readEnvPort() {
   try {
     const m = /^PORT=(\d+)/m.exec(fs.readFileSync(path.join(ROOT, '.env'), 'utf8'));
     if (m) return parseInt(m[1], 10);
-  } catch (e) { /* default */ }
+  } catch (e) { }
   return 8787;
 }
 
-// ---------------------------------------------------------------- 4. primo avvio
 function ask(rl, question, def) {
   return new Promise(function (resolve) {
     rl.question('  ' + question + (def ? ' [S/n] ' : ' [s/N] '), function (a) {
@@ -131,7 +115,6 @@ const windowsSetup = {
     return /Public/.test(r.stdout || '');
   },
   firewallExists: function () {
-    // anche la regola creata quando il progetto si chiamava "Command Dock"
     return ['Vibe Deck', 'Command Dock'].some(function (name) {
       const r = spawnSync('netsh', ['advfirewall', 'firewall', 'show', 'rule', 'name=' + name], { encoding: 'utf8', windowsHide: true });
       return r.status === 0;
@@ -140,17 +123,14 @@ const windowsSetup = {
   addFirewall: function (port) {
     say('Windows chiederà i permessi di amministratore...');
     const inner = 'New-NetFirewallRule -DisplayName "Vibe Deck" -Direction Inbound -Protocol TCP -LocalPort ' + parseInt(port, 10) + ' -Action Allow -Profile Private';
-    // -EncodedCommand evita i problemi di virgolette annidate
     const encoded = Buffer.from(inner, 'utf16le').toString('base64');
     const r = ps('Start-Process powershell.exe -Verb RunAs -Wait -WindowStyle Hidden -ArgumentList "-NoProfile","-EncodedCommand","' + encoded + '"');
     return r.status === 0 && windowsSetup.firewallExists();
   },
-  // panel = il doppio clic apre anche il pannello di controllo (collegamento sul desktop)
   shortcut: function (dir, name, minimized, panel) {
     const lnk = path.join(dir, name + '.lnk');
     const cmd = [
       '$s = (New-Object -ComObject WScript.Shell).CreateShortcut(' + psQuote(lnk) + ')',
-      // wscript + vbs: parte nascosto, con l'icona vicino all'orologio
       '$s.TargetPath = ' + psQuote(path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'wscript.exe')),
       '$s.Arguments = ' + psQuote('"' + HIDDEN_LAUNCHER + '"' + (panel ? ' /panel' : '')),
       '$s.WorkingDirectory = ' + psQuote(ROOT),
@@ -171,7 +151,6 @@ const windowsSetup = {
 };
 
 const linuxSetup = {
-  // Icona e voci di menu: le crea scripts/linux/vibe-deck.sh (dock in background, senza terminale)
   install: function (what) {
     const r = spawnSync('bash', [path.join(ROOT, 'scripts', 'linux', 'vibe-deck.sh'), 'install'].concat(what), { stdio: 'inherit' });
     return r.status === 0;
@@ -230,7 +209,7 @@ async function firstRunSetup(force) {
         answers.autostart = linuxSetup.install(['autostart']);
         say(answers.autostart ? 'Avvio automatico attivo.' : 'Avvio automatico non configurato.');
       }
-      try { fs.chmodSync(path.join(ROOT, 'start.sh'), 0o755); } catch (e) { /* ignora */ }
+      try { fs.chmodSync(path.join(ROOT, 'start.sh'), 0o755); } catch (e) { }
     }
   } finally {
     rl.close();
@@ -238,7 +217,6 @@ async function firstRunSetup(force) {
   fs.writeFileSync(SETUP_FILE, JSON.stringify(Object.assign({ at: new Date().toISOString(), platform: process.platform }, answers), null, 2));
 }
 
-// ---------------------------------------------------------------- 5. server con riavvio
 function runServer() {
   let restarts = [];
   let stopping = false;
@@ -249,7 +227,6 @@ function runServer() {
     child = spawn(process.execPath, [path.join(ROOT, 'server', 'index.js')], { cwd: ROOT, stdio: 'inherit', env: env });
     child.on('exit', function (code, signal) {
       if (stopping || signal === 'SIGINT' || code === 0 || code === 130) process.exit(code || 0);
-      // porta occupata: inutile riprovare (la dock è già avviata altrove)
       if (code === EXIT_PORT_IN_USE) process.exit(EXIT_PORT_IN_USE);
       const now = Date.now();
       restarts = restarts.filter(function (t) { return now - t < 60000; });
@@ -264,7 +241,7 @@ function runServer() {
   }
   function stop() {
     stopping = true;
-    if (child) { try { child.kill('SIGINT'); } catch (e) { /* già chiuso */ } }
+    if (child) { try { child.kill('SIGINT'); } catch (e) { } }
     setTimeout(function () { process.exit(0); }, 1500);
   }
   process.on('SIGINT', stop);

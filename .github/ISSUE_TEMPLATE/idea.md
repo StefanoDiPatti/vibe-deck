@@ -1,15 +1,18 @@
 ---
 name: Idea
-about: Una funzione, un widget o una pagina nuova
+about: A new feature, widget or page
 title: ''
 labels: enhancement
 ---
 
-**Cosa vorresti fare dal tablet**
-<!-- Es. "un pulsante che cambia scena in OBS", "un widget con il meteo nella HOME". -->
+**What would you like to do from the tablet**
 
-**Dove**
-<!-- Pagina nuova, pulsante in una pagina esistente, widget per la HOME, plugin... e su quale sistema (Windows/Linux). -->
+For example "a button that switches scene in OBS", "a weather widget on the HOME".
 
-**Ti va di farlo tu?**
-<!-- Se sì, la guida è in CONTRIBUTING.md; per un widget parti da: npm run new:widget -- <nome> -->
+**Where**
+
+New page, button in an existing page, HOME widget, plugin... and on which system (Windows/Linux).
+
+**Would you like to build it?**
+
+If so, the guide is in CONTRIBUTING.md; for a widget start from `npm run new:widget -- <name>`.

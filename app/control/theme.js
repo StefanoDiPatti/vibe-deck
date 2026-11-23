@@ -1,5 +1,3 @@
-// Tema del pannello di controllo: gli stessi del tablet, scelti in alto e ricordati su questo PC.
-// Caricato nell'<head> (prima del CSS disegnato) così la pagina non lampeggia col tema sbagliato.
 (function () {
   'use strict';
   const KEY = 'dock-panel-theme';
@@ -12,8 +10,7 @@
   const ok = (id) => THEMES.some((t) => t.id === id);
 
   let current = 'classic';
-  try { const s = localStorage.getItem(KEY); if (ok(s)) current = s; } catch (e) { /* niente storage: Classico */ }
-  // /control?theme=neon apre il pannello con quel tema (comodo per gli screenshot), senza ricordarlo
+  try { const s = localStorage.getItem(KEY); if (ok(s)) current = s; } catch (e) { }
   const q = new URLSearchParams(location.search).get('theme');
   if (ok(q)) current = q;
   document.documentElement.setAttribute('data-theme', current);
@@ -22,7 +19,7 @@
     if (!ok(id)) return;
     current = id;
     document.documentElement.setAttribute('data-theme', id);
-    try { localStorage.setItem(KEY, id); } catch (e) { /* resta solo per questa visita */ }
+    try { localStorage.setItem(KEY, id); } catch (e) { }
     const box = document.getElementById('theme-pick');
     if (box) box.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.theme === id)));
   }
@@ -37,7 +34,6 @@
     box.addEventListener('click', (e) => { const b = e.target.closest('button[data-theme]'); if (b) set(b.dataset.theme); });
   }
 
-  // un altro pannello aperto (altra scheda) cambia tema: segui
   window.addEventListener('storage', (e) => { if (e.key === KEY && ok(e.newValue)) set(e.newValue); });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);

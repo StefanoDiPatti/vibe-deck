@@ -1,5 +1,3 @@
-// Interfaccia per sistema operativo, pulsanti scelti dal pannello e griglia automatica.
-// Non scrive mai i file veri in config/.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -11,7 +9,6 @@ const common = require('../server/platform/common');
 const DEFAULTS = path.join(__dirname, '..', 'config', 'defaults');
 function readDefault(name) { return config.parseJson(fs.readFileSync(path.join(DEFAULTS, name + '.json'), 'utf8')); }
 function page(d, id) { return d.pages.filter(function (p) { return p.id === id; })[0]; }
-// tutti i pulsanti della pagina, anche quelli nascosti di default (configurazione standard: si mostrano dal pannello)
 function labels(p) { return (p.allTiles || p.tiles).map(function (t) { return t.label; }); }
 
 const RAW = {
@@ -36,7 +33,6 @@ test('pulsanti e pagine diversi per Windows e Linux', function () {
   assert.ok(!page(lin, 'screens') && page(win, 'screens'));
   assert.strictEqual(page(lin, 'home').description, 'linux');
   assert.strictEqual(page(win, 'home').description, 'windows');
-  // i campi per sistema non arrivano al tablet
   const t = page(lin, 'apps').tiles[1];
   assert.strictEqual(t.linux, undefined);
   assert.strictEqual(t.os, undefined);
@@ -46,11 +42,9 @@ test('pulsanti scelti dal pannello: ordine, nascosti e nuovi in fondo', function
   const layout = { tiles: { apps: { show: ['b', 'a', 'nonesiste', 'b'], hide: ['term'] } } };
   const d = config.normalizeDock(RAW, layout, 'linux');
   const p = page(d, 'apps');
-  // 'lin' non è in nessuna lista: è nuovo, va in fondo
   assert.deepStrictEqual(p.tiles.map(function (x) { return x.id; }), ['b', 'a', 'lin']);
   assert.strictEqual(p.allTiles.length, 4);
   assert.strictEqual(p.editable, true);
-  // con 3 pulsanti la griglia si restringe: pulsanti più grandi
   assert.deepStrictEqual([p.columns, p.rows], [3, 1]);
 });
 
@@ -70,7 +64,6 @@ test('griglia automatica: niente buchi inutili, forma da tablet', function () {
   assert.deepStrictEqual(n(1), { columns: 1, rows: 1 });
   const big = n(60);
   assert.ok(big.columns <= 8 && big.rows <= 6);
-  // un pulsante largo 3 non sta in 2 colonne
   assert.ok(config.autoGrid([{ w: 3, h: 1 }, { w: 1, h: 1 }]).columns >= 3);
 });
 
@@ -82,7 +75,6 @@ test('pagina APP di default: CLAUDE unico, Viber su entrambi, terminale su Linux
     const l = labels(p);
     assert.strictEqual(l.filter(function (x) { return /CLAUDE/.test(x); }).length, 1, 'un solo pulsante Claude');
     assert.ok(l.indexOf('CLAUDE CODE') < 0);
-    // id fissi: il pannello ricorda ordine e nascosti anche se dock.json cambia
     p.allTiles.forEach(function (t) { assert.ok(!/^apps-\d+$/.test(t.id), t.label + ' senza id'); });
   });
   const ll = labels(lin);
@@ -92,7 +84,6 @@ test('pagina APP di default: CLAUDE unico, Viber su entrambi, terminale su Linux
   const wl = labels(win);
   assert.strictEqual(wl[wl.indexOf('VS CODE') + 1], 'VIBER', 'Viber anche su Windows');
   assert.ok(wl.indexOf('POWERSHELL') >= 0 && wl.indexOf('TASK MGR') >= 0);
-  // su Windows screenshot e desktop restano le scorciatoie di sempre
   const shot = win.tiles.filter(function (t) { return t.id === 'screenshot'; })[0];
   assert.deepStrictEqual(shot.action.keys, ['WIN', 'SHIFT', 'S']);
   assert.strictEqual(lin.tiles.filter(function (t) { return t.id === 'screenshot'; })[0].action.type, 'launch');
@@ -112,7 +103,7 @@ test('APP avvia Blender e DaVinci; tutti i pulsanti di default hanno id fissi e 
   const raw = config.defaultDock();
   const apps = page(config.normalizeDock(raw, {}, 'linux'), 'apps');
   ['blender', 'davinci'].forEach(function (id) {
-    const t = apps.allTiles.filter(function (x) { return x.id === id; })[0];   // nascosti di default, ma ci sono
+    const t = apps.allTiles.filter(function (x) { return x.id === id; })[0];
     assert.deepStrictEqual(t.action, { type: 'launch', app: id });
   });
   raw.pages.forEach(function (p) {
@@ -131,7 +122,6 @@ test('Linux Wayland: se il focus non è possibile i tasti partono lo stesso', as
     platform.focus = async function () { throw Object.assign(new Error('no'), { code: 'UNSUPPORTED' }); };
     await actions.HANDLERS.hotkey({ keys: ['CTRL', 'SHIFT', 'P'], focus: 'Code' });
     assert.strictEqual(sent.length, 1);
-    // finestra non trovata (Windows): niente tasti alla finestra sbagliata
     platform.focus = async function () { throw new Error('Finestra non trovata'); };
     await assert.rejects(actions.HANDLERS.hotkey({ keys: ['CTRL', 'S'], focus: 'Code' }));
     assert.strictEqual(sent.length, 1);
@@ -161,8 +151,8 @@ test('i file di config non modificati passano alla nuova versione, quelli modifi
   fs.writeFileSync(path.join(defs, 'apps.json'), '{ "apps": { "a": {}, "b": {} } }\n');
   fs.writeFileSync(path.join(defs, 'dock.json'), '{ "pages": [] }\n');
   fs.writeFileSync(path.join(defs, 'history.json'), JSON.stringify({ apps: [config.fingerprint(oldText)], dock: [config.fingerprint(oldText)] }));
-  fs.writeFileSync(path.join(conf, 'apps.json'), oldText.replace(/\n/g, '\r\n'));   // copia di Windows (CRLF)
-  fs.writeFileSync(path.join(conf, 'dock.json'), '{ "pages": [ "mia" ] }\n');         // modificato a mano
+  fs.writeFileSync(path.join(conf, 'apps.json'), oldText.replace(/\n/g, '\r\n'));
+  fs.writeFileSync(path.join(conf, 'dock.json'), '{ "pages": [ "mia" ] }\n');
   assert.deepStrictEqual(config.upgradeUserConfig(conf, defs), ['apps.json']);
   assert.ok(/"b"/.test(fs.readFileSync(path.join(conf, 'apps.json'), 'utf8')));
   assert.ok(/mia/.test(fs.readFileSync(path.join(conf, 'dock.json'), 'utf8')));
@@ -224,7 +214,6 @@ test('configurazione standard (prima installazione): barra semplice, il resto tr
   assert.deepStrictEqual(tabs('linux'), ['main', 'media', 'apps', 'audio'], 'SCHERMI su Linux richiede KDE: la aggiungi tu');
   const apps = page(config.normalizeDock(raw, {}, 'windows'), 'apps');
   assert.deepStrictEqual(labels({ tiles: apps.tiles }), ['APPLE MUSIC', 'DISCORD', 'FILE', 'SCREENSHOT', 'DESKTOP', 'BLOCCA', 'SCHERMO OFF', 'VOL -', 'MUTE', 'VOL +']);
-  // le scelte del pannello vincono: chi ha già scelto i suoi pulsanti li ritrova tutti
   const mine = page(config.normalizeDock(raw, { tiles: { apps: { show: ['blender', 'docker', 'lock'] } } }, 'windows'), 'apps');
   assert.deepStrictEqual(mine.tiles.slice(0, 3).map(function (t) { return t.id; }), ['blender', 'docker', 'lock']);
 });

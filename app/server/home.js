@@ -1,14 +1,5 @@
-// HOME configurabile dal pannello di controllo: quali widget, dove e quanto grandi.
-// Le scelte stanno in config/layout.json ("homePage": { columns, rows, tiles: [{ id, x, y, w, h }] })
-// e vincono sulla pagina "main" (config/defaults/pages/main.json o la tua copia in config/pages/).
-// x, y = colonna e riga (da 0). Senza posizione (HOME salvate prima) i widget si dispongono
-// come sul tablet: in ordine, nella prima cella libera (pack).
-
 const HOME_ID = 'main';
 
-// Un widget per ogni pagina, in versione adatta alla HOME.
-// id = voce del catalogo; widget + props = come finisce nella pagina;
-// w/h = misura proposta, minW/minH = più piccolo di così non si legge.
 const CATALOG = [
   { id: 'nowplaying', widget: 'nowplaying', label: 'Musica', icon: 'music', page: 'MUSICA', description: 'Brano in riproduzione, copertina e comandi', w: 3, h: 2, minW: 2, minH: 2 },
   { id: 'todo', widget: 'todo', label: 'Note e TODO', icon: 'check', page: 'HOME', description: 'Le attività (Memo di Windows o lista della dock), con dettatura', w: 3, h: 4, minW: 2, minH: 2 },
@@ -34,7 +25,6 @@ function clamp(v, min, max, def) {
   return Math.max(min, Math.min(max, n));
 }
 
-// Catalogo completo: quelli del progetto più i widget dei plugin (plugins/<nome>/home.json).
 function catalog() {
   const out = CATALOG.map(function (c) { return Object.assign({ plugin: '', props: null }, c); });
   let fromPlugins = [];
@@ -45,8 +35,6 @@ function catalog() {
   return out;
 }
 
-// Prima cella libera, da sinistra a destra e dall'alto in basso (come public/js/app.js -> pack).
-// Le tile con x, y validi e liberi restano lì; le altre vanno nella prima cella libera.
 function pack(tiles, cols, rows) {
   const grid = [];
   for (let r = 0; r < rows; r++) { grid[r] = []; for (let c = 0; c < cols; c++) grid[r][c] = false; }
@@ -80,7 +68,6 @@ function pack(tiles, cols, rows) {
   return { placed: placed, left: left };
 }
 
-// Controlla e ripulisce quello che arriva dal pannello. Errore leggibile se qualcosa non va.
 function clean(input) {
   const bad = function (m) { return Object.assign(new Error(m), { code: 'BAD_REQUEST' }); };
   input = input || {};
@@ -92,7 +79,6 @@ function clean(input) {
   if (!list.length) throw bad('La HOME deve avere almeno un widget');
   if (list.length > LIMITS.maxTiles) throw bad('Al massimo ' + LIMITS.maxTiles + ' widget nella HOME');
   const tiles = list.map(function (t) {
-    // HOME salvate prima delle posizioni: { widget, w, h } (l'id era il nome del widget)
     const c = known[t && (t.id || t.widget)];
     if (!c) throw bad('Widget non disponibile per la HOME: ' + (t && (t.id || t.widget)));
     if (c.minW > columns || c.minH > rows) throw bad(c.label + ' ha bisogno di almeno ' + c.minW + ' colonne e ' + c.minH + ' righe');
@@ -112,23 +98,19 @@ function clean(input) {
     const names = p.left.map(function (i) { return known[tiles[i].id].label; });
     throw bad('Non c\'è spazio per: ' + names.join(', ') + '. Rimpicciolisci qualche widget o aggiungi righe o colonne.');
   }
-  // posizioni definitive (anche per chi non l'aveva, e per chi si sovrapponeva)
   p.placed.forEach(function (x) { tiles[x.index].x = x.x; tiles[x.index].y = x.y; });
   return { columns: columns, rows: rows, tiles: tiles };
 }
 
-// La HOME salvata nel layout, se valida (altrimenti null: vale la pagina main dei file).
 function fromLayout(layout) {
   const h = layout && layout.homePage;
   if (!h || !Array.isArray(h.tiles) || !h.tiles.length) return null;
-  // voci tolte dal catalogo (o plugin spenti): si saltano, il resto della HOME resta
   const known = {};
   catalog().forEach(function (c) { known[c.id] = true; });
   const tiles = h.tiles.filter(function (t) { return t && known[t.id || t.widget]; });
   try { return clean(Object.assign({}, h, { tiles: tiles })); } catch (e) { return null; }
 }
 
-// Applica la HOME del pannello alla pagina main (prima della normalizzazione).
 function apply(page, layout) {
   const h = fromLayout(layout);
   if (!h || !page || page.id !== HOME_ID) return page;
@@ -145,9 +127,7 @@ function apply(page, layout) {
   });
 }
 
-// Voce del catalogo di una tile della pagina main (per l'editor): id del catalogo o null.
 function catalogId(tile) {
-  // stesso widget e stesse opzioni (es. viber con "show": "tasks"); un viber senza "show" non c'è nel catalogo
   const hit = catalog().filter(function (c) {
     const props = c.props || {};
     return c.widget === tile.widget && Object.keys(props).every(function (k) { return tile[k] === props[k]; });

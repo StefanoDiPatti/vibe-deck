@@ -1,7 +1,3 @@
-// Pagina BROWSER DEV (id "browserdev"): scorciatoie del browser per sviluppare siti (Chrome, Brave, Edge;
-// quasi tutte valgono anche in Firefox). I tasti vanno alla finestra in primo piano: tieni davanti il browser.
-// Tra le pagine disponibili: aggiungila alla barra e scegli i pulsanti dal pannello di controllo.
-// Per cambiarla copiala in config/pages/browserdev.json e modifica la copia.
 {
   "id": "browserdev",
   "title": "BROWSER DEV",

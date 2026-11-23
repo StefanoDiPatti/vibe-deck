@@ -1,4 +1,3 @@
-// Lingua del tablet: i18n.js + lang-en.js caricati come nel browser, con l'inglese scelto.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -36,7 +35,6 @@ test('inglese: parole, maiuscole, pezzi separati da " · " e testi con numeri', 
   assert.strictEqual(I.t('PR aperte 2 · Issue 0 · CI falliti 1'), 'Open PRs 2 · Issue 0 · Failed CI 1');
   assert.strictEqual(I.t('Niente in riproduzione'), 'Nothing playing');
   assert.strictEqual(I.t('Neon Skyline'), 'Neon Skyline', 'testo sconosciuto: invariato');
-  // un plugin aggiunge le sue traduzioni
   I.add({ 'Meteo di casa': 'Home weather' });
   assert.strictEqual(I.t('METEO DI CASA'), 'HOME WEATHER');
 });
@@ -49,7 +47,6 @@ test('dizionario: niente traduzioni vuote; titoli delle pagine predefinite trado
   fs.readdirSync(dir).forEach(function (f) {
     const p = config.parseJson(fs.readFileSync(path.join(dir, f), 'utf8'));
     const title = p.title || p.id.toUpperCase();
-    // nomi propri (HOME, GITHUB, AUDIO, BLENDER...) restano uguali; gli altri devono cambiare
     if (/[ÀÈÉÌÒÙ]|MUSICA|SCHERMI|GIOCHI|DESKTOP VIRTUALI/.test(title) && I.t(title) === title) missing.push(title);
     if (p.description && I.t(p.description) === p.description) missing.push(f + ': ' + p.description);
   });
@@ -58,8 +55,6 @@ test('dizionario: niente traduzioni vuote; titoli delle pagine predefinite trado
 
 test('ogni testo italiano del tablet ha la traduzione inglese (codice, index.html, pagine predefinite)', function () {
   const out = require('./i18n-audit')(path.join(__dirname, '..'));
-  // pezzi di frasi composte nel codice: tradotti a frase intera dalle regole di lang-en.js;
-  // giorni dell'orologio: li sceglie il widget; title della bandierina: bilingue apposta
   const PEZZI = ['Aggiungi a', 'Ancorata nella zona', 'CONNESSIONE PERSA · nuovo tentativo tra', 'English · tocca per l\'italiano',
     'IN CODA ·', 'Le app dal tablet si aprono sul monitor', 'Non disponibile per', 'Nuovo tentativo automatico tra', 'PR aperte',
     'Passa a un altro branch (uguale a git checkout', 'Sincronizzazione:', 'Spostata su', 'giovedì', 'lunedì', 'martedì', 'mercoledì',

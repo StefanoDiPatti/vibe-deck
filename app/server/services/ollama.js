@@ -1,5 +1,3 @@
-// Ollama locale: il tablet parla col server, il server parla con Ollama.
-// Ollama non viene mai esposto sul Wi-Fi.
 const config = require('../config');
 const common = require('../platform/common');
 const chats = require('./chats');
@@ -34,7 +32,6 @@ async function models() {
   }
 }
 
-// Alcuni modelli "pensanti" mettono il ragionamento tra <think></think>.
 function stripThinking(text) {
   return String(text || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 }
@@ -65,7 +62,7 @@ async function chat(sessionId, model, text) {
     session.messages.push({ role: 'assistant', content: reply });
     return { sessionId: session.id, model: model, reply: reply };
   } catch (e) {
-    session.messages.pop(); // il messaggio senza risposta non resta nella storia
+    session.messages.pop();
     if (e.name === 'AbortError') throw new Error('Ollama ci sta mettendo troppo: riprova o usa un modello più piccolo');
     if (/fetch failed|ECONNREFUSED/i.test(e.message)) throw new Error('Ollama non è in esecuzione');
     throw e;

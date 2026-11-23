@@ -1,11 +1,3 @@
-// Mini loader per il file .env (evita la dipendenza da dotenv).
-// Non sovrascrive variabili già presenti nell'ambiente.
-//
-// I segreti (token, chiavi API, password) vengono cifrati nel file al primo
-// avvio: GITHUB_TOKEN=ghp_... diventa GITHUB_TOKEN=enc:v1:... e la dock lo
-// decifra in memoria. Per cambiarlo scrivi il valore nuovo in chiaro: al
-// riavvio viene cifrato di nuovo. DOCK_TOKEN resta leggibile: è il codice che
-// il tablet ti chiede e che compare nel pannello e nell'icona di Windows.
 const fs = require('fs');
 const paths = require('./paths');
 const secrets = require('./secrets');
@@ -33,8 +25,6 @@ function parseEnv(text) {
   return out;
 }
 
-// Riscrive il .env con i segreti cifrati (commenti e righe restano come sono).
-// Ritorna i nomi cifrati adesso.
 function sealEnv(file) {
   file = file || paths.ENV_FILE;
   if (!fs.existsSync(file)) return [];
@@ -60,7 +50,6 @@ function loadEnv(file) {
   file = file || paths.ENV_FILE;
   if (!fs.existsSync(file)) return {};
   try {
-    // i test leggono il .env vero ma non lo riscrivono
     const sealed = process.env.NODE_TEST_CONTEXT && file === paths.ENV_FILE ? [] : sealEnv(file);
     if (sealed.length) console.log('  .env: cifrati ' + sealed.join(', '));
   } catch (e) {

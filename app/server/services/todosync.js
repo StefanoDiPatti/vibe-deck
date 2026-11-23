@@ -1,18 +1,3 @@
-// TODO condivisi tra i PC (Windows e Linux) attraverso GitHub.
-//
-// La lista sta in todo.json su un branch a parte della repo della dock
-// (predefinito "dock-todo"): niente rumore nella cronologia del codice, e si
-// usano le stesse credenziali git con cui fai push. Su Windows la fonte resta
-// le Memo; su Linux la lista locale (data/todo.json), con gli stessi gruppi.
-//
-// Fusione a tre vie per attività (id): base = ultima versione sincronizzata da
-// questo PC (data/todo-sync.json). Vince la modifica fatta da una sola parte;
-// se cambiano entrambe, vince questo PC. Un'attività cancellata da una parte
-// e non toccata dall'altra sparisce anche lì.
-//
-// Spenta di default: le TODO finiscono nel remote, quindi accendila solo se la repo è privata
-// (o indica un remote privato a parte).
-// services.json -> todo.sync: { "enabled": true, "remote": "origin", "branch": "dock-todo", "intervalSec": 120 }
 const { execFile } = require('child_process');
 const fs = require('fs');
 const os = require('os');
@@ -35,14 +20,12 @@ let status = { enabled: false, ok: null, at: 0, message: '' };
 function settings() {
   const s = ((config.get('services') || {}).todo || {}).sync || {};
   return {
-    enabled: s.enabled === true,   // spenta se non è accesa esplicitamente
+    enabled: s.enabled === true,
     remote: /^[\w.-]+$/.test(s.remote || '') ? s.remote : 'origin',
     branch: /^[\w./-]+$/.test(s.branch || '') ? s.branch : 'dock-todo',
     intervalSec: Math.max(30, parseInt(s.intervalSec, 10) || 120)
   };
 }
-
-// ------------------------------------------------------------ git
 
 function git(args, input, cwd) {
   return new Promise(function (resolve, reject) {
@@ -51,9 +34,6 @@ function git(args, input, cwd) {
       timeout: 45000,
       windowsHide: true,
       maxBuffer: 4 * 1024 * 1024,
-      // mai chiedere password in background: se mancano le credenziali, fallisce e basta
-      // messaggi di git in inglese: gli errori vengono riconosciuti dal testo
-      // (su un sistema in italiano "couldn't find remote ref" sarebbe tradotto)
       env: Object.assign({}, process.env, { GIT_TERMINAL_PROMPT: '0', GCM_INTERACTIVE: 'never', LC_ALL: 'C', LANGUAGE: 'C' })
     }, function (err, stdout, stderr) {
       if (err) return reject(Object.assign(new Error(String(stderr || err.message).trim().split('\n').slice(-1)[0] || 'git fallito'), { stderr: String(stderr || '') }));
@@ -70,7 +50,6 @@ async function repoRoot() {
   return rootCache;
 }
 
-// Versione su GitHub: { commit, data } oppure null se il branch non c'è ancora.
 async function fetchRemote(root, s) {
   try {
     await git(['fetch', '--quiet', '--no-tags', s.remote, '+refs/heads/' + s.branch + ':' + LOCAL_REF], undefined, root);
@@ -80,11 +59,10 @@ async function fetchRemote(root, s) {
   }
   const commit = (await git(['rev-parse', LOCAL_REF], undefined, root)).trim();
   let data = { groups: [], items: [] };
-  try { data = JSON.parse(await git(['show', commit + ':' + FILE_NAME], undefined, root)); } catch (e) { /* file vuoto o rovinato */ }
+  try { data = JSON.parse(await git(['show', commit + ':' + FILE_NAME], undefined, root)); } catch (e) { }
   return { commit: commit, data: normalize(data) };
 }
 
-// Nuovo commit sul branch, senza toccare la cartella di lavoro né il branch attuale.
 async function pushRemote(root, s, data, parent) {
   const body = JSON.stringify(Object.assign({ updated: new Date().toISOString(), from: os.hostname() }, data), null, 2) + '\n';
   const blob = (await git(['hash-object', '-w', '--stdin'], body, root)).trim();
@@ -96,8 +74,6 @@ async function pushRemote(root, s, data, parent) {
   await git(['update-ref', LOCAL_REF, commit], undefined, root).catch(function () {});
   return commit;
 }
-
-// ------------------------------------------------------------ fusione
 
 function normalize(snap) {
   return {
@@ -116,27 +92,23 @@ function byId(list) {
   return m;
 }
 
-// Ritorna le modifiche dell'altro PC da applicare qui: [{ type, item }]
 function merge(base, local, remote) {
   const B = byId(base.items), L = byId(local.items), ops = [];
   local.items.forEach(function (it) {
     const b = B[it.id], r = byId(remote.items)[it.id];
     if (!r) {
-      // sparita sull'altro PC: la tolgo solo se qui non è cambiata
       if (b && b.text === it.text && b.done === it.done) ops.push({ type: 'remove', item: it });
       return;
     }
-    if (!b) return; // nuova da entrambe le parti con lo stesso id: è la stessa
+    if (!b) return;
     if (it.done === b.done && r.done !== b.done) ops.push({ type: 'toggle', item: r });
     if (it.text === b.text && r.text !== b.text) ops.push({ type: 'text', item: r });
   });
   remote.items.forEach(function (r) {
-    if (!L[r.id] && !B[r.id]) ops.push({ type: 'add', item: r });   // nuova sull'altro PC
+    if (!L[r.id] && !B[r.id]) ops.push({ type: 'add', item: r });
   });
   return ops;
 }
-
-// ------------------------------------------------------------ sincronizzazione
 
 function loadState() {
   try { return JSON.parse(fs.readFileSync(STATE, 'utf8')); } catch (e) { return null; }
@@ -162,14 +134,12 @@ async function syncOnce() {
 
     if (remote) {
       if (!st || !st.base) {
-        // primo giro su questo PC: si parte dalla lista condivisa
         if (todo.source() === 'local') {
           const backup = path.join(paths.DATA_DIR, 'todo.prima-della-sync.json');
           if (!fs.existsSync(backup)) fs.writeFileSync(backup, JSON.stringify(local, null, 2));
           todo.replaceLocal(remote.data);
           applied = remote.data.items.length;
         } else {
-          // Memo: aggiunge solo quello che manca (stesso testo nello stesso gruppo = già presente)
           const have = {};
           local.items.forEach(function (i) { have[i.group.toLowerCase() + '|' + i.text.toLowerCase()] = true; });
           for (const it of remote.data.items) {
@@ -191,13 +161,11 @@ async function syncOnce() {
       if (applied) local = normalize(todo.snapshot());
     }
 
-    // GitHub aggiornato solo se qui c'è qualcosa di diverso
     let commit = remote ? remote.commit : null;
     if (!remote || !same(local, remote.data)) {
       try {
         commit = await pushRemote(root, s, local, remote ? remote.commit : null);
       } catch (e) {
-        // qualcun altro ha appena scritto: rifaccio il giro con la versione nuova
         if (/rejected|non-fast-forward|fetch first/i.test(e.stderr || e.message) && attempt < 2) continue;
         throw e;
       }
@@ -210,7 +178,6 @@ async function syncOnce() {
   return status;
 }
 
-// Una sincronizzazione alla volta; le richieste arrivate nel frattempo ne fanno partire un'altra.
 function sync() {
   if (running) { again = true; return running; }
   running = syncOnce().catch(function (e) {
@@ -229,7 +196,6 @@ function start() {
   if (timer) return;
   const s = settings();
   if (!s.enabled) return;
-  // dopo una modifica dal tablet: aspetta che le Memo si siano riaperte
   todo.onChange(function () {
     clearTimeout(debounce);
     debounce = setTimeout(sync, 4000);

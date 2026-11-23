@@ -1,14 +1,3 @@
-// Giochi della pagina GAMES, scelti dal pannello di controllo.
-//
-// Sono dati personali: stanno in data/games.json e le icone in data/game-icons/,
-// fuori da git. Il repository non contiene giochi né percorsi di un PC.
-//
-// Ogni gioco diventa:
-//  - un'app "game_<id>" (come in apps.json: game, whenRunning "focus", processo)
-//  - un pulsante della pagina GAMES, con l'icona scelta (immagine) o quella di riserva.
-//
-// Icone proposte: quella dell'eseguibile, le immagini del gioco su Steam e i
-// loghi di Wikipedia/Wikimedia Commons (nessuna chiave API).
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -42,15 +31,11 @@ function save() {
 
 function osKey() { return process.platform === 'win32' ? 'windows' : 'linux'; }
 
-// ------------------------------------------------------------ per config.js (app e pulsanti)
-
-// I giochi del sistema in uso, come app di apps.json.
 function apps() {
   const out = {};
   load().games.forEach(function (g) {
     if (g.os && g.os !== osKey()) return;
     const a = { label: g.label, game: true, whenRunning: 'focus' };
-    // più processi separati da virgola (es. il client e il gioco vero)
     if (g.process) {
       const list = String(g.process).split(',').map(function (x) { return x.trim(); }).filter(Boolean);
       a.process = list.length > 1 ? list : list[0];
@@ -66,7 +51,6 @@ function iconUrl(g) {
   return g.icon ? '/api/games/icon/' + encodeURIComponent(g.id) + '?v=' + encodeURIComponent(g.iconRev || '') : null;
 }
 
-// Pulsanti della pagina GAMES. Senza giochi: un pulsante che spiega dove aggiungerli.
 function tiles() {
   const list = load().games.filter(function (g) { return !g.os || g.os === osKey(); });
   if (!list.length) {
@@ -86,8 +70,6 @@ function tiles() {
     return t;
   });
 }
-
-// ------------------------------------------------------------ comandi del sistema
 
 function run(cmd, args, timeout) {
   return new Promise(function (resolve, reject) {
@@ -113,7 +95,6 @@ function which(cmd) {
   return '';
 }
 
-// Selettore di file del sistema, aperto sul PC (il pannello è sul PC stesso).
 async function pickFile() {
   if (process.platform === 'win32') {
     const d = await ps('pick', [], 10 * 60 * 1000);
@@ -130,13 +111,11 @@ async function pickFile() {
   return { path: r.code === 0 ? r.out.trim().split('\n')[0] : '' };
 }
 
-// Riga Chiave=valore della sezione [Desktop Entry] di un file .desktop
 function desktopKey(text, key) {
   const m = new RegExp('^' + key + '=(.*)$', 'm').exec(String(text || ''));
   return m ? m[1].trim() : '';
 }
 
-// Nome proposto e processo da controllare per il pallino verde.
 async function fileInfo(file) {
   file = checkPath(file);
   if (process.platform === 'win32') {
@@ -151,7 +130,6 @@ async function fileInfo(file) {
   return { path: file, label: cleanLabel(path.basename(file).replace(/\.(sh|x86_64|appimage)$/i, '')), process: path.basename(file).toLowerCase() };
 }
 
-// "Nome Gioco Beta Launcher" -> "Nome Gioco"
 function cleanLabel(s) {
   return String(s || '').replace(/[_]+/g, ' ').replace(/\b(beta|launcher|client|services?|api|x64|win64|shipping)\b/gi, '').replace(/\s{2,}/g, ' ').trim() || String(s || '').trim();
 }
@@ -162,8 +140,6 @@ function checkPath(file) {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) throw fail('File non trovato: ' + file);
   return file;
 }
-
-// ------------------------------------------------------------ icone
 
 function imageType(buf) {
   if (buf.length > 8 && buf.readUInt32BE(0) === 0x89504e47) return 'png';
@@ -198,7 +174,6 @@ async function download(url) {
   } finally { clearTimeout(timer); }
 }
 
-// Steam: ricerca nel negozio, poi le immagini del gioco (intestazione e copertina verticale).
 async function steamIcons(name) {
   const d = await fetchJson('https://store.steampowered.com/api/storesearch/?term=' + encodeURIComponent(name) + '&l=italian&cc=IT');
   const out = [];
@@ -210,7 +185,6 @@ async function steamIcons(name) {
   return out;
 }
 
-// Parole del nome (minuscole, senza accenti), per scartare risultati che non c'entrano.
 function words(s) {
   return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/[^a-z0-9]+/).filter(function (w) { return w.length > 2 && ['the', 'and', 'video', 'game', 'logo'].indexOf(w) < 0; });
 }
@@ -221,7 +195,6 @@ function relevant(title, name) {
 }
 function cleanUrl(u) { return String(u || '').replace(/\?utm_[^#]*$/, ''); }
 
-// Wikipedia (immagine della voce del gioco, anche loghi non liberi) e Wikimedia Commons (loghi).
 async function wikiIcons(name) {
   const out = [];
   const wp = await fetchJson('https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search&gsrlimit=4&gsrsearch=' +
@@ -238,7 +211,6 @@ async function wikiIcons(name) {
     .forEach(function (p) {
       const ii = (p.imageinfo || [])[0];
       const title = String(p.title || '').replace(/^File:/, '');
-      // solo immagini (niente PDF o documenti) con il nome del gioco nel titolo
       if (ii && ii.thumburl && /^image\/(png|jpeg|svg\+xml|gif)$/.test(ii.mime || '') && relevant(title, name)) {
         out.push({ source: 'Wikimedia', title: title, url: cleanUrl(ii.thumburl) });
       }
@@ -246,10 +218,8 @@ async function wikiIcons(name) {
   return out;
 }
 
-// Il tablet (browser vecchio) non mostra WebP: solo PNG, JPG, GIF (anche le miniature PNG degli SVG).
 function tabletImage(u) { return !/\.webp($|[?#])/i.test(String(u || '')); }
 
-// Icone proposte per un gioco: quella del file (se c'è) e quelle trovate sul web.
 async function searchIcons(name) {
   name = String(name || '').trim().slice(0, 80);
   if (!name) throw fail('Scrivi il nome del gioco');
@@ -261,8 +231,7 @@ async function searchIcons(name) {
   return { icons: [].concat(results[0], results[1]).filter(function (x) { if (seen[x.url] || !tabletImage(x.url)) return false; seen[x.url] = true; return true; }).slice(0, 16) };
 }
 
-// Icona del file del gioco (PNG): in una cartella temporanea finché non salvi il gioco.
-const previews = {};   // token -> file temporaneo
+const previews = {};
 async function fileIcon(file) {
   file = checkPath(file);
   const token = crypto.randomBytes(8).toString('hex');
@@ -285,7 +254,6 @@ function previewFile(token) {
   return f;
 }
 
-// Linux: icona del file .desktop (tema hicolor o pixmaps), solo PNG.
 function linuxIconFile(file) {
   if (!/\.desktop$/i.test(file)) return '';
   const icon = desktopKey(fs.readFileSync(file, 'utf8'), 'Icon');
@@ -306,7 +274,6 @@ function linuxIconFile(file) {
 
 function iconFile(g) { return g && g.icon ? path.join(ICON_DIR, path.basename(g.icon)) : ''; }
 
-// Salva l'icona scelta: { url } dal web, { token } quella del file, nessuna = icona di riserva.
 async function storeIcon(id, choice) {
   choice = choice || {};
   let buf = null;
@@ -320,8 +287,6 @@ async function storeIcon(id, choice) {
   fs.writeFileSync(path.join(ICON_DIR, name), buf);
   return name;
 }
-
-// ------------------------------------------------------------ pannello
 
 function panelInfo() {
   return {
@@ -348,7 +313,6 @@ async function add(b) {
   const proc = String(b.process || '').split(',').map(function (x) { return x.trim().toLowerCase().replace(/\.exe$/, ''); }).filter(Boolean).join(', ').slice(0, 120);
   const g = { id: id, label: label, path: file, os: osKey() };
   if (proc) g.process = proc;
-  // argomenti di avvio (facoltativi, es. un launcher che apre un gioco preciso)
   const args = (Array.isArray(b.args) ? b.args : []).map(function (x) { return String(x).slice(0, 200); }).filter(Boolean).slice(0, 10);
   if (args.length) g.args = args;
   const icon = await storeIcon(id, b.icon);
@@ -362,7 +326,7 @@ async function add(b) {
 async function setIcon(id, choice) {
   const g = find(id);
   const icon = await storeIcon(g.id, choice);
-  if (g.icon && g.icon !== icon) { try { fs.unlinkSync(iconFile(g)); } catch (e) { /* già tolta */ } }
+  if (g.icon && g.icon !== icon) { try { fs.unlinkSync(iconFile(g)); } catch (e) { } }
   if (icon) { g.icon = icon; g.iconRev = Date.now().toString(36); } else { delete g.icon; delete g.iconRev; }
   save();
 }
@@ -375,12 +339,11 @@ function find(id) {
 
 function remove(id) {
   const g = find(id);
-  if (g.icon) { try { fs.unlinkSync(iconFile(g)); } catch (e) { /* già tolta */ } }
+  if (g.icon) { try { fs.unlinkSync(iconFile(g)); } catch (e) { } }
   store.games = store.games.filter(function (x) { return x !== g; });
   save();
 }
 
-// Ordine dei giochi (come sui pulsanti della pagina).
 function reorder(ids) {
   const s = load();
   const list = (Array.isArray(ids) ? ids : []).map(String);

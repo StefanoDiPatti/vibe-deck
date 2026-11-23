@@ -1,5 +1,3 @@
-// Plugin: un plugin creato con npm run new:widget in una cartella temporanea,
-// più uno spento ("_") e uno rotto. Prova azioni, rotte, pagine, script del tablet e controllo.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -13,7 +11,6 @@ process.env.DOCK_PLUGINS_DIR = path.join(tmp, 'plugins');
 process.env.DOCK_TOKEN = 'TESTCODE';
 process.env.LOG_LEVEL = 'error';
 
-// plugin "meteo" dal generatore, con in più un'app e un comando
 const newWidget = require('../scripts/new-widget');
 const logs = console.log;
 console.log = function () {};
@@ -26,10 +23,8 @@ fs.mkdirSync(path.join(P, 'apps'));
 fs.writeFileSync(path.join(P, 'apps', 'radar.json'), '// app del plugin\n{ "label": "Radar", "windows": { "path": "radar.exe" }, "linux": { "path": "radar" } }');
 fs.mkdirSync(path.join(P, 'commands'));
 fs.writeFileSync(path.join(P, 'commands', 'previsioni.json'), '{ "label": "Previsioni", "windows": { "cmd": "echo" }, "linux": { "cmd": "echo" } }');
-// spento: ignorato del tutto
 fs.mkdirSync(path.join(process.env.DOCK_PLUGINS_DIR, '_spento', 'pages'), { recursive: true });
 fs.writeFileSync(path.join(process.env.DOCK_PLUGINS_DIR, '_spento', 'pages', 'spenta.json'), '{ "id": "spenta", "tiles": [] }');
-// rotto: il suo index.js non parte, ma la dock sì
 fs.mkdirSync(path.join(process.env.DOCK_PLUGINS_DIR, 'rotto'));
 fs.writeFileSync(path.join(process.env.DOCK_PLUGINS_DIR, 'rotto', 'index.js'), 'throw new Error("guasto");');
 
@@ -58,7 +53,6 @@ test('azioni del plugin come "<plugin>.<azione>"', async function () {
   assert.ok(actions.BUILTIN.indexOf('meteo.saluta') < 0);
   const r = await actions.execute({ type: 'meteo.saluta', nome: 'Ste' });
   assert.strictEqual(r.message, 'Ciao Ste da meteo!');
-  // e dal pulsante della pagina del plugin
   const p = await actions.press('meteo', 'saluta');
   assert.match(p.message, /Ciao Vibe Deck/);
 });
@@ -79,7 +73,6 @@ test('pagina, app e comandi del plugin come quelli predefiniti', function () {
   assert.ok(!config.dock().pages.some(function (p) { return p.id === 'spenta'; }));
   assert.strictEqual(config.apps().radar.label, 'Radar');
   assert.strictEqual(config.commands().previsioni.label, 'Previsioni');
-  // una tua copia in config/pages vince
   fs.mkdirSync(path.join(process.env.DOCK_CONFIG_DIR, 'pages'), { recursive: true });
   fs.writeFileSync(path.join(process.env.DOCK_CONFIG_DIR, 'pages', 'meteo.json'), '{ "id": "meteo", "title": "MIO METEO", "tiles": [] }');
   assert.strictEqual(config.dock().pages.filter(function (p) { return p.id === 'meteo'; })[0].title, 'MIO METEO');
@@ -138,7 +131,6 @@ test('widget del plugin nel catalogo della HOME: home.json (anche più versioni 
   let c = home.catalog().filter(function (x) { return x.plugin === 'meteo'; });
   assert.deepStrictEqual(c.map(function (x) { return x.id + ' ' + x.label + ' ' + x.w + 'x' + x.h + ' min ' + x.minW + 'x' + x.minH + ' ' + x.page; }),
     ['meteo METEO 2x2 min 2x1 PLUGIN METEO'], 'dal home.json del generatore');
-  // una seconda voce con opzioni, e una che usa un widget di un altro plugin (ignorata)
   fs.writeFileSync(path.join(P, 'home.json'), '// prova\n{ "meteo": { "label": "Meteo", "icon": "meteo", "w": 3, "h": 2 },' +
     ' "meteo-roma": { "widget": "meteo", "label": "Meteo Roma", "props": { "citta": "Roma" } },' +
     ' "furbo": { "widget": "clock" } }');

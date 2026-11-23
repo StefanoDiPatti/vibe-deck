@@ -1,6 +1,3 @@
-// Motore delle azioni. Il tablet non manda MAI comandi: manda solo
-// { page, tile } e il server cerca l'azione in dock.json.
-// Per aggiungere un tipo di azione: aggiungi una voce a HANDLERS.
 const { spawn } = require('child_process');
 const os = require('os');
 const config = require('../config');
@@ -27,7 +24,6 @@ function appLabel(id, app) { return (app && app.label) || id; }
 
 const forPlatform = common.forPlatform;
 
-// Il gioco aperto (app con "game": true), per il Go Live di Discord: { pid, label }
 async function runningGame() {
   if (typeof platform.windowList !== 'function') return null;
   const all = config.apps();
@@ -35,7 +31,6 @@ async function runningGame() {
     .filter(function (g) { return g.app && g.app.game; });
   if (!games.length) return null;
   const wins = await platform.windowList().catch(function () { return []; });
-  // prima la finestra in primo piano, poi le altre dall'alto
   wins.sort(function (x, y) { return (y.active ? 1 : 0) - (x.active ? 1 : 0); });
   for (let i = 0; i < wins.length; i++) {
     if (wins[i].state === 'min') continue;
@@ -46,7 +41,6 @@ async function runningGame() {
   return null;
 }
 
-// "path" può essere una lista (es. giochi su C: o D:, o più terminali): vale il primo che c'è.
 function pickPath(p) {
   if (!Array.isArray(p)) return p;
   for (let i = 0; i < p.length; i++) if (common.available(String(p[i]))) return p[i];
@@ -59,7 +53,6 @@ function normalizeArgs(args) {
   return [];
 }
 
-// Esegue un comando della whitelist (config/commands.json) e cattura l'output.
 function runCommand(id) {
   const all = config.commands();
   const def = forPlatform(all[id]);
@@ -70,8 +63,6 @@ function runCommand(id) {
   const timeout = Math.min(def.timeoutMs || 20000, 120000);
   return new Promise(function (resolve, reject) {
     let proc;
-    // Su Windows molti comandi sono script .cmd (npm): serve la shell.
-    // Comando e argomenti vengono SOLO dal file di config, mai dal tablet.
     if (process.platform === 'win32') {
       const line = [common.quoteWinArg(cmd)].concat(args.map(common.quoteWinArg)).join(' ');
       proc = spawn(line, { shell: true, cwd: def.cwd ? common.expandPath(def.cwd) : os.homedir(), windowsHide: true });
@@ -93,8 +84,6 @@ function runCommand(id) {
   });
 }
 
-// Porta in primo piano il programma prima dei tasti. Dove il sistema non lo
-// permette (Linux Wayland senza xdotool) i tasti vanno alla finestra attiva.
 async function focusBefore(name) {
   if (!name) return;
   try {
@@ -111,16 +100,13 @@ const HANDLERS = {
     const app = forPlatform(apps[id]);
     if (!apps[id]) throw fail('App "' + id + '" non definita in apps.json', 'NOT_FOUND');
     if (!app || !app.path) throw fail(appLabel(id, apps[id]) + ' non configurata per questo sistema', 'UNSUPPORTED');
-    // App con "toggle": se è già aperta, il pulsante la chiude
     if (app.toggle && await appsState.closeIfRunning(id)) {
       return { message: appLabel(id, app) + ': chiusura in corso' };
     }
-    // Giochi: se è già aperto lo porta in primo piano invece di riavviarlo
     if (app.whenRunning === 'focus' && await appsState.focusIfRunning(id).catch(function () { return false; })) {
       return { message: appLabel(id, app) + ' in primo piano' };
     }
     appsState.invalidate();
-    // Monitor scelto nella pagina Schermi: la finestra nuova viene spostata lì
     const follow = screens.followLaunch(appsState.processNames(app));
     try {
       await platform.launch({ path: pickPath(app.path), args: normalizeArgs(app.args), cwd: app.cwd });
@@ -131,9 +117,6 @@ const HANDLERS = {
     return { message: appLabel(id, app) + ' avviata' };
   },
 
-  // play_pause/next/previous/stop -> l'app musicale attiva (non quella che Windows sceglie)
-  // volume_up/volume_down/mute    -> volume di SISTEMA
-  // app_volume_up/app_volume_down/app_mute -> volume dell'app musicale
   media: async function (a) {
     const cmd = String(a.command || '');
     if (cmd === 'volume_up' || cmd === 'volume_down' || cmd === 'mute') {
@@ -190,8 +173,6 @@ const HANDLERS = {
     return runCommand(a.id || a.commandId);
   },
 
-  // { "type": "discord", "command": "mute" | "deaf" | "video" | "stream" }
-  // stream = Go Live del gioco aperto (app con "game": true in apps.json)
   discord: async function (a) {
     const discord = require('../services/discord');
     const what = String(a.command || '');
@@ -199,7 +180,6 @@ const HANDLERS = {
     await discord.ensure();
     if (discord.state().status !== 'ready') {
       if (what === 'video' || what === 'stream') throw fail('Per webcam e Go Live collega Discord dal pannello di controllo sul PC', 'UNAVAILABLE');
-      // senza collegamento: le scorciatoie di Discord (finestra in primo piano)
       await HANDLERS.hotkey({ keys: ['CTRL', 'SHIFT', what === 'mute' ? 'M' : 'D'], focus: 'discord' });
       return Object.assign(discord.state(), { message: (what === 'mute' ? 'Mute' : 'Silenzia') + ' inviato a Discord (scorciatoia)' });
     }
@@ -212,7 +192,6 @@ const HANDLERS = {
     return Object.assign(st, { message: message });
   },
 
-  // Pagina VIBER: { "panel": "terminal" } | { "layout": "review" } | { "view": "agents" } | { "project": "next" }
   viber: async function (a) {
     const viber = require('../services/viber');
     return { message: null, viber: await viber.action(a) };
@@ -241,10 +220,8 @@ const HANDLERS = {
   }
 };
 
-// Alias per compatibilità con la vecchia configurazione
 HANDLERS.shell = HANDLERS.command;
 
-// Tipi del progetto (i plugin aggiungono i loro come "<plugin>.<azione>")
 const BUILTIN = Object.keys(HANDLERS);
 require('../plugins').registerActions(HANDLERS);
 
@@ -255,7 +232,6 @@ async function execute(action) {
   return handler(action);
 }
 
-// Punto d'ingresso dal tablet.
 async function press(pageId, tileId) {
   const tile = config.findTile(pageId, tileId);
   if (!tile) throw fail('Pulsante non trovato (configurazione cambiata?)', 'CONFIG_CHANGED');

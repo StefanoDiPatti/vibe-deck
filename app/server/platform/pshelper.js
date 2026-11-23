@@ -1,5 +1,3 @@
-// Gestisce un processo windows-helper.ps1 sempre aperto: richieste JSON su stdin,
-// risposte "@@DOCK {json}" su stdout. Si riavvia da solo se muore.
 const { spawn } = require('child_process');
 const path = require('path');
 const readline = require('readline');
@@ -90,8 +88,6 @@ PsHelper.prototype.call = function (cmd, args, timeoutMs) {
         reject(new Error('timeout (' + cmd + ')'));
       }, timeoutMs || 6000);
       self.pending[id] = { resolve: resolve, reject: reject, timer: timer };
-      // id e cmd per ultimi: un argomento con lo stesso nome non deve sovrascriverli
-      // (succedeva con l'id dei dispositivi audio: risposta mai riconosciuta, timeout)
       self.proc.stdin.write(JSON.stringify(Object.assign({}, args || {}, { id: id, cmd: cmd })) + '\n');
     });
   });
@@ -99,7 +95,7 @@ PsHelper.prototype.call = function (cmd, args, timeoutMs) {
 
 PsHelper.prototype.stop = function () {
   this.stopped = true;
-  if (this.proc) { try { this.proc.stdin.end(); this.proc.kill(); } catch (e) { /* ignore */ } }
+  if (this.proc) { try { this.proc.stdin.end(); this.proc.kill(); } catch (e) { } }
 };
 
 module.exports = PsHelper;

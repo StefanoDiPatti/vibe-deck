@@ -1,5 +1,3 @@
-// Service worker: inoltra lo stato delle schede musicali al server della dock
-// (sempre sullo stesso PC) e restituisce i comandi arrivati dal tablet.
 const DEFAULT_SERVER = 'http://127.0.0.1:8787';
 const HEADERS = { 'Content-Type': 'application/json', 'X-Dock-Bridge': '1' };
 const SITES = ['https://music.apple.com/*', 'https://beta.music.apple.com/*', 'https://music.youtube.com/*', 'https://www.youtube.com/*'];
@@ -19,11 +17,10 @@ async function post(path, body) {
 async function remember(key, value) {
   const o = {};
   o[key] = value;
-  try { await chrome.storage.local.set(o); } catch (e) { /* ignora */ }
+  try { await chrome.storage.local.set(o); } catch (e) { }
 }
 
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
-  // Il tablet ha chiesto di chiudere l'app (es. Apple Music): si chiude la scheda
   if (msg && msg.type === 'close_tab' && sender.tab) {
     chrome.tabs.remove(sender.tab.id).catch(function () {});
     return false;
@@ -39,16 +36,13 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
       remember('lastError', { at: Date.now(), message: String(e && e.message || e) });
       sendResponse({ commands: [] });
     });
-  return true; // risposta asincrona
+  return true;
 });
 
 chrome.tabs.onRemoved.addListener(function (tabId) {
   post('/api/bridge/closed', { key: tabId + ':0' }).catch(function () {});
 });
 
-// Le schede già aperte prima dell'installazione (o di un aggiornamento) non
-// ricevono gli script finché non vengono ricaricate: li inseriamo subito,
-// senza ricaricare la pagina (la musica non si interrompe).
 async function injectIntoOpenTabs() {
   let tabs = [];
   try { tabs = await chrome.tabs.query({ url: SITES }); } catch (e) { return; }
@@ -56,7 +50,7 @@ async function injectIntoOpenTabs() {
     try {
       await chrome.scripting.executeScript({ target: { tabId: t.id }, files: ['page.js'], world: 'MAIN' });
       await chrome.scripting.executeScript({ target: { tabId: t.id }, files: ['content.js'] });
-    } catch (e) { /* scheda non accessibile: verrà presa al prossimo caricamento */ }
+    } catch (e) { }
   }
 }
 chrome.runtime.onInstalled.addListener(injectIntoOpenTabs);

@@ -1,6 +1,3 @@
-// Backend Windows: tutto passa da due helper PowerShell persistenti.
-//  - "input": tasti, testo, avvio app, focus (deve rispondere subito)
-//  - "query": now playing, copertina, rete (può essere più lento)
 const fs = require('fs');
 const os = require('os');
 const PsHelper = require('./pshelper');
@@ -9,7 +6,6 @@ const common = require('./common');
 
 const input = new PsHelper('input');
 const query = new PsHelper('query');
-// App desktop di Claude (UI Automation, lenta): parte solo al primo uso
 const ui = new PsHelper('ui');
 
 const MEDIA_VK = {
@@ -72,13 +68,11 @@ module.exports = {
     return input.call('open', { file: String(target) });
   },
 
-  // app: { path, args: [], cwd }
   launch: function (app) {
     const file = common.resolveWildcard(common.expandPath(app.path));
     const args = (app.args || []).map(common.expandPath);
     const cwd = app.cwd ? common.expandPath(app.cwd) : os.homedir();
     if (/^shell:/i.test(file)) {
-      // App dello Store (es. Apple Music): shell:AppsFolder\<AUMID>
       return input.call('open', { file: 'explorer.exe', args: common.quoteWinArg(file), cwd: cwd });
     }
     if (common.looksLikePath(file) && !fs.existsSync(file)) {
@@ -94,8 +88,6 @@ module.exports = {
     });
   },
 
-  // Tutte le sessioni multimediali di Windows, in formato neutro.
-  // position/duration sono relative all'inizio del brano (EndTime - StartTime).
   sessions: function () {
     return query.call('sessions', {}, 8000).then(function (d) {
       if (!d || !d.supported) return { supported: false, sessions: [] };
@@ -126,7 +118,6 @@ module.exports = {
     });
   },
 
-  // Comando a una sessione precisa: play_pause, next, previous, stop, seek, shuffle
   control: function (session, action, extra) {
     const args = { app: session.app, action: action };
     if (action === 'seek') args.position = (session.start || 0) + Number(extra || 0);
@@ -144,7 +135,6 @@ module.exports = {
     });
   },
 
-  // Volume dell'app (non di sistema): names = nomi dei processi, delta = ±0.05, mute 2 = inverti
   appVolume: function (names, delta, mute) {
     return input.call('appvolume', { names: names, delta: delta || 0, mute: mute === undefined ? -1 : mute }, 6000)
       .then(function (r) { return r.level; });
@@ -158,12 +148,10 @@ module.exports = {
     return query.call('net', {}, 4000).catch(function () { return null; });
   },
 
-  // Rete attiva: { type: 'wifi'|'ethernet'|'none', name, signal }
   netInfo: function () {
     return query.call('netinfo', {}, 6000).catch(function () { return null; });
   },
 
-  // Finestre visibili: [{ process, title }]
   windows: function () {
     return query.call('windows', {}, 5000).then(function (r) {
       return (r.list || []).map(function (l) {
@@ -173,13 +161,11 @@ module.exports = {
     });
   },
 
-  // Chiude le finestre di un processo (come la X): ritorna quante
   closeWindows: function (processName, titlePattern) {
     return input.call('closewin', { process: String(processName), title: titlePattern || '' }, 5000)
       .then(function (r) { return r.closed; });
   },
 
-  // ---- Schermi (pixel fisici). Monitor: { id, primary, x, y, w, h, work: {x,y,w,h}, hw }
   monitors: function () {
     return query.call('monitors', {}, 8000).then(function (r) {
       const names = {};
@@ -195,7 +181,6 @@ module.exports = {
     });
   },
 
-  // Finestre con posizione: [{ id, pid, process, state: normal|min|max, monitor, x, y, w, h, active, title }]
   windowList: function () {
     return query.call('winlist', {}, 6000).then(function (r) {
       return (r.list || []).map(function (l) {
@@ -206,12 +191,10 @@ module.exports = {
     });
   },
 
-  // Desktop virtuali dal registro: { ids: hex (16 byte per desktop), cur: hex, names: { GUID: nome } }
   virtualDesktopsReg: function () {
     return query.call('vdreg', {}, 4000);
   },
 
-  // Finestre di tutti i desktop virtuali: [{ id, desktop (GUID), state, monitor, x, y, w, h, process, title }]
   deskWindows: function () {
     return query.call('deskwins', {}, 6000).then(function (r) {
       return (r.list || []).map(function (l) {
@@ -222,13 +205,10 @@ module.exports = {
     });
   },
 
-  // Sposta una finestra su un desktop virtuale (GUID; '' = uno nuovo, senza passarci).
-  // Ritorna il GUID del desktop di arrivo.
   moveWindowToDesktop: function (id, desk) {
     return input.call('vdmove', { hwnd: Number(id), desk: desk ? String(desk) : '' }, 8000).then(function (r) { return r.desk; });
   },
 
-  // rect = area visibile voluta; max = massimizza dopo lo spostamento
   placeWindow: function (id, rect, max, focus) {
     return input.call('place', { hwnd: Number(id), x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.w), h: Math.round(rect.h), max: !!max, focus: !!focus }, 6000).then(function (r) {
       if (!r.moved) throw new Error('Windows non permette di spostare questa finestra (programma avviato come amministratore?)');
@@ -240,7 +220,6 @@ module.exports = {
     return input.call('winact', { hwnd: Number(id), action: String(action) }, 5000);
   },
 
-  // ---- Mixer: dispositivi (uscita/ingresso) e volume per app. Valori 0..1.
   mixer: function () {
     return query.call('mixer', {}, 8000).then(function (r) {
       const num = function (v) { const n = parseFloat(v); return isNaN(n) || n < 0 ? null : Math.round(n * 100); };
@@ -256,8 +235,6 @@ module.exports = {
       };
     });
   },
-  // volume: 0..100 o null; mute: true/false/'toggle'/null
-  // "dev" e non "id": id è il numero della richiesta all'helper
   setDefaultDevice: function (id) { return input.call('mixdefault', { dev: String(id) }, 8000); },
   setDeviceVolume: function (id, volume, mute) {
     return input.call('mixdevice', { dev: String(id), level: volume === null || volume === undefined ? -1 : volume / 100, mute: muteArg(mute) }, 6000);
@@ -267,7 +244,6 @@ module.exports = {
       .then(function (r) { if (!r.done) throw new Error('L\'app non sta più usando l\'audio'); return r; });
   },
 
-  // ---- App desktop di Claude
   claudeView: function () { return ui.call('claudeview', {}, 15000); },
   claudeSend: function (title, text) { return ui.call('claudesend', { title: title || '', text: String(text) }, 20000); },
   claudeStop: function (title) { return ui.call('claudestop', { title: title || '' }, 15000); },

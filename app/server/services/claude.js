@@ -1,15 +1,3 @@
-// Claude dal tablet.
-//
-// Due tipi di conversazione:
-//  - "dock": chat create dalla dock. Backend da services.json -> claude.backend:
-//      "api"  Claude API con ANTHROPIC_API_KEY (SDK ufficiale @anthropic-ai/sdk)
-//      "cli"  Claude Code installato sul PC (`claude -p`), usa il tuo abbonamento
-//      "auto" api se c'è la chiave, altrimenti cli
-//  - "code": le sessioni di Claude Code del PC (anche quelle aperte dal
-//    terminale o dall'app desktop). Si leggono e si continuano con `--resume`.
-//
-// Le risposte possono richiedere minuti: ogni invio diventa un "job" e il
-// tablet controlla lo stato ogni pochi secondi.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -26,9 +14,9 @@ const MAX_CHATS = 60;
 const MAX_API_MESSAGES = 80;
 let client = null;
 let AnthropicMod = null;
-let chats = null;      // id -> chat della dock
-const jobs = {};       // id -> job
-const busy = {};       // "kind:id" -> true mentre Claude risponde
+let chats = null;
+const jobs = {};
+const busy = {};
 
 function settings() {
   const s = (config.get('services').claude) || {};
@@ -77,7 +65,6 @@ function info() {
   };
 }
 
-// ---------------------------------------------------------------- archivio chat
 function load() {
   if (chats) return chats;
   try { chats = JSON.parse(fs.readFileSync(STORE, 'utf8')).chats || {}; } catch (e) { chats = {}; }
@@ -110,7 +97,6 @@ function newChat(backend, firstText) {
   return chats[id];
 }
 
-// ---------------------------------------------------------------- backend
 function sdk() {
   if (!AnthropicMod) {
     const mod = require('@anthropic-ai/sdk');
@@ -137,8 +123,6 @@ async function runApi(chat, text) {
   if (chat.api.length >= MAX_API_MESSAGES) throw new Error('Conversazione troppo lunga: inizia una nuova chat');
   chat.api.push({ role: 'user', content: String(text) });
   try {
-    // Fallback lato server: se un classificatore rifiuta, l'API ritenta da sola
-    // sul modello consigliato per quella categoria.
     const resp = await sdk().beta.messages.create({
       model: s.model,
       max_tokens: s.maxTokens,
@@ -149,7 +133,6 @@ async function runApi(chat, text) {
       messages: chat.api
     });
     if (resp.stop_reason === 'refusal') throw Object.assign(new Error('Claude ha rifiutato questa richiesta'), { refused: true });
-    // Risposta completa (anche il thinking) nella storia: l'API vuole la cronologia invariata.
     chat.api.push({ role: 'assistant', content: resp.content });
     const reply = resp.content.filter(function (b) { return b.type === 'text'; })
       .map(function (b) { return b.text; }).join('\n').trim();
@@ -162,14 +145,11 @@ async function runApi(chat, text) {
   }
 }
 
-// Esegue `claude -p` (Claude Code). resumeId continua una sessione esistente.
 function runCli(opts) {
   const s = settings();
   const args = ['-p', '--output-format', 'json'];
   if (opts.appendSystem) args.push('--append-system-prompt', s.system);
   if (s.cliModel) args.push('--model', s.cliModel);
-  // In -p nessuno può approvare i permessi: senza una modalità le scritture vengono negate.
-  // Per una sessione esistente vale la sua modalità (es. "auto" dell'app desktop).
   const mode = opts.permissionMode || s.cliPermissionMode || (opts.resumeId || opts.cwd ? 'auto' : '');
   if (mode) args.push('--permission-mode', mode);
   if (opts.resumeId) args.push('--resume', opts.resumeId);
@@ -197,11 +177,9 @@ function runCli(opts) {
   });
 }
 
-// ---------------------------------------------------------------- job
 function makeJob(kind, chatId) {
   const id = crypto.randomBytes(6).toString('hex');
   jobs[id] = { id: id, kind: kind, chatId: chatId, status: 'running', startedAt: Date.now() };
-  // pulizia dei job vecchi
   Object.keys(jobs).forEach(function (k) { if (Date.now() - jobs[k].startedAt > 3600000) delete jobs[k]; });
   return jobs[id];
 }
@@ -216,8 +194,6 @@ function finish(job, err, reply, chatId) {
 
 function bad(msg, code) { return Object.assign(new Error(msg), { code: code || 'BAD_REQUEST' }); }
 
-// Invia un messaggio. kind: "dock" (id vuoto = nuova chat) o "code" (id = sessione,
-// oppure id vuoto + cwd = nuova sessione di Claude Code in quella cartella).
 function send(kind, id, text, cwd) {
   text = String(text || '').trim();
   if (!text) throw bad('Messaggio vuoto');
@@ -285,17 +261,15 @@ function sendCode(id, text, cwd) {
   return { jobId: job.id, kind: 'code', chatId: id || null };
 }
 
-// Modalità dei permessi scelta nell'app desktop per questa sessione (se c'è)
 function desktopMode(cliId) {
   if (!cliId) return '';
   try {
     const all = require('./desktopcode').list().sections || [];
     for (const sec of all) for (const x of sec.sessions) if (x.cli === cliId) return x.permissionMode || '';
-  } catch (e) { /* app non installata */ }
+  } catch (e) { }
   return '';
 }
 
-// Continua una sessione dalla riga di comando (app desktop chiusa). Ritorna una Promise.
 function resumeCode(cliId, text, cwd, permissionMode) {
   if (!hasCli()) return Promise.reject(bad('Claude Code non è installato su questo PC', 'UNAVAILABLE'));
   const lock = 'code:' + cliId;
@@ -314,7 +288,6 @@ function getJob(id) {
   };
 }
 
-// ---------------------------------------------------------------- elenco e lettura
 function listChats() {
   load();
   const linked = {};
@@ -365,7 +338,6 @@ function deleteChat(id) {
   return { deleted: id };
 }
 
-// Compatibilità con la vecchia API (/api/claude/chat): risposta sincrona.
 async function chatSync(sessionId, text) {
   const r = sendDock(sessionId, text);
   for (let i = 0; i < 900; i++) {

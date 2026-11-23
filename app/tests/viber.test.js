@@ -23,7 +23,6 @@ test('Viber: pannello non valido rifiutato prima di chiamare Viber', async funct
   await assert.rejects(viber.focusPanel('impostazioni'), /Pannello non valido/);
 });
 
-// Finto Viber: risponde 200 con { error } come fa il vero quando il pannello non è tra le schede.
 function fakeViber(t, handler) {
   const fs = require('fs');
   const os = require('os');
@@ -107,11 +106,9 @@ test('Pagina VIBER: pulsanti personalizzabili a sinistra e widget a destra, "hid
   assert.strictEqual(p.buttonGrid, true);
   assert.strictEqual(p.columns + 'x' + p.rows, '1x1');
   assert.deepStrictEqual(p.tiles.map(function (x) { return x.widget || x.id; }), ['viber', 'a', 'b']);
-  // dal pannello: C mostrato per primo, A nascosto; il widget resta sempre e la griglia non cambia
   const q = config.normalizeDock(raw, { tiles: { viber: { show: ['c', 'b'], hide: ['a'] } } }, 'windows').pages[0];
   assert.deepStrictEqual(q.tiles.map(function (x) { return x.widget || x.id; }), ['viber', 'c', 'b']);
   assert.strictEqual(q.columns + 'x' + q.rows, '1x1');
-  // senza buttonGrid una pagina con widget non è modificabile
   const r = config.normalizeDock({ pages: [{ id: 'x', tiles: [{ widget: 'clock' }, { id: 'a' }] }] }, {}, 'windows').pages[0];
   assert.strictEqual(r.editable, false);
 });

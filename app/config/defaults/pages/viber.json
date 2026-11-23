@@ -1,14 +1,9 @@
-// Pagina VIBER (id "viber"): una pagina per file, vedi la guida per sviluppatori nel README.
-// Per cambiarla copiala in config/pages/viber.json e modifica la copia: quella vince su questa.
 {
   "id": "viber",
   "title": "VIBER",
   "icon": "code",
   "description": "Viber: pulsanti (pannelli, disposizioni, viste) personalizzabili dal pannello, a destra progetti e task",
   "tab": false,
-  // pulsanti a sinistra (si scelgono e ordinano dal pannello di controllo come per BLENDER;
-  // "hidden": true = disponibile ma nascosto), a destra le colonne Progetti e Task.
-  // I pannelli che non sono tra le schede aperte in Viber escono dalla griglia da soli.
   "columns": 1,
   "rows": 1,
   "buttonGrid": true,

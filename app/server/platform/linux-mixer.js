@@ -1,5 +1,3 @@
-// Mixer su Linux con pactl (PulseAudio e PipeWire con pipewire-pulse).
-// Serve pactl recente (15+) per l'uscita JSON: sudo apt install pulseaudio-utils
 const common = require('./common');
 
 function pct(volume) {
@@ -9,14 +7,13 @@ function pct(volume) {
   return vals.length ? Math.round(vals.reduce(function (a, b) { return a + b; }, 0) / vals.length) : null;
 }
 
-// Dati di `pactl -f json list sinks|sources|sink-inputs` -> formato della dock
 function parse(sinks, sources, inputs, defSink, defSource) {
   const devices = [];
   (sinks || []).forEach(function (s) {
     devices.push({ flow: 'out', id: s.name, name: s.description || s.name, default: s.name === defSink, volume: pct(s.volume), mute: !!s.mute });
   });
   (sources || []).forEach(function (s) {
-    if (/\.monitor$/.test(s.name || '')) return; // "monitor" delle uscite: non sono microfoni
+    if (/\.monitor$/.test(s.name || '')) return;
     devices.push({ flow: 'in', id: s.name, name: s.description || s.name, default: s.name === defSource, volume: pct(s.volume), mute: !!s.mute });
   });
   const byIndex = {};
@@ -59,7 +56,6 @@ async function setDefaultDevice(id) {
   const dev = m.devices.filter(function (d) { return d.id === id; })[0];
   if (!dev) throw new Error('Dispositivo non trovato');
   await pactl([dev.flow === 'out' ? 'set-default-sink' : 'set-default-source', id]);
-  // come su Windows: le app che stanno suonando passano al nuovo dispositivo
   if (dev.flow === 'out') {
     const inputs = await json('sink-inputs').catch(function () { return []; });
     for (const i of inputs) await pactl(['move-sink-input', String(i.index), id]).catch(function () {});

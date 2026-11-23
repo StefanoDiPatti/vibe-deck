@@ -1,25 +1,15 @@
-// "Now Playing": cosa sta suonando e come comandarlo.
-//
-// Due tipi di sorgente:
-//  - "bridge": Apple Music web, YouTube, YouTube Music via estensione del browser.
-//    Dati esatti (durata, posizione), coda, volume dell'app, shuffle/ripeti.
-//  - "system": app desktop viste dal sistema (Windows: controlli multimediali,
-//    Linux: MPRIS). Solo app musicali: Riot Client & co. vengono ignorati.
 const crypto = require('crypto');
 const platform = require('../platform');
 const config = require('../config');
 const bridge = require('./bridge');
 const log = require('../log');
 
-// App musicali accettate (regex sull'identificativo dell'app). Personalizzabile
-// in services.json -> media.allowApps / media.blockApps.
 const DEFAULT_ALLOW = [
   'spotify', 'applemusic', 'apple music', 'zunemusic', 'microsoft\\.media', 'vlc', 'foobar', 'musicbee',
   'aimp', 'winamp', 'tidal', 'deezer', 'amazon.?music', 'youtube', 'ytmusic', 'th-ch', 'cider',
   'qobuz', 'soundcloud', 'rhythmbox', 'clementine', 'strawberry', 'elisa', 'lollypop', 'audacious', 'mpv'
 ];
 const BROWSERS = /chrome|msedge|edge|brave|firefox|opera|vivaldi|arc\b|chromium/i;
-// Nome del processo per il volume dell'app, dove non si ricava dall'identificativo.
 const PROCESS_HINTS = [
   [/spotify/i, ['spotify']], [/vlc/i, ['vlc']], [/foobar/i, ['foobar2000']], [/musicbee/i, ['musicbee']],
   [/aimp/i, ['aimp']], [/tidal/i, ['tidal']], [/deezer/i, ['deezer']], [/ZuneMusic|Microsoft\.Media/i, ['microsoft.media.player']],
@@ -28,11 +18,11 @@ const PROCESS_HINTS = [
 const SITE_NAMES = { apple: 'Apple Music', ytmusic: 'YouTube Music', youtube: 'YouTube', web: 'Browser' };
 
 let sysCache = { at: 0, data: null, pending: null };
-const tracking = {};     // id sessione di sistema -> stato per stimare la posizione
-let selectedId = null;   // sorgente scelta (resta "appiccicosa")
+const tracking = {};
+let selectedId = null;
 let lastError = null;
 const artCache = { key: null, data: null, pending: null };
-const volumeCache = {};  // id sorgente -> ultimo volume app noto
+const volumeCache = {};
 
 function settings() {
   const m = (config.get('services').media) || {};
@@ -46,7 +36,7 @@ function settings() {
 
 function matchAny(list, text) {
   for (let i = 0; i < list.length; i++) {
-    try { if (new RegExp(list[i], 'i').test(text)) return true; } catch (e) { /* regex non valida: ignorata */ }
+    try { if (new RegExp(list[i], 'i').test(text)) return true; } catch (e) { }
   }
   return false;
 }
@@ -67,14 +57,10 @@ function hash(parts) {
   return crypto.createHash('sha1').update(parts.join('|')).digest('hex').slice(0, 12);
 }
 
-// Le app che non aggiornano la timeline al cambio brano lasciano posizione e
-// durata del brano precedente: qui si riparte da zero e si stima il tempo.
 function estimate(s, now) {
   const key = hash([s.title, s.artist, s.album]);
   let t = tracking[s.id];
   if (!t || t.key !== key) {
-    // Al primo sguardo la timeline vale; a un cambio brano vale solo se è
-    // stata aggiornata adesso, altrimenti appartiene al brano precedente.
     const trust = !t || (s.updatedAt && s.updatedAt >= now - 4000);
     t = tracking[s.id] = {
       key: key,
@@ -93,7 +79,6 @@ function estimate(s, now) {
     t.duration = s.duration;
   }
   if (s.status !== t.status) {
-    // cambio play/pausa: fissa la posizione raggiunta
     t.base = currentPos(t, now);
     t.baseAt = now;
     t.status = s.status;
@@ -132,7 +117,6 @@ async function systemSessions() {
   return sysCache.pending;
 }
 
-// Elenco delle sorgenti musicali valide, nel formato inviato al tablet.
 async function sources() {
   const now = Date.now();
   const s = settings();
@@ -205,7 +189,6 @@ async function sources() {
   return { supported: sys.supported !== false || out.length > 0, list: out };
 }
 
-// Sceglie la sorgente da mostrare: chi suona vince; a parità resta quella già scelta.
 function pick(list) {
   if (!list.length) return null;
   const sticky = list.filter(function (x) { return x.id === selectedId; })[0];
@@ -229,7 +212,6 @@ async function active() {
   return { supported: s.supported, src: pick(s.list), count: s.list.length };
 }
 
-// Stato per il tablet (niente coda: si scarica a parte quando cambia).
 async function nowPlaying() {
   const a = await active();
   if (!a.src) return { supported: a.supported, active: false, bridge: bridge.connected() };
@@ -309,7 +291,6 @@ function badRequest(msg) { return Object.assign(new Error(msg), { code: 'BAD_REQ
 const COMMANDS = ['play_pause', 'next', 'previous', 'stop', 'volume_up', 'volume_down', 'mute', 'seek', 'shuffle', 'repeat', 'queue_play'];
 const VOLUME_STEP = 0.06;
 
-// Comandi dal tablet: vanno sempre all'app che sta suonando, mai a caso.
 async function command(cmd, value) {
   if (COMMANDS.indexOf(cmd) < 0) throw badRequest('Comando media sconosciuto: ' + cmd);
   const a = await active();
@@ -330,8 +311,6 @@ async function command(cmd, value) {
       if (isNaN(c.value)) throw badRequest('Brano non valido');
     }
     bridge.send(x.tabKey, c);
-    // Scheda in background "addormentata" dal browser: per i comandi base
-    // si usa anche il controllo di sistema del browser, che risponde subito.
     if (['play_pause', 'next', 'previous'].indexOf(cmd) >= 0 && bridge.isStale(x.tabKey, 3000)) {
       const sys = await systemSessions();
       const browsers = (sys.sessions || []).filter(function (s) { return BROWSERS.test(s.app); });
@@ -340,7 +319,6 @@ async function command(cmd, value) {
     return { done: cmd, volume: c.type === 'volume' ? c.value : undefined };
   }
 
-  // Sorgente di sistema
   const s = x.session;
   if (cmd === 'volume_up' || cmd === 'volume_down' || cmd === 'mute') {
     const delta = cmd === 'mute' ? 0 : (cmd === 'volume_up' ? VOLUME_STEP : -VOLUME_STEP);

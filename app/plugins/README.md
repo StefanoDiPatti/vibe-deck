@@ -1,24 +1,24 @@
-# Plugin di Vibe Deck
+# Vibe Deck plugins
 
-Ogni cartella qui dentro è un plugin, caricato da solo all'avvio della dock.
-Per crearne uno pronto da modificare:
+Every folder in here is a plugin, loaded automatically when the deck starts.
+To create one ready to edit:
 
 ```bash
-npm run new:widget -- meteo
+npm run new:widget -- weather
 ```
 
-```text
-plugins/meteo/
-  index.js           server: azioni ("meteo.saluta") e rotte (/api/plugins/meteo/...)
-  pages/*.json       pagine (le attivi dal pannello di controllo)
-  apps/*.json        app       commands/*.json   comandi consentiti
-  public/*.js        tablet (ES5): Widgets.register(...), Icons.register(...)
-  public/*.css       stile dei widget (niente flexbox)
-  home.json          il widget nel catalogo della HOME (nome, icona, misure)
-```
+| File | What it is |
+|---|---|
+| `plugins/weather/index.js` | server: actions (`"weather.saluta"`) and routes (`/api/plugins/weather/...`) |
+| `plugins/weather/pages/*.json` | pages (turn them on from the control panel) |
+| `plugins/weather/apps/*.json`, `commands/*.json` | apps and allowed commands |
+| `plugins/weather/public/*.js` | tablet (ES5): `Widgets.register(...)`, `Icons.register(...)` |
+| `plugins/weather/public/*.css` | widget style (no flexbox) |
+| `plugins/weather/home.json` | the widget in the HOME catalog (name, icon, sizes) |
 
-- Una cartella che inizia con `_` o `.` viene ignorata: rinomina `meteo` in `_meteo` per spegnere un plugin.
-- Dopo una modifica a `index.js` riavvia la dock. Pagine, app, comandi e file in `public/` si ricaricano da soli.
-- Gli errori dei plugin (codice che non parte, widget o icone sconosciuti) compaiono nel pannello di controllo e nel log.
+- A folder starting with `_` or `.` is ignored: rename `weather` to `_weather` to turn a plugin off.
+- After a change to `index.js` restart the deck. Pages, apps, commands and files in `public/` reload by themselves.
+- Plugin errors (code that does not start, unknown widgets or icons) show up in the control panel and in the log.
+- No comments in plugin files either: the project has a zero-comments rule.
 
-La guida completa è nel README principale: *Guida per sviluppatori > Plugin*.
+The full guide is in the main README: *Developer guide > Plugins*.

@@ -1,4 +1,3 @@
-// Giochi della pagina GAMES scelti dal pannello: dati in una cartella temporanea.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -7,7 +6,7 @@ const path = require('path');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dock-games-'));
 process.env.DOCK_DATA_DIR = path.join(tmp, 'data');
-process.env.DOCK_CONFIG_DIR = path.join(tmp, 'config');   // config vuota: valgono i default
+process.env.DOCK_CONFIG_DIR = path.join(tmp, 'config');
 process.env.LOG_LEVEL = 'error';
 
 const games = require('../server/services/games');
@@ -33,7 +32,7 @@ test('aggiunta: diventa app (gioco, primo piano) e pulsante della pagina', async
   await assert.rejects(games.add({ path: path.join(tmp, 'non-esiste.exe'), label: 'X' }), /non trovato/);
   await assert.rejects(games.add({ path: EXE, label: '  ' }), /nome/);
   await games.add({ path: EXE, label: 'Mio Gioco', process: 'MioGioco.exe' });
-  await games.add({ path: EXE, label: 'Mio Gioco' });   // stesso nome: id diverso
+  await games.add({ path: EXE, label: 'Mio Gioco' });
   const apps = config.apps();
   const a = apps.game_mio_gioco;
   assert.ok(a);
@@ -48,13 +47,11 @@ test('aggiunta: diventa app (gioco, primo piano) e pulsante della pagina', async
   assert.deepStrictEqual(p.tiles[0].action, { type: 'launch', app: 'game_mio_gioco' });
   assert.strictEqual(p.tiles[0].showRunning, 'game_mio_gioco');
   assert.ok(!p.tiles[0].image, 'senza icona: quella di riserva');
-  // i dati restano in data/, fuori dal repository
   assert.ok(fs.existsSync(path.join(process.env.DOCK_DATA_DIR, 'games.json')));
 });
 
 test('icona: solo immagini vere, servita al tablet; ordine e rimozione', async function () {
   await assert.rejects(games.setIcon('mio_gioco', { url: 'http://esempio.it/a.png' }), /non valido/);
-  // icona dal file del gioco: anteprima temporanea, poi salvata con il gioco
   const tok = 'abc';
   const tmpPng = path.join(tmp, 'anteprima.png');
   fs.writeFileSync(tmpPng, PNG);

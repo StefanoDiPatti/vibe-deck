@@ -1,4 +1,3 @@
-// Utility condivise dai backend Windows e Linux.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -6,7 +5,6 @@ const { spawn, execFile } = require('child_process');
 
 const MEDIA_COMMANDS = ['play_pause', 'next', 'previous', 'stop', 'volume_up', 'volume_down', 'mute'];
 
-// Espande %VAR% (Windows), $VAR / ${VAR} (Linux) e ~ iniziale.
 function expandPath(p) {
   if (typeof p !== 'string') return p;
   let out = p.replace(/%([^%]+)%/g, function (m, name) {
@@ -22,13 +20,8 @@ function expandPath(p) {
 
 function looksLikePath(p) { return /[\\/]/.test(p); }
 
-// Nomi confrontati senza badare a maiuscole e tipo di spazio: alcuni collegamenti
-// hanno uno spazio "non separabile" (U+00A0) che a occhio è identico.
 function looseName(s) { return String(s).replace(/[\s   ]+/g, ' ').trim().toLowerCase(); }
 
-// Risolve "*" nei percorsi (es. "Blender *\blender.exe"): sceglie la cartella
-// più recente in ordine alfabetico/numerico, così un aggiornamento non rompe il pulsante.
-// Se un percorso non esiste, prova anche a confrontare i nomi in modo tollerante.
 function resolveWildcard(p) {
   if (typeof p !== 'string') return p;
   if (p.indexOf('*') < 0 && (!looksLikePath(p) || fs.existsSync(p))) return p;
@@ -72,7 +65,6 @@ function listDir(dir) {
   }
   return dirCache[dir];
 }
-// Cerca un eseguibile nel PATH (con PATHEXT su Windows). Ritorna il percorso o null.
 function which(cmd) {
   if (whichCache[cmd] !== undefined) return whichCache[cmd];
   let found = null;
@@ -92,8 +84,6 @@ function which(cmd) {
           const st = fs.statSync(candidate);
           if (st.isFile()) { found = candidate; break outer; }
         } catch (e) {
-          // Gli alias delle app di Windows (WindowsApps\wt.exe, ...) sono reparse
-          // point che Node non apre: esistono se compaiono nell'elenco della cartella.
           if (process.platform === 'win32' && listDir(dirs[i]).indexOf((cmd + exts[j]).toLowerCase()) >= 0) {
             found = candidate;
             break outer;
@@ -106,7 +96,6 @@ function which(cmd) {
   return found;
 }
 
-// Esegue un programma senza shell e raccoglie l'output (max 64KB).
 function run(cmd, args, opts) {
   opts = opts || {};
   return new Promise(function (resolve) {
@@ -130,7 +119,6 @@ function run(cmd, args, opts) {
   });
 }
 
-// Avvia un programma staccato dal server (continua a vivere se il server si chiude).
 function spawnDetached(cmd, args, cwd) {
   return new Promise(function (resolve, reject) {
     let child;
@@ -143,7 +131,6 @@ function spawnDetached(cmd, args, cwd) {
   });
 }
 
-// Quoting degli argomenti secondo le regole di CommandLineToArgvW.
 function quoteWinArg(arg) {
   arg = String(arg);
   if (arg && !/[\s"]/.test(arg)) return arg;
@@ -169,8 +156,6 @@ function stripAnsi(s) {
   return String(s || '').replace(/\u001b\[[0-9;?]*[A-Za-z]/g, '').replace(/\u001b\][^\u0007]*\u0007/g, '');
 }
 
-// Nome leggibile di un monitor: DeviceID '\\?\DISPLAY#MSI3CA4#5&1a&0&UID4352#{...}'
-// confrontato con l'istanza WMI 'DISPLAY\MSI3CA4\5&1a&0&UID4352_0' -> 'MSI MP242'.
 function monitorName(deviceId, names) {
   const parts = String(deviceId || '').split('#');
   if (parts.length < 3) return '';
@@ -179,11 +164,8 @@ function monitorName(deviceId, names) {
   return hit ? names[hit] : '';
 }
 
-// Chiave del sistema nei file di config: "windows" | "linux" | "darwin".
 function osKey() { return process.platform === 'win32' ? 'windows' : process.platform; }
 
-// Il programma c'è? Un percorso deve esistere, un nome deve stare nel PATH.
-// Ammette * nelle versioni e liste (basta che ce ne sia uno).
 function available(p) {
   const list = Array.isArray(p) ? p : [p];
   return list.some(function (x) {
@@ -193,9 +175,6 @@ function available(p) {
   });
 }
 
-// Variante per il sistema corrente: { windows: {...}, linux: {...} } oppure campi diretti.
-// La variante può essere una lista di alternative (es. Konsole, poi Alacritty):
-// vale la prima installata ("path" per le app, "cmd" per i comandi), altrimenti la prima.
 function forPlatform(entry) {
   if (!entry || typeof entry !== 'object') return null;
   let specific = entry[osKey()];
@@ -204,7 +183,6 @@ function forPlatform(entry) {
     specific = options.filter(function (v) { return available(v.path || v.cmd); })[0] || options[0];
   }
   if (specific && typeof specific === 'object') return Object.assign({}, entry, specific);
-  // Definita solo per altri sistemi
   if ((entry.windows || entry.linux) && !entry.path && !entry.cmd) return null;
   return entry;
 }

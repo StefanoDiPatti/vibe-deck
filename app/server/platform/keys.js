@@ -1,6 +1,3 @@
-// Nomi di tasto "neutri" usati in dock.json, tradotti per ogni sistema:
-//   win = virtual-key code Windows (SendInput)
-//   x11 = keysym per xdotool / wtype su Linux
 const KEYS = {
   CTRL: { win: 0x11, x11: 'ctrl', mod: true },
   SHIFT: { win: 0x10, x11: 'shift', mod: true },
@@ -75,7 +72,6 @@ function canonical(name) {
   return null;
 }
 
-// Accetta ["CTRL","S"] oppure "CTRL+S". Ritorna i nomi canonici o lancia un errore leggibile.
 function parseCombo(input) {
   let parts;
   if (Array.isArray(input)) parts = input;

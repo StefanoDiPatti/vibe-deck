@@ -1,13 +1,4 @@
 'use strict';
-// Dock DEMO con dati finti: per screenshot e prove dell'interfaccia senza i tuoi dati.
-//
-//   node scripts/demo.js            -> http://127.0.0.1:8790/?t=DEMO1234
-//   DEMO_PORT=9000 node scripts/demo.js
-//
-// Usa solo i default di config/defaults (niente config/ personale) e una cartella dati
-// temporanea, e non legge il .env (niente token né account). Tutto è inventato: musica, stato del PC, TODO,
-// Claude Code, email, audio, schermi, GitHub, Discord, Viber, Ollama e le informazioni del pannello,
-// così screenshot e prove non mostrano mai i dati del PC su cui gira. npm run screenshots rifà le immagini del README.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -21,13 +12,12 @@ process.env.DOCK_TOKEN = process.env.DOCK_TOKEN || 'DEMO1234';
 process.env.DOCK_NO_QR = '1';
 process.env.LOG_LEVEL = process.env.LOG_LEVEL || 'error';
 os.hostname = function () { return 'MY-PC'; };
-// rete finta: link e QR del pannello non mostrano l'indirizzo vero
 os.networkInterfaces = function () {
   return { Ethernet: [{ address: '192.168.1.50', netmask: '255.255.255.0', family: 'IPv4', mac: '00:00:00:00:00:00', internal: false, cidr: '192.168.1.50/24' }] };
 };
-require('../server/paths').ENV_FILE = path.join(tmp, 'demo.env');   // nessun .env: niente segreti
+require('../server/paths').ENV_FILE = path.join(tmp, 'demo.env');
 const PORT = parseInt(process.env.DEMO_PORT, 10) || 8790;
-process.env.PORT = String(PORT);   // i link del pannello usano la porta della demo
+process.env.PORT = String(PORT);
 
 const express = require('express');
 const { app: dock } = require('../server/index.js');
@@ -101,11 +91,10 @@ function session(id, title, project, ago, busy) {
 const demo = express.Router();
 demo.use('/api', function (req, res, next) {
   if (req.path === '/health' || req.path === '/pair' || req.path.indexOf('/control/') === 0) return next();
-  if (req.path === '/media/art') return next();   // copertina finta: anche senza codice (le immagini non mandano l'header)
+  if (req.path === '/media/art') return next();
   auth.requireToken(req, res, next);
 });
 demo.get('/api/state', function (req, res, next) {
-  // versione e build vere (il tablet ricarica se cambiano), il resto finto
   const json = res.json.bind(res);
   res.json = function (body) {
     if (body && body.data) Object.assign(body.data, { system: system(), media: media(), apps: Object.assign({}, body.data.apps, { vscode: true, discord: true, claude_desktop: true, spotify: false }) });
@@ -138,8 +127,6 @@ demo.get('/api/claude/usage', function (req, res) {
 });
 demo.get('/api/claude/chats', function (req, res) { ok(res, []); });
 
-// ---- tutto il resto finto: la demo non deve mai mostrare dati del PC su cui gira
-// (email, dispositivi audio, finestre, repository, Discord, Viber): serve per gli screenshot del README.
 const MAIL_ACCOUNTS = [
   { id: 'demo1', label: 'Gmail', provider: 'gmail', email: 'mario.rossi@example.com', unread: 3, status: 'ok', error: '' },
   { id: 'demo2', label: 'Lavoro', provider: 'outlook', email: 'mario@studio.example', unread: 0, status: 'ok', error: '' }
@@ -203,7 +190,6 @@ const WINDOWS = [
 ];
 demo.get('/api/screens/windows', function (req, res) { ok(res, WINDOWS); });
 demo.get('/api/screens', function (req, res, next) {
-  // le disposizioni sono quelle vere della dock, monitor finti
   const json = res.json.bind(res);
   res.json = function (body) { if (body && body.data) Object.assign(body.data, { monitors: MONITORS, target: null }); return json(body); };
   next();
@@ -240,8 +226,6 @@ demo.get('/api/viber/tasks', function (req, res) {
 });
 demo.get('/api/ollama/models', function (req, res) { ok(res, { running: true, models: [{ name: 'llama3.2:3b', size: 2 }, { name: 'qwen2.5-coder:7b', size: 4.7 }], error: '' }); });
 
-// Screenshot (scripts/screenshots.js): /?shot=1&page=apps&theme=neon&lang=en apre il tablet già collegato,
-// su quella pagina, con quel tema e quella lingua; /control?shot=1&theme=neon il pannello con quel tema.
 function shotScript(q, panel) {
   const set = function (k, v) { return 'localStorage.setItem(' + JSON.stringify(k) + ',' + JSON.stringify(v) + ');'; };
   let js = 'try{localStorage.clear();';
@@ -266,7 +250,6 @@ demo.get(['/control', '/control/'], function (req, res, next) {
   res.type('html').send(html.replace('<head>', function (m) { return m + shotScript(req.query, true); }));
 });
 
-// pannello di controllo: niente account email veri né l'id dell'app Discord
 demo.get('/api/control/info', function (req, res, next) {
   const json = res.json.bind(res);
   res.json = function (body) {
@@ -289,8 +272,8 @@ server.listen(PORT, '127.0.0.1', function () {
 });
 
 function stop() {
-  try { require('../server/platform').shutdown(); } catch (e) { /* niente */ }
-  try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (e) { /* niente */ }
+  try { require('../server/platform').shutdown(); } catch (e) { }
+  try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (e) { }
   process.exit(0);
 }
 process.on('SIGINT', stop);

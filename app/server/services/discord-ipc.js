@@ -1,6 +1,3 @@
-// Collegamento locale all'app Discord (RPC via named pipe / socket Unix).
-// È lo stesso canale che usano Stream Deck e simili: niente bot, niente rete.
-// Formato: [op int32 LE][lunghezza int32 LE][JSON].
 const net = require('net');
 const path = require('path');
 const crypto = require('crypto');
@@ -16,8 +13,8 @@ function candidates() {
     else {
       const base = process.env.XDG_RUNTIME_DIR || process.env.TMPDIR || '/tmp';
       out.push(path.join(base, 'discord-ipc-' + i));
-      out.push(path.join(base, 'app', 'com.discordapp.Discord', 'discord-ipc-' + i)); // Flatpak
-      out.push(path.join(base, 'snap.discord', 'discord-ipc-' + i));                  // Snap
+      out.push(path.join(base, 'app', 'com.discordapp.Discord', 'discord-ipc-' + i));
+      out.push(path.join(base, 'snap.discord', 'discord-ipc-' + i));
     }
   }
   return out;
@@ -44,7 +41,6 @@ class DiscordIpc extends EventEmitter {
     this.closed = true;
   }
 
-  // Si collega alla prima pipe disponibile e completa l'handshake (evento READY).
   connect(clientId) {
     const self = this;
     const list = candidates();
@@ -78,7 +74,7 @@ class DiscordIpc extends EventEmitter {
       });
       sock.on('data', function (chunk) { self.onData(chunk); });
       sock.on('close', function () { self.onClose(); });
-      sock.on('error', function () { /* segue "close" */ });
+      sock.on('error', function () { });
       sock.write(encode(OP.HANDSHAKE, { v: 1, client_id: String(clientId) }));
     });
   }
@@ -132,7 +128,7 @@ class DiscordIpc extends EventEmitter {
       const timer = setTimeout(function () {
         self.pending.delete(nonce);
         reject(rpcError('Discord non risponde (' + cmd + ')'));
-      }, cmd === 'AUTHORIZE' ? 120000 : TIMEOUT); // l'autorizzazione aspetta il tuo clic
+      }, cmd === 'AUTHORIZE' ? 120000 : TIMEOUT);
       self.pending.set(nonce, { resolve: resolve, reject: reject, timer: timer });
       const frame = { cmd: cmd, args: args || {}, nonce: nonce };
       if (evt) frame.evt = evt;
@@ -141,7 +137,7 @@ class DiscordIpc extends EventEmitter {
   }
 
   close() {
-    if (this.socket) { try { this.socket.destroy(); } catch (e) { /* già chiuso */ } }
+    if (this.socket) { try { this.socket.destroy(); } catch (e) { } }
     this.onClose();
   }
 }

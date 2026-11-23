@@ -1,11 +1,4 @@
 'use strict';
-// Rifà gli screenshot del README (docs/screenshots) dalla demo con dati finti.
-//
-//   1. npm run demo                (in un altro terminale)
-//   2. npm run screenshots
-//
-// Usa Chrome, Edge o Chromium in modalità headless (BROWSER=percorso per sceglierne uno).
-// Tablet 1280x800, pannello 1280x1250. Tema, lingua e pagina arrivano dall'indirizzo (?shot=1, solo nella demo).
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -15,7 +8,6 @@ const PORT = parseInt(process.env.DEMO_PORT, 10) || 8790;
 const OUT = path.join(__dirname, '..', '..', 'docs', 'screenshots');
 
 const SHOTS = [
-  // file, indirizzo, larghezza, altezza
   ['tablet-main.png', '/?shot=1&page=main', 1280, 800],
   ['tablet-apps.png', '/?shot=1&page=apps', 1280, 800],
   ['tablet-claude.png', '/?shot=1&page=claude', 1280, 800],
@@ -40,7 +32,7 @@ const browser = findBrowser();
 if (!browser) { console.error('Nessun browser trovato: installa Chrome o Edge, oppure BROWSER=percorso npm run screenshots'); process.exit(1); }
 fs.mkdirSync(OUT, { recursive: true });
 SHOTS.forEach(function (s) {
-  const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-shot-'));   // profilo pulito per ogni scatto
+  const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-shot-'));
   const file = path.join(OUT, s[0]);
   try {
     execFileSync(browser, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run', '--user-data-dir=' + profile,
@@ -50,6 +42,6 @@ SHOTS.forEach(function (s) {
   } catch (e) {
     console.error('NO  ' + s[0] + ': ' + e.message);
   } finally {
-    try { fs.rmSync(profile, { recursive: true, force: true }); } catch (e) { /* niente */ }
+    try { fs.rmSync(profile, { recursive: true, force: true }); } catch (e) { }
   }
 });

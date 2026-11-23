@@ -1,5 +1,3 @@
-/* Icone SVG inline (viewBox 24x24, stile Material). ES5.
- * Uso in dock.json: "icon": "play". Nome sconosciuto = nessuna icona. */
 var Icons = (function () {
   'use strict';
 
@@ -99,8 +97,6 @@ var Icons = (function () {
       '<path fill-rule="evenodd" d="' + P[key] + '"/></svg>';
   }
 
-  // Plugin: Icons.register('sole', 'M12 7c-2.76 ...') = path SVG in un riquadro 24x24.
-  // Non sostituisce le icone del progetto.
   function register(name, d) {
     if (!name || typeof d !== 'string' || P.hasOwnProperty(name)) return false;
     P[name] = d;

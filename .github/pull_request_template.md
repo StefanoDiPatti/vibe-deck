@@ -1,19 +1,20 @@
-## Cosa cambia
+## What changes
 
-<!-- Cosa fa la modifica e perché. Se risolve una issue: "Risolve #numero". -->
+What the change does and why. If it fixes an issue: "Fixes #number".
 
-## Come l'ho provato
+## How I tested it
 
-- [ ] `npm test` in `app/` passa tutto
-- [ ] provato con `npm run demo` (se tocca l'interfaccia), anche in inglese e con un altro tema
-- [ ] client del tablet in ES5 e CSS senza flexbox (se tocca `app/public`)
-- [ ] `npm run themes` dopo una modifica a `dock.css`
-- [ ] testi nuovi del tablet tradotti in `app/public/js/lang-en.js`
-- [ ] funziona su Windows e su Linux (o spiego qui sotto perché solo su uno)
-- [ ] niente dati personali (codici, email, nomi) in codice, log o screenshot
+- [ ] `npm test` in `app/` passes
+- [ ] tried with `npm run demo` (if it touches the UI), in English too and with another theme
+- [ ] tablet client in ES5 and CSS without flexbox (if it touches `app/public`)
+- [ ] `npm run themes` after a change to `dock.css`
+- [ ] new tablet text translated in `app/public/js/lang-en.js`
+- [ ] no comments added (`tests/no-comments.test.js`)
+- [ ] works on Windows and Linux (or I explain below why only on one)
+- [ ] no personal data (codes, email addresses, names) in code, logs or screenshots
 
-## Da provare dal vero
+## To try for real
 
-<!-- Cosa non si può provare in automatico: tablet, telefono, Discord, audio, finestre, app desktop... e su quale sistema. -->
+What cannot be tested automatically: tablet, phone, Discord, audio, windows, desktop apps... and on which system.
 
-<!-- La PR viene verificata e unita dal proprietario del repository. -->
+The PR is reviewed and merged by the repository owner.

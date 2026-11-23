@@ -1,7 +1,3 @@
-/* Tema "Neo-brutalista" del tablet. GENERATO da scripts/build-themes.js da dock.css +
- * scripts/themes/brutal.js: non modificarlo a mano, rigeneralo. */
-
-/* ---- colori (da dock.css) */
 body { background: #f4efe3; color: #111111; }
 svg.ic { fill: #111111; }
 #topbar { background: #fffdf7; border-bottom: 1px solid #111111; }
@@ -357,14 +353,11 @@ svg.ic.dc-camflag { fill: #127a3a; }
 .gg-row.danger { border-left-color: #ff6b5b; background: #ffe3df; }
 .gg-row.danger code { color: #c4271a; }
 
-/* ---- forme del tema (scritte a mano) */
-/* salvaschermo: cifre nere pesanti con ombra piena */
 @font-face { font-family: "VDClockBrutal"; src: url("../../fonts/clock-brutal.ttf") format("truetype"); }
 .saver-clock { font-family: "VDClockBrutal", "Arial Black", sans-serif; font-size: 100px; letter-spacing: 0; color: #6e6656; text-shadow: 6px 6px 0 #4a3d06; }
 .clk-time { font-family: "VDClockBrutal", "Arial Black", sans-serif; letter-spacing: 0; color: #111111; text-shadow: 4px 4px 0 #ffd23f; }
 .clk-date { color: #111111; }
 body { font-family: "Arial Black", "Archivo Black", Roboto, Arial, sans-serif; }
-/* barre nere con testo crema */
 #topbar { background: #111111; color: #f4efe3; border-bottom: 3px solid #111111; }
 #topbar svg.ic { fill: #f4efe3; }
 #page-title, #mini { color: #f4efe3; }
@@ -374,12 +367,10 @@ body { font-family: "Arial Black", "Archivo Black", Roboto, Arial, sans-serif; }
 .tab svg.ic { fill: #f4efe3; }
 .tab.active { background: #ffd23f; color: #111111; -webkit-box-shadow: none; box-shadow: none; }
 .tab.active svg.ic { fill: #111111; }
-/* play della musica: giallo con icona nera (in dock.css è chiaro con icona scura) */
 .np-btn.np-play { background: #ffd23f; border: 3px solid #111111; -webkit-box-shadow: 3px 3px 0 #111111; box-shadow: 3px 3px 0 #111111; }
 .np-btn.np-play svg.ic { fill: #111111; }
 .tab.pressed { background: #333; }
 svg.ic { fill: #111111; }
-/* tasti come adesivi: bordo spesso e ombra piena, premuti "scendono" */
 .tile { border: 3px solid #111111; border-radius: 6px; -webkit-box-shadow: 5px 5px 0 #111111; box-shadow: 5px 5px 0 #111111; }
 .tile.btn:after { display: none; }
 .tile.btn.pressed { -webkit-transform: translate(4px, 4px); transform: translate(4px, 4px); -webkit-box-shadow: 1px 1px 0 #111111; box-shadow: 1px 1px 0 #111111; border-color: #111111; }
@@ -392,7 +383,6 @@ svg.ic { fill: #111111; }
 .t-hold { background: rgba(0, 0, 0, 0.15); }
 .sbtn { border: 2px solid #111111; border-radius: 4px; -webkit-box-shadow: 2px 2px 0 #111111; box-shadow: 2px 2px 0 #111111; }
 .sbtn.pressed { background: #ffd23f; }
-/* avvisi e finestre */
 #toast { background: #111111; color: #f4efe3; border-radius: 4px; -webkit-box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.35); box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.35); }
 #toast.ok { background: #2bd96b; color: #111111; border: 3px solid #111111; }
 #toast.err { background: #ff6b5b; color: #111111; border: 3px solid #111111; }

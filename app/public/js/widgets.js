@@ -1,5 +1,3 @@
-/* Widget della dock: system, nowplaying, github, todo, chat, clock, mail... ES5.
- * Ogni widget: create(el, tile, app) -> { update(state), resize(w, h), destroy() } */
 var Widgets = (function () {
   'use strict';
 
@@ -8,7 +6,6 @@ var Widgets = (function () {
   function level(v, warn, hot) { return v === null || v === undefined ? '' : v >= hot ? 'hot' : v >= warn ? 'warn' : 'ok'; }
 
   function header(root, title, right) {
-    // con i pulsanti a destra il titolo lascia loro spazio; senza, usa tutta la larghezza
     var h = el('div', 'w-head' + (right ? ' tools' : ''));
     var t = el('div', 'w-title', title);
     h.appendChild(t);
@@ -17,7 +14,6 @@ var Widgets = (function () {
     return t;
   }
 
-  // sostituisce l'HTML solo se cambia: ridisegnare uguale costa batteria al tablet
   function setHtml(e, h) { if (e && e.__html !== h) { e.innerHTML = h; e.__html = h; } }
 
   function smallBtn(label, icon, onTap) {
@@ -27,10 +23,6 @@ var Widgets = (function () {
     return b;
   }
 
-  // Dettatura in un campo di testo, usata da Claude e TODO.
-  // Ordine: riconoscimento vocale del browser > audio trascritto sul PC
-  // (services.json -> voice) > microfono della tastiera di Android.
-  // opts: { mic, input, app, serverVoice: function () -> bool, onText: function (testo) }
   function dictation(opts) {
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     var mic = opts.mic, input = opts.input, app = opts.app, rec = null, listening = false;
@@ -47,7 +39,7 @@ var Widgets = (function () {
       if (opts.onText) opts.onText(t);
     }
     function stop() {
-      if (rec && listening) { try { rec.stop(); } catch (e) { /* già fermo */ } }
+      if (rec && listening) { try { rec.stop(); } catch (e) { } }
       listening = false;
       D.removeClass(mic, 'on');
     }
@@ -104,9 +96,6 @@ var Widgets = (function () {
     return { stop: stop };
   }
 
-  // ------------------------------------------------------------ SYSTEM
-  // Una riga per voce (etichetta, barra, valore): le 4 voci stanno anche in
-  // un riquadro basso. Il testo si adatta all'altezza disponibile.
   function system(root) {
     D.addClass(root, 'w-system');
     var title = header(root, 'DIAGNOSTICA');
@@ -125,10 +114,8 @@ var Widgets = (function () {
       list.appendChild(r);
       rows[key] = { row: r, val: v, fill: fill, bar: bar };
     }
-    // la rete è nella barra in alto
     row('cpu', 'CPU'); row('gpu', 'GPU'); row('ram', 'RAM'); row('vram', 'VRAM');
 
-    // tocca il DOM solo se qualcosa cambia: ogni scrittura costa ricalcolo e ridisegno sul tablet
     function set(key, value, pct, lvl) {
       var r = rows[key];
       setText(r.val, value);
@@ -143,7 +130,7 @@ var Widgets = (function () {
       update: function (s) {
         var sys = s && s.system;
         if (!sys) return;
-        var c = sys.cpu;   // il nome del PC è già nella barra in alto
+        var c = sys.cpu;
         set('cpu', (c.usage === null ? '…' : c.usage + '%') + deg(c.temp), c.usage, level(Math.max(c.usage || 0, c.temp ? c.temp - 15 : 0), 60, 85));
         var g = sys.gpu;
         if (g) {
@@ -157,7 +144,6 @@ var Widgets = (function () {
         set('ram', sys.ram.usage + '% · ' + sys.ram.usedGb + '/' + sys.ram.totalGb + ' GB', sys.ram.usage, level(sys.ram.usage, 75, 90));
       },
       resize: function (w, h) {
-        // altezza di una riga = spazio disponibile / 5 (tra 24 e 56 px)
         var rh = Math.max(24, Math.min(56, Math.floor((h - 46) / KEYS.length)));
         var fs = Math.max(12, Math.min(18, Math.round(rh * 0.5)));
         list.style.fontSize = fs + 'px';
@@ -171,9 +157,6 @@ var Widgets = (function () {
     };
   }
 
-  // ------------------------------------------------------------ NOW PLAYING
-  // I comandi vanno all'app musicale attiva (Apple Music, YouTube, Spotify...),
-  // il volume è quello dell'app, non di sistema.
   function nowplaying(root, tile, app) {
     D.addClass(root, 'w-np');
     var art = el('div', 'np-art');
@@ -193,7 +176,6 @@ var Widgets = (function () {
     var ctr2 = el('div', 'np-ctr2');
     info.appendChild(src); info.appendChild(title); info.appendChild(artist);
     info.appendChild(seek); info.appendChild(times); info.appendChild(ctr2);
-    // i comandi stanno sotto copertina e testo, a tutta larghezza: non si schiacciano e non coprono il titolo
     root.appendChild(art); root.appendChild(info); root.appendChild(ctr);
 
     var cur = null, artKey = null, offset = 0, receivedAt = 0, timer = null, optimisticUntil = 0;
@@ -236,14 +218,12 @@ var Widgets = (function () {
     ctrlBtn(ctr, 'next', 'next');
     var volUp = ctrlBtn(ctr, 'volup', 'volume_up', 'np-vol', true);
     var shufBtn = ctrlBtn(ctr2, 'shuffle', 'shuffle', 'np-opt', false, 'SHUFFLE');
-    // "RIPETI" altrove è Redo (scorciatoie): qui è Repeat, quindi il testo lo sceglie il widget
     var REP = I18n.lang() === 'en' ? ['REPEAT', 'REPEAT 1'] : ['RIPETI', 'RIPETI 1'];
     var repBtn = ctrlBtn(ctr2, 'repeat', 'repeat', 'np-opt notr', false, REP[0]);
     var muteBtn = ctrlBtn(ctr2, 'mute', 'mute', 'np-opt', false, 'MUTO');
     var volLabel = el('div', 'np-vollabel', '');
     ctr2.appendChild(volLabel);
 
-    // Tocco sulla barra = salta a quel punto del brano
     D.bindTap(seek, {
       onTap: function (target, x) {
         if (!cur || !cur.canSeek || !cur.duration) return;
@@ -274,7 +254,6 @@ var Widgets = (function () {
     function paintStatus() {
       var playing = cur && cur.status === 'playing';
       playBtn.innerHTML = Icons.html(playing ? 'pause' : 'play') || (playing ? '||' : '>');
-      // solo il nome dell'app: lo stato si vede già dal tasto play/pausa
       setText(src, cur ? String(cur.appName || '').toUpperCase() : '');
       var vol = cur && typeof cur.volume === 'number' ? Math.round(cur.volume * 100) : null;
       setText(volLabel, vol === null ? '' : (cur.muted ? 'MUTO' : 'VOL ' + vol + '%'));
@@ -297,7 +276,6 @@ var Widgets = (function () {
         if (s.time) offset = s.time - new Date().getTime();
         if (!m.supported) {
           cur = null;
-          // titolo e artista sono "notr" (nomi dei brani): i messaggi della dock si traducono qui
           setText(title, I18n.t('Now Playing non disponibile'));
           setText(artist, I18n.t('Su questo sistema non è supportato'));
         } else if (!m.active) {
@@ -323,15 +301,12 @@ var Widgets = (function () {
       },
       resize: function (w, h) {
         var pad = 12;
-        // disposizione "pagina MUSICA" solo in un riquadro grande e alto
         var tall = h > 380 && w > 420 && w < h * 1.6;
         var compact = h <= 190;
         var ctrH = compact ? 50 : 64;
-        // comandi in basso a tutta larghezza; sopra, copertina (piccola) e testo
-        var free = h - ctrH - pad * 3;          // altezza sopra i comandi
+        var free = h - ctrH - pad * 3;
         var size, showArt;
         if (tall) {
-          // pagina MUSICA: copertina sopra, testo e due file di tasti sotto (~240px)
           size = Math.max(0, Math.min(w - pad * 2, h - 240 - ctrH));
           showArt = size >= 90;
         } else {
@@ -353,9 +328,7 @@ var Widgets = (function () {
         ctr.style.left = pad + 'px'; ctr.style.right = pad + 'px'; ctr.style.bottom = pad + 'px';
         D.toggleClass(root, 'np-tall', tall);
         D.toggleClass(root, 'np-compact', compact);
-        // shuffle / ripeti / muto solo dove c'è spazio (pagina MUSICA)
         ctr2.style.display = tall ? '' : 'none';
-        // tasti del volume solo se la fila è abbastanza larga (altrimenti 3 tasti più grandi)
         var vol = w - pad * 2 > 330;
         volDown.style.display = volUp.style.display = vol ? '' : 'none';
         D.toggleClass(root, 'np-novol', !vol);
@@ -364,7 +337,6 @@ var Widgets = (function () {
     };
   }
 
-  // ------------------------------------------------------------ CODA / PLAYLIST
   function queue(root, tile, app) {
     D.addClass(root, 'w-queue');
     var title = header(root, 'IN CODA');
@@ -434,9 +406,6 @@ var Widgets = (function () {
     };
   }
 
-  // ------------------------------------------------------------ GITHUB
-  // Guida ai comandi git (pagina GITHUB, pulsante COMANDI GIT).
-  // [comando, spiegazione, livello] livello: '' normale, 'warn' attenzione, 'danger' perdi lavoro
   var GIT_GUIDE = [
     { title: 'IL TUO FLUSSO: UNA MODIFICA DALL\'INIZIO ALLA FINE', note: 'Nella cartella del progetto (es. vibe-deck), in PowerShell o nel terminale di VS Code.', items: [
       ['git checkout main', 'Torna sul ramo principale.'],
@@ -495,7 +464,6 @@ var Widgets = (function () {
     ] }
   ];
 
-  // Guida a sezioni (comandi git, desktop virtuali): [testo, spiegazione, livello]
   function guideHtml(sections) {
     var html = '';
     for (var s = 0; s < sections.length; s++) {
@@ -513,7 +481,6 @@ var Widgets = (function () {
   function github(root, tile, app) {
     D.addClass(root, 'w-gh');
     var refreshBtn = smallBtn('', 'refresh', function () { load(true); });
-    // COMANDI GIT: alterna tra i repository e la guida ai comandi (scelta ricordata)
     var guideBtn = smallBtn('COMANDI GIT', 'terminal', function () { showGuide(!guideOn); });
     var tools = el('span', 'gh-tools');
     tools.appendChild(guideBtn); tools.appendChild(refreshBtn);
@@ -545,7 +512,6 @@ var Widgets = (function () {
       if (r.ci.conclusion === 'failure') return '<span class="badge bad">CI ✗</span>';
       return '<span class="badge none">CI ' + D.esc(r.ci.conclusion || '?') + '</span>';
     }
-    // ultimo deploy (workflow di GitHub Actions con deploy/release/publish/pages nel nome): solo se il repository ne ha uno
     function deploy(r) {
       var d = r.deploy;
       if (!d) return '';
@@ -608,9 +574,6 @@ var Widgets = (function () {
     return { update: function () {}, resize: function () {}, destroy: function () { D.stop(timer); } };
   }
 
-  // ------------------------------------------------------------ TODO
-  // Con le Memo di Windows ogni modifica chiude e riapre l'app Memo sul PC:
-  // la risposta arriva dopo 1-2 secondi, intanto la riga si aggiorna subito.
   function todo(root, tile, app) {
     D.addClass(root, 'w-todo');
     var clearBtn = smallBtn('PULISCI', 'trash', function () {
@@ -619,7 +582,6 @@ var Widgets = (function () {
       });
     });
     var title = header(root, 'TODO', clearBtn);
-    // nuvoletta: TODO sincronizzati con GitHub (verde ok, rossa errore). Tocco = sincronizza ora
     var syncEl = el('span', 'todo-sync');
     title.appendChild(syncEl);
     function renderSync() {
@@ -663,7 +625,6 @@ var Widgets = (function () {
       list.innerHTML = '';
       var open = 0, group = null;
       var tn = targetNote();
-      // gruppi = le memo di Windows (anche su Linux, arrivano con la sincronizzazione)
       var groups = state.notes.length > 0;
       for (var i = 0; i < state.items.length; i++) {
         var it = state.items[i];
@@ -681,7 +642,6 @@ var Widgets = (function () {
         bindRow(row, it);
         list.appendChild(row);
       }
-      // memo senza righe: mostra comunque il titolo per poterla scegliere
       if (groups) for (var n = 0; n < state.notes.length; n++) {
         var has = false;
         for (var j = 0; j < state.items.length; j++) if (state.items[j].note === state.notes[n].id) { has = true; break; }
@@ -693,7 +653,6 @@ var Widgets = (function () {
     }
     function groupRow(id, label, isTarget) {
       var g = el('div', 'todo-group' + (isTarget ? ' target' : ''));
-      // con più memo il titolo evidenziato è quella in cui finiscono le nuove righe
       g.innerHTML = '<span' + (label ? ' class="notr"' : '') + '>' + D.esc(label || 'Memo') + '</span>' + (isTarget && state.notes.length > 1 ? '<i>+ qui</i>' : '');
       if (state.notes.length > 1) {
         D.bindTap(g, {
@@ -709,14 +668,13 @@ var Widgets = (function () {
         onTap: function (t) {
           var del = D.closestClass(t, 'todo-del', row);
           if (del) { D.addClass(row, 'busy'); send('/api/todo/remove', { id: it.id }); return; }
-          it.done = !it.done; // subito sul tablet, poi conferma dal PC
+          it.done = !it.done;
           D.toggleClass(row, 'done', it.done);
           D.addClass(row, 'busy');
           send('/api/todo/toggle', { id: it.id });
         }
       });
     }
-    // Invia una modifica e ridisegna con la lista aggiornata restituita dal server.
     function send(url, body, done) {
       busy++;
       D.addClass(root, 'todo-busy');
@@ -749,7 +707,6 @@ var Widgets = (function () {
     }
     D.bindTap(addBtn, { onTap: add });
     input.addEventListener('keydown', function (e) { if (e.keyCode === 13) { e.preventDefault(); add(); } }, false);
-    // ridisegna solo se la lista è cambiata (ogni 10 s arriva quasi sempre uguale)
     var lastTodo = '';
     function load() {
       if (busy) return;
@@ -762,17 +719,14 @@ var Widgets = (function () {
       });
     }
     load();
-    // le modifiche fatte sul PC compaiono entro qualche secondo
     var timer = D.every(10000, 30000, load);
     return { update: function () {}, resize: function () {}, destroy: function () { D.stop(timer); } };
   }
 
-  // ------------------------------------------------------------ CHAT (Ollama / Claude)
   function chat(root, tile, app) {
     var provider = tile.provider === 'claude' ? 'claude' : 'ollama';
     D.addClass(root, 'w-chat ' + provider);
     var stKey = 'chat:' + provider;
-    // Stato condiviso tra istanze: se cambi pagina mentre aspetti, la risposta non si perde.
     var st = CHAT[provider] || (CHAT[provider] = { saved: D.store.get(stKey, { sessionId: null, messages: [], model: null }), busy: false, render: null });
 
     var head = el('div', 'w-head');
@@ -810,7 +764,6 @@ var Widgets = (function () {
     }
 
     function bubble(m) {
-      // i messaggi non si traducono, gli errori della dock sì
       var b = el('div', 'msg ' + (m.error ? '' : 'notr ') + m.role + (m.error ? ' error' : ''));
       b.innerHTML = m.role === 'user' ? D.esc(m.text).replace(/\n/g, '<br>') : D.richText(m.text);
       return b;
@@ -897,7 +850,6 @@ var Widgets = (function () {
     loadInfo();
     return {
       update: function () {},
-      // riquadro stretto (HOME): menu dei modelli più corto e titolo che lascia solo lo spazio che serve
       resize: function (w) {
         D.toggleClass(root, 'chat-narrow', w < 560);
         if (select) select.style.maxWidth = (w < 560 ? Math.max(90, Math.round(w * 0.32)) : 280) + 'px';
@@ -908,7 +860,6 @@ var Widgets = (function () {
     };
   }
 
-  // ------------------------------------------------------------ CLOCK
   function clock(root) {
     D.addClass(root, 'w-clock');
     var t = el('div', 'clk-time', '');
@@ -919,7 +870,7 @@ var Widgets = (function () {
       ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
     var MONTHS = en ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] :
       ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
-    D.addClass(d, 'notr');   // già nella lingua scelta
+    D.addClass(d, 'notr');
     function paint() {
       var n = new Date();
       setText(t, D.pad(n.getHours()) + ':' + D.pad(n.getMinutes()));
@@ -929,7 +880,6 @@ var Widgets = (function () {
     var timer = D.every(5000, 30000, paint);
     return {
       update: function () {},
-      // ora e data al centro, grandi quanto il riquadro permette (anche in una cella sola)
       resize: function (w, h) {
         var inner = h - 20;
         var tf = Math.round(Math.min((w - 24) / 3.1, inner * 0.62));
@@ -944,8 +894,6 @@ var Widgets = (function () {
     };
   }
 
-  // ------------------------------------------------------------ consumi di Claude
-  // Barre dei consumi dell'abbonamento: nella pagina CLAUDE e nel widget "claudeusage" (HOME).
   function usageWhen(iso) {
     if (!iso) return '';
     var d = new Date(iso), now = new Date();
@@ -961,7 +909,6 @@ var Widgets = (function () {
       '<div class="cu-bar"><i style="width:' + w.percent + '%"></i></div>' +
       (w.resetsAt ? '<div class="cu-reset">si azzera ' + usageWhen(w.resetsAt) + '</div>' : '') + '</div>';
   }
-  // models = anche i limiti per modello (pagina CLAUDE)
   function usageHtml(err, u, models) {
     if (err || !u || !u.ok) return '<div class="cu-h">CONSUMI</div><div class="cu-err">' + D.esc(err ? err.message : (u && u.error) || 'Non disponibili') + '</div>';
     var h = '<div class="cu-h">CONSUMI' + (u.stale ? ' <i>(non aggiornati)</i>' : '') + '</div>' + usageBar('Sessione 5 ore', u.fiveHour) + usageBar('Settimana', u.sevenDay);
@@ -969,7 +916,6 @@ var Widgets = (function () {
     return h;
   }
 
-  // Widget per la HOME: solo i consumi (tocco = aggiorna subito).
   function claudeUsage(root, tile) {
     D.addClass(root, 'w-cusage');
     header(root, tile.title || 'CLAUDE');
@@ -986,17 +932,11 @@ var Widgets = (function () {
     var timer = D.every(60000, 300000, function () { load(false); });
     return {
       update: function () {},
-      // abbastanza alto: anche i limiti per modello
       resize: function (w, h) { var b = h > 240; if (b !== big) { big = b; load(false); } },
       destroy: function () { alive = false; D.stop(timer); }
     };
   }
 
-  // ------------------------------------------------------------ CLAUDE
-  // CLAUDE CODE: le sessioni dell'app desktop di Claude, raggruppate per le
-  // sezioni della barra laterale del PC. Scrivi qui e il messaggio parte
-  // dall'app sul PC (lo vedi comparire lì), come se scrivessi alla tastiera.
-  // CHAT: le chat fatte dal tablet (quelle di claude.ai restano sul tuo account).
   var CL = { mode: D.store.get('cl:mode2', 'code'), sel: D.store.get('cl:sel2', null), info: null, closed: {} };
 
   function claudeWidget(root, tile, app) {
@@ -1032,7 +972,6 @@ var Widgets = (function () {
     function persist() { D.store.set('cl:mode2', CL.mode); D.store.set('cl:sel2', CL.sel); }
     function ago(ms) { return ms ? D.ago(new Date(ms).toISOString()) : ''; }
 
-    // ---- elenco
     function sectionOf(id) {
       for (var i = 0; desk && i < desk.sections.length; i++) if (desk.sections[i].id === id) return desk.sections[i];
       return null;
@@ -1086,7 +1025,6 @@ var Widgets = (function () {
       }
     }
 
-    // ---- conversazione
     function bubbleHtml(m) {
       if (m.role === 'user') return D.esc(m.text).replace(/\n/g, '<br>');
       return D.richText(m.text).replace(/(^|<br>)\[ ([^\]<]{1,80}) \](?=<br>|$)/g, '$1<span class="tool">$2</span>');
@@ -1161,7 +1099,6 @@ var Widgets = (function () {
       loadChat(true);
     }
 
-    // ---- invio
     function post(url, body, done) {
       D.addClass(send, 'busy');
       D.api.post(url, body, function (err, r) {
@@ -1191,7 +1128,6 @@ var Widgets = (function () {
           pendingNew = null;
           if (err) { input.value = text; renderChat(true); return app.toast(err.message, 'err'); }
           app.toast('Sessione aperta sul PC', 'ok');
-          // la nuova sessione compare nell'elenco dopo pochi secondi
           var tries = 0;
           var known = {};
           var sec = sectionOf(sel.section);
@@ -1218,10 +1154,8 @@ var Widgets = (function () {
       }
     }
 
-    // ---- voce
     var voice = dictation({ mic: mic, input: input, app: app, serverVoice: function () { return !!(CL.info && CL.info.voiceServer); } });
 
-    // ---- tocchi
     for (var t = 0; t < tabs.length; t++) (function (tab) {
       D.bindTap(tab, { onTap: function () { CL.mode = tab.getAttribute('data-mode'); CL.sel = null; chat = null; persist(); renderList(); renderChat(true); loadList(); } });
     })(tabs[t]);
@@ -1278,8 +1212,6 @@ var Widgets = (function () {
     renderChat(true);
     loadList();
     loadChat(true);
-    // conversazione aperta: aggiornata spesso, così vedi le risposte mentre arrivano
-    // ---- consumi dell'abbonamento: sessione di 5 ore, settimana, limiti per modello
     var usageEl = q('cl-usage');
     function loadUsage(force) {
       D.api.get('/api/claude/usage' + (force ? '?refresh=1' : ''), function (err, u) {
@@ -1301,9 +1233,6 @@ var Widgets = (function () {
     };
   }
 
-  // ------------------------------------------------------------ DISCORD
-  // Tre colonne: server | canali vocali con chi c'è dentro | la tua stanza e i comandi.
-  // Tocca un canale per entrarci, una persona nella tua stanza per mutarla (solo per te).
   var DC = { guild: D.store.get('dc:guild', '') };
   function discord(root, tile, app) {
     D.addClass(root, 'w-discord');
@@ -1327,7 +1256,6 @@ var Widgets = (function () {
     var rtitle = q('dc-rtitle'), rsub = q('dc-rsub'), muteBtn = q('dc-mute'), deafBtn = q('dc-deaf'), leaveBtn = q('dc-leave');
     var camBtn = q('dc-cam'), liveBtn = q('dc-live'), pop = q('dc-pop');
     var st = null, guilds = null, chans = null, alive = true, lastRoom = '';
-    // menu di una persona: volume e muto solo per te (come il tasto destro su Discord)
     var popUser = null, popBusy = 0, popLast = '';
 
     function av(m, cls) {
@@ -1351,8 +1279,8 @@ var Widgets = (function () {
     function renderPop() {
       if (!popUser) return;
       var m = findMem(popUser);
-      if (!m) return closePop();            // è uscito dalla stanza
-      if (popBusy) return;                   // non sovrascrivere mentre parte un cambio
+      if (!m) return closePop();
+      if (popBusy) return;
       var v = typeof m.volume === 'number' ? Math.round(m.volume) : 100, pre = [50, 100, 150, 200], ph = '';
       for (var i = 0; i < pre.length; i++) ph += '<span class="dc-ppre' + (pre[i] === v ? ' on' : '') + '" data-vol="' + pre[i] + '">' + pre[i] + '%</span>';
       var html =
@@ -1373,7 +1301,6 @@ var Widgets = (function () {
     function setUser(patch, msg) {
       var m = findMem(popUser);
       if (!m) return;
-      // subito sul tablet, poi conferma dal PC
       if ('volume' in patch) m.volume = patch.volume;
       if ('mute' in patch) m.localMute = patch.mute;
       popLast = ''; renderPop(); lastRoom = ''; renderState();
@@ -1400,7 +1327,6 @@ var Widgets = (function () {
         if (a === 'mute') return setUser({ mute: !m.localMute }, m.localMute ? 'Di nuovo udibile' : 'Mutato per te');
         if (a === 'up' || a === 'down') return setUser({ volume: Math.max(0, Math.min(200, v + (a === 'up' ? 10 : -10))) });
         if (a === 'bar') {
-          // il punto toccato diventa il volume (0-200%, il segno a metà è 100%), a passi di 5
           var r = act.getBoundingClientRect();
           var nv = Math.round(Math.max(0, Math.min(1, (x - r.left) / (r.right - r.left))) * 40) * 5;
           setUser({ volume: nv });
@@ -1409,7 +1335,7 @@ var Widgets = (function () {
     });
 
     function renderState() {
-      renderPop();   // si chiude da solo se la persona (o la stanza) non c'è più
+      renderPop();
       var ready = st && st.status === 'ready';
       var v = (st && st.voice) || {};
       D.toggleClass(muteBtn, 'off', !!v.mute);
@@ -1417,14 +1343,12 @@ var Widgets = (function () {
       setHtml(muteBtn, Icons.html(v.mute ? 'micoff' : 'mic') + '<span>' + (v.mute ? 'MUTO' : 'MIC') + '</span>');
       setHtml(deafBtn, Icons.html(v.deaf ? 'headsetoff' : 'headset') + '<span>' + (v.deaf ? 'SILENZIATO' : 'AUDIO') + '</span>');
       D.toggleClass(leaveBtn, 'disabled', !(ready && st.channel));
-      // webcam e Go Live: servono una stanza e il permesso (riautorizzazione dal pannello)
       var inRoom = !!(ready && st.channel);
       D.toggleClass(camBtn, 'on', !!v.video);
       D.toggleClass(liveBtn, 'on', !!v.stream);
       D.toggleClass(camBtn, 'disabled', !inRoom || !st.media);
       D.toggleClass(liveBtn, 'disabled', !inRoom || !st.media);
       setHtml(camBtn, Icons.html(v.video ? 'camera' : 'camoff') + '<span>' + (v.video ? 'CAM ON' : 'CAM') + '</span>');
-      // in live: pallino rosso che lampeggia sul pulsante e nell'intestazione della stanza
       setHtml(liveBtn, Icons.html('live') + (v.stream ? '<i class="dc-livedot"></i>' : '') + '<span>' + (v.stream ? 'SEI IN LIVE' : 'LIVE') + '</span>');
       D.toggleClass(root, 'dc-streaming', !!v.stream);
       D.toggleClass(root, 'dc-off', !ready);
@@ -1461,7 +1385,6 @@ var Widgets = (function () {
         html += '<div class="dc-mem' + (m.speaking ? ' speaking' : '') + (m.localMute ? ' lmuted' : '') + (m.me ? ' me' : '') + '" data-user="' + D.esc(m.id) + '" data-lmute="' + (m.localMute ? 1 : 0) + '">' +
           av(m, 'dc-av') + '<span class="dc-name">' + D.esc(m.name) + (m.me ? ' <i>(tu)</i>' : '') + '</span>' + flags(m) + '</div>';
       }
-      // ridisegna solo se cambia qualcosa (il polling è veloce per vedere chi parla)
       if (html !== lastRoom) { members.innerHTML = html; lastRoom = html; }
     }
 
@@ -1529,7 +1452,6 @@ var Widgets = (function () {
       }, 15000);
     }
 
-    // ---- tocchi
     D.bindTap(guildsEl, {
       scrollable: true,
       onTap: function (t) {
@@ -1596,7 +1518,6 @@ var Widgets = (function () {
 
     renderState();
     loadState();
-    // ogni secondo solo in una stanza (chi parla); fuori basta ogni 4 s
     var lastStateAt = 0;
     var fast = D.every(1000, 5000, function () {
       if (!(st && st.channel) && new Date().getTime() - lastStateAt < 4000) return;
@@ -1611,10 +1532,6 @@ var Widgets = (function () {
     };
   }
 
-  // ------------------------------------------------------- desktop virtuali
-  // Guida alle scorciatoie (pagina DESKTOP VIRTUALI). Parte dal sistema del PC
-  // collegato (tile.system, scelto dal server) e si cambia con i due pulsanti.
-  // In arancione ('warn') quello che chiude o sposta qualcosa.
   var VDESK_GUIDE = {
     windows: [
       { title: 'LE BASI', note: 'Windows 10 e 11. Le finestre restano aperte anche sui desktop che non stai guardando.', items: [
@@ -1679,7 +1596,6 @@ var Widgets = (function () {
     ]
   };
 
-  // Guida dentro root (intestazione + elenco). onClose: pulsante X (guida sopra SCHERMI).
   function vdeskGuide(root, sys, onClose) {
     var btns = {};
     var tools = el('span', 'gh-tools');
@@ -1702,17 +1618,12 @@ var Widgets = (function () {
     return { show: show };
   }
 
-  // Pagina a sé (su Linux, dove SCHERMI non c'è)
   function vdeskWidget(root, tile, app) {
     D.addClass(root, 'w-vdesk');
     vdeskGuide(root, tile && tile.system);
     return { update: function () {}, resize: function () {}, destroy: function () {} };
   }
 
-  // ---------------------------------------------------------------- schermi
-  // A sinistra i monitor come sono sulla scrivania: tocca un monitor, scegli una
-  // disposizione, tocca una zona e poi una finestra a destra per metterla lì
-  // (come Snap di Windows). Sotto: su quale monitor si aprono le app dal tablet.
   var SC = { mon: D.store.get('sc:mon', ''), layout: D.store.get('sc:layout', 'half'), zone: null, placed: {} };
   function screensWidget(root, tile, app) {
     D.addClass(root, 'w-screens');
@@ -1735,13 +1646,11 @@ var Widgets = (function () {
     var desksEl = q('sc-desks'), guideEl = q('sc-guide');
     var desks = null, deskBusy = false;
 
-    // GUIDA: scorciatoie dei desktop virtuali, sopra tutta la pagina
     var helpBtn = smallBtn('GUIDA', 'info', function () { D.removeClass(guideEl, 'hidden'); });
     D.addClass(helpBtn, 'sc-help');
     q('sc-left').appendChild(helpBtn);
     vdeskGuide(guideEl, tile.system === 'linux' ? 'linux' : 'windows', function () { D.addClass(guideEl, 'hidden'); });
 
-    // Ogni desktop è una scheda semplice: icona dello schermo, numero, nome e finestre.
     function deskCard(d) {
       var n = d.windows ? d.windows.length : 0;
       return '<div class="sc-dk' + (d.current ? ' on' : '') + '" data-desk="' + D.esc(d.id) + '">' +
@@ -1757,10 +1666,8 @@ var Widgets = (function () {
       if (!desks.supported) { desksEl.innerHTML = '<div class="empty">' + D.esc(desks.message || 'Non disponibili su questo sistema') + '</div>'; return; }
       var html = '';
       for (var i = 0; i < desks.desktops.length; i++) html += deskCard(desks.desktops[i]);
-      // "+" come in Visualizzazione attività: crea un desktop e ci entra (al massimo 3 desktop)
       if (desks.desktops.length < (desks.max || 3)) html += '<div class="sc-dk sc-dknew" data-new="1">' + Icons.html('add', 'sc-dkic') + '<span class="sc-dkname">Nuovo</span></div>';
       desksEl.innerHTML = html;
-      // la X chiude il desktop: va tenuta premuta (le finestre passano al desktop vicino)
       var xs = desksEl.querySelectorAll('.sc-dkx');
       for (var k = 0; k < xs.length; k++) bindClose(xs[k]);
     }
@@ -1777,7 +1684,6 @@ var Widgets = (function () {
       D.api.get('/api/screens/desktops', function (err, d) {
         if (!alive || deskBusy) return;
         if (err) {
-          // es. dock avviata prima dell'aggiornamento: meglio dirlo che restare su "Carico…"
           if (!desks) desksEl.innerHTML = '<div class="empty err">' + D.esc(err.code === 'NOT_FOUND' ?
             'Il PC ha una versione vecchia della dock: riavviala (icona vicino all\'orologio → Riavvia).' : err.message) + '</div>';
           return;
@@ -1795,7 +1701,7 @@ var Widgets = (function () {
         if (err) { app.toast(err.message, 'err'); lastDesks = ''; renderDesks(); loadDesks(); return; }
         desks = d; lastDesks = JSON.stringify(d); renderDesks();
         if (msg) app.toast(msg(d), 'ok');
-        lastWins = ''; setTimeout(loadWins, 300);   // le finestre visibili cambiano col desktop
+        lastWins = ''; setTimeout(loadWins, 300);
       }, 15000);
     }
     function curDesk(d) {
@@ -1805,7 +1711,7 @@ var Widgets = (function () {
     D.bindTap(desksEl, {
       scrollable: true,
       onTap: function (t) {
-        if (D.closestAttr(t, 'data-del', desksEl)) {         // la X ha il suo tocco (tenuto premuto)
+        if (D.closestAttr(t, 'data-del', desksEl)) {
           if (new Date().getTime() - xFired > 1500) app.toast('Tieni premuta la X per chiudere il desktop', 'info');
           return;
         }
@@ -1828,7 +1734,6 @@ var Widgets = (function () {
       for (var i = 0; info && i < info.layouts.length; i++) if (info.layouts[i].id === id) return info.layouts[i];
       return info ? info.layouts[0] : null;
     }
-    // sui monitor verticali le colonne diventano righe (come fa il server)
     function zones(l, m) {
       var out = [];
       for (var i = 0; i < l.zones.length; i++) {
@@ -1865,7 +1770,6 @@ var Widgets = (function () {
         var x = Math.round(ox + (m.x - minX) * k) + 3, y = Math.round(oy + (m.y - minY) * k) + 3;
         var w = Math.round(m.w * k) - 6, h = Math.round(m.h * k) - 6;
         html += '<div class="sc-mon' + (sel ? ' sel' : '') + '" data-mon="' + D.esc(m.id) + '" style="left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + h + 'px">';
-        // zone della divisione scelta: sul monitor selezionato, e su tutti mentre trascini una finestra
         if ((sel || drag) && l) {
           var zs = zones(l, m);
           for (var z = 0; z < zs.length; z++) {
@@ -1947,7 +1851,6 @@ var Widgets = (function () {
       });
     }
 
-    // ---- tocchi
     D.bindTap(map, {
       onTap: function (t) {
         var zEl = D.closestAttr(t, 'data-zone', map);
@@ -1973,7 +1876,6 @@ var Widgets = (function () {
         if (!l) return;
         SC.layout = l.getAttribute('data-layout');
         D.store.set('sc:layout', SC.layout);
-        // la prima zona è già pronta: basta toccare una finestra
         SC.zone = 0;
         renderMap(); renderLayouts();
       }
@@ -1995,7 +1897,7 @@ var Widgets = (function () {
     D.bindTap(winsEl, {
       scrollable: true,
       onTap: function (t) {
-        if (drag || new Date().getTime() - dragEnded < 700) return;   // fine di un trascinamento
+        if (drag || new Date().getTime() - dragEnded < 700) return;
         var row = D.closestAttr(t, 'data-win', winsEl);
         if (!row) return;
         var id = row.getAttribute('data-win');
@@ -2009,7 +1911,6 @@ var Widgets = (function () {
         }
         var title = row.querySelector('.sc-wtitle').textContent;
         if (SC.zone === null || !mon(SC.mon)) {
-          // nessuna zona scelta: porta la finestra in primo piano
           D.api.post('/api/screens/window', { window: id, action: 'focus' }, function (err) {
             if (err) return app.toast(err.message, 'err');
             app.toast('In primo piano: ' + short(title, 40), 'ok');
@@ -2022,7 +1923,6 @@ var Widgets = (function () {
           D.removeClass(row, 'busy');
           if (err) return app.toast(err.message, 'err');
           SC.placed[monId + '|' + lay.id + '|' + zone] = title;
-          // come Snap Assist: passa alla zona successiva
           SC.zone = zone + 1 < lay.zones.length ? zone + 1 : null;
           renderMap();
           lastWins = ''; setTimeout(loadWins, 400);
@@ -2030,11 +1930,8 @@ var Widgets = (function () {
       }
     });
 
-    // ---- trascinamento: tieni premuta una finestra della lista, poi lasciala su un desktop
-    // virtuale, su "Nuovo" (desktop nuovo) o su un monitor della mappa.
     var drag = null, dragEnded = 0, hold = null, holdT = null;
     function now() { return new Date().getTime(); }
-    // pagina girata sul telefono (body.rot): dalle coordinate dello schermo a quelle della pagina
     function local(x, y) {
       if (D.hasClass(document.body, 'rot')) return { x: y, y: document.body.offsetHeight - x };
       return { x: x, y: y };
@@ -2048,7 +1945,6 @@ var Widgets = (function () {
       if (d) return { kind: 'desk', el: d, id: d.getAttribute('data-desk') };
       var m = D.closestAttr(el, 'data-mon', root);
       var z = D.closestAttr(el, 'data-zone', root);
-      // una zona della divisione scelta: la finestra si ancora lì, con quella misura
       if (z && m) return { kind: 'zone', el: z, id: m.getAttribute('data-mon'), zone: parseInt(z.getAttribute('data-zone'), 10) };
       if (m) return { kind: 'mon', el: m, id: m.getAttribute('data-mon') };
       return null;
@@ -2058,7 +1954,7 @@ var Widgets = (function () {
       drag = { id: row.getAttribute('data-win'), title: title, row: row, target: null };
       D.addClass(row, 'dragging');
       D.addClass(root, 'sc-dragging');
-      renderMap();   // mostra le zone su tutti i monitor
+      renderMap();
       var g = D.el('div', 'sc-ghost');
       g.innerHTML = Icons.html('window') + D.esc(short(title, 30));
       document.body.appendChild(g);
@@ -2099,12 +1995,10 @@ var Widgets = (function () {
         lastDesks = ''; setTimeout(loadDesks, 600);
       }, 15000);
     }
-    // finestra lasciata su una zona: va su quel monitor, nella zona della divisione scelta
     function dropOnZone(d, monId, zone) {
       var lay = layout(SC.layout);
       if (!lay) return;
       D.addClass(d.row, 'busy');
-      // trascinata: cambia posto ma non prende il primo piano (quello solo col tocco)
       D.api.post('/api/screens/place', { window: d.id, monitor: monId, layout: lay.id, zone: zone, focus: false }, function (err) {
         D.removeClass(d.row, 'busy');
         if (err) return app.toast(err.message, 'err');
@@ -2133,14 +2027,13 @@ var Widgets = (function () {
     winsEl.addEventListener('touchmove', function (e) {
       var t = e.touches[0];
       if (drag) { e.preventDefault(); moveDrag(t.clientX, t.clientY); return; }
-      if (hold && (Math.abs(t.clientX - hold.x) > 10 || Math.abs(t.clientY - hold.y) > 10)) cancelHold();   // sta scorrendo
+      if (hold && (Math.abs(t.clientX - hold.x) > 10 || Math.abs(t.clientY - hold.y) > 10)) cancelHold();
     }, false);
     winsEl.addEventListener('touchend', function (e) {
       cancelHold();
       if (drag) { e.preventDefault(); endDrag(false); }
     }, false);
     winsEl.addEventListener('touchcancel', function () { cancelHold(); if (drag) endDrag(true); }, false);
-    // col mouse (browser del PC): si trascina subito, basta muoversi un po'
     var mhold = null;
     winsEl.addEventListener('mousedown', function (e) {
       if (e.button !== 0) return;
@@ -2174,16 +2067,9 @@ var Widgets = (function () {
     };
   }
 
-  // ------------------------------------------------------------ Viber
-  // Pagina VIBER: due liste, progetti aperti in Viber (con lo stato dei loro agenti;
-  // tocco = passa a quel progetto) e task del progetto mostrato. Sotto, la fila di
-  // pulsanti della pagina (personalizzabile dal pannello): qui si accende quello del
-  // pannello attivo e si tolgono dalla fila i pannelli che non sono tra le schede aperte
-  // in Viber (non si potrebbero usare); tornano da soli quando li apri.
   var VB_STATES = { question: 'ti aspetta', working: 'al lavoro', completed: 'pronto', idle: '' };
   function viberWidget(root, tile, app) {
     D.addClass(root, 'w-viber');
-    // "show": "projects" o "tasks" = una colonna sola (HOME); senza, tutte e due (pagina VIBER)
     if (tile.show === 'projects' || tile.show === 'tasks') D.addClass(root, 'vb-only-' + tile.show);
     root.innerHTML ='<div class="vb-col vb-colp"><div class="vb-h">PROGETTI<span class="vb-sub"></span></div><div class="vb-projs scroll"></div></div>' +
       '<div class="vb-col vb-colt"><div class="vb-h">TASK<span class="vb-tsub"></span></div><div class="vb-tasks scroll"></div></div>';
@@ -2191,7 +2077,6 @@ var Widgets = (function () {
     var sub = q('vb-sub'), projEl = q('vb-projs'), tasksEl = q('vb-tasks'), tsub = q('vb-tsub');
     var st = null, alive = true, busy = false, lastTasks = '', lastProjs = '';
 
-    // pulsanti { "type": "viber", "panel": ... } della pagina
     function paintButtons() {
       var open = st && st.online && st.open ? ',' + st.open.join(',') + ',' : null;
       for (var i = 0; i < app.tiles.length; i++) {
@@ -2257,7 +2142,6 @@ var Widgets = (function () {
         tasksEl.innerHTML = h || '<div class="empty">Nessuna task aperta in questo progetto</div>';
       });
     }
-    // tocco su un progetto: Viber passa a quel progetto (scorciatoie di Viber, verificate)
     D.bindTap(projEl, {
       scrollable: true,
       onTap: function (t) {
@@ -2283,7 +2167,6 @@ var Widgets = (function () {
     return {
       update: function () {},
       resize: function () {},
-      // risposta di un pulsante "viber" della pagina: stato aggiornato subito
       viber: function (d) {
         if (!d) return;
         if (d.projects) { renderProjects(d); lastTasks = ''; loadState(); loadTasks(); return; }
@@ -2293,8 +2176,6 @@ var Widgets = (function () {
     };
   }
 
-  // ------------------------------------------------------------ Email
-  // Posta in arrivo in sola lettura. Gli account si aggiungono dal pannello sul PC.
   var ML = { acc: D.store.get('ml:acc', '') };
   function mailWidget(root, tile, app) {
     D.addClass(root, 'w-mail');
@@ -2446,10 +2327,6 @@ var Widgets = (function () {
     return { update: function () {}, resize: function () {}, destroy: function () { alive = false; D.stop(timer); } };
   }
 
-  // ---------------------------------------------------------------- audio
-  // A sinistra le uscite (casse, cuffie, monitor) e gli ingressi (microfoni):
-  // tocca il nome per renderlo predefinito. A destra le app che usano l'audio.
-  // Ogni riga: mute, -, barra (tocca un punto per impostare il volume), +.
   function audioWidget(root, tile, app) {
     D.addClass(root, 'w-audio');
     root.innerHTML =
@@ -2464,7 +2341,6 @@ var Widgets = (function () {
 
     function ctl(kind, it, mic) {
       var v = it.volume === null ? 0 : it.volume;
-      // pulsante mute: sempre l'icona barrata (rossa quando è muto), così non si confonde con +
       var muteIcon = mic ? 'micoff' : 'mute';
       return '<div class="au-ctl' + (it.mute ? ' muted' : '') + '" data-kind="' + kind + '" data-id="' + D.esc(it.id) + '">' +
         '<span class="au-b au-mute" data-act="mute">' + Icons.html(muteIcon) + '</span>' +
@@ -2533,7 +2409,6 @@ var Widgets = (function () {
       var id = box.getAttribute('data-id'), a = act.getAttribute('data-act');
       if (a === 'mute') return post(url, { id: id, mute: 'toggle' });
       if (a === 'up' || a === 'down') return post(url, { id: id, delta: a === 'up' ? 5 : -5 });
-      // barra: il punto toccato diventa il volume
       var r = act.getBoundingClientRect();
       var v = Math.round(Math.max(0, Math.min(1, (x - r.left) / (r.right - r.left))) * 100);
       var fill = act.firstChild;
@@ -2553,8 +2428,6 @@ var Widgets = (function () {
     };
   }
 
-  // ------------------------------------------------------------ widget piccoli per la HOME
-  // Desktop virtuali (dalla pagina SCHERMI): tocco = passa a quel desktop, + = nuovo.
   function desksWidget(root, tile, app) {
     D.addClass(root, 'w-desks');
     header(root, tile.title || 'DESKTOP');
@@ -2603,13 +2476,11 @@ var Widgets = (function () {
     var timer = D.every(3000, 15000, load);
     return {
       update: function () {},
-      // in un riquadro basso i desktop stanno in fila, in uno alto uno sotto l'altro
       resize: function (w, h) { D.toggleClass(root, 'dk-row', w > h * 1.3); },
       destroy: function () { alive = false; D.stop(timer); }
     };
   }
 
-  // Giochi (dalla pagina GAMES): icone piccole, tocco = avvia (pallino verde se è aperto).
   function gamesWidget(root, tile, app) {
     D.addClass(root, 'w-games');
     header(root, tile.title || 'GIOCHI');
@@ -2658,7 +2529,6 @@ var Widgets = (function () {
     };
   }
 
-  // Discord compatto: stanza in cui sei, chi parla, mute e silenzia.
   function discordMini(root, tile, app) {
     D.addClass(root, 'w-dcmini');
     header(root, tile.title || 'DISCORD');
@@ -2722,8 +2592,6 @@ var Widgets = (function () {
     return fn(root, tile, app);
   }
 
-  // Plugin: Widgets.register('meteo', function (root, tile, app) { ... return { update, resize, destroy }; })
-  // Il nome non può sostituire un widget del progetto.
   function register(name, fn) {
     if (typeof fn !== 'function' || !name) return false;
     if (TYPES.hasOwnProperty(name) && !TYPES[name].plugin) {
@@ -2735,7 +2603,6 @@ var Widgets = (function () {
     return true;
   }
 
-  // Aiuti per i widget dei plugin: gli stessi usati da quelli del progetto
   var helpers = { el: el, header: header, setHtml: setHtml, smallBtn: smallBtn, level: level };
 
   return { create: create, types: TYPES, register: register, helpers: helpers };

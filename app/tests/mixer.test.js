@@ -1,4 +1,3 @@
-// Pagina AUDIO: lettura dei dati di pactl (Linux) e validazione delle richieste.
 const test = require('node:test');
 const assert = require('node:assert');
 

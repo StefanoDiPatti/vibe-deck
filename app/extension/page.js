@@ -1,6 +1,3 @@
-// Gira DENTRO la pagina (world MAIN) per poter usare il player del sito:
-// Apple Music -> MusicKit, YouTube / YouTube Music -> #movie_player.
-// Parla solo con content.js tramite window.postMessage.
 (function () {
   'use strict';
   if (window.__dockBridgeLoaded) return;
@@ -17,11 +14,10 @@
     try {
       var r = fn();
       if (r && typeof r.catch === 'function') r.catch(function () {});
-    } catch (e) { /* il sito ha cambiato qualcosa: si ignora */ }
+    } catch (e) { }
   }
   function text(el) { return el ? String(el.textContent || '').replace(/\s+/g, ' ').trim() : ''; }
 
-  // ------------------------------------------------------------ Apple Music
   function mk() {
     try { return window.MusicKit && MusicKit.getInstance ? MusicKit.getInstance() : null; } catch (e) { return null; }
   }
@@ -81,7 +77,6 @@
     }
   }
 
-  // ------------------------------------------------------------ YouTube / YouTube Music
   function yt() {
     var p = document.getElementById('movie_player');
     return p && typeof p.getPlayerState === 'function' ? p : null;
@@ -174,15 +169,12 @@
     }
   }
 
-  // ------------------------------------------------------------ ciclo
   function state() {
     try { return site === 'apple' ? appleState() : ytState(); } catch (e) { return null; }
   }
   var idleTicks = 0;
   function post() {
     var s = state();
-    // Senza musica si manda comunque un segnale ogni 5 s: così la dock sa
-    // che la scheda è aperta (pulsante "aperta" sul tablet) e che l'estensione funziona.
     if (!s) {
       if (!hadState && (++idleTicks % 5) !== 1) return;
       s = { site: site, idle: true };

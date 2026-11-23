@@ -1,7 +1,3 @@
-// Impronte (sha1, fine riga LF) delle versioni precedenti dei file di default.
-// Se un file in config/ è identico a una di queste, nessuno l'ha modificato:
-// all'avvio viene sostituito dalla versione nuova. I file modificati restano come sono.
-// Dopo aver cambiato un default, aggiungi qui l'impronta della versione vecchia.
 {
   "dock": [
     "89c9b62df502c735b6a82ef00edeb3517be8449a",
@@ -26,7 +22,8 @@
     "eecd3ca14147316d548cf975c586a080ba049e58",
     "0c3a621e0760cf5d6b566e15bef75ac672c34bee",
     "bb07ed973eb80fad58ae4a3270c7a1b412b2b41b",
-    "5f9bd4cc86a00ab26276d2ce054967610344ec6a"
+    "5f9bd4cc86a00ab26276d2ce054967610344ec6a",
+    "f07261b46a5925be48359a0b690860532979fd7b"
   ],
   "apps": [
     "1f1f99f0e7ab86b9df4d90eb5376ac1cfd2a32e2",
@@ -35,11 +32,13 @@
     "b1e38a75defbb73d837a5edb6b9581993bb1a8a4",
     "35e4f4ddd9d76c5ecdd95bd438987a9137bb4014",
     "6f18809f7301c74ab231626f10e51c23dd1805f5",
-    "4267ba40afd53aaf0a23705697b95d39a6bb5f56"
+    "4267ba40afd53aaf0a23705697b95d39a6bb5f56",
+    "85225bc69b9aebdae7c75d9035446899ccae2a93"
   ],
   "commands": [
     "8cddcb3f7f5daa56067582e02a3b11927925c60d",
-    "e30e956708e025b2bd5e582a48c28709f766efd5"
+    "e30e956708e025b2bd5e582a48c28709f766efd5",
+    "225f507f0be13b67f2814ec1d36c02485f0497d9"
   ],
   "services": [
     "6cad0b177a6e593ee9b84b77babae88856ea8d4c",
@@ -48,6 +47,7 @@
     "bf955d2e1680d6dd7ba9f25a8c9a1d21903f553f",
     "e5d66858dfab54ed14b7a738d0fce253a3a4b54f",
     "2e401fcd6846855da9c9502fbe8d8a2f5ab101a6",
-    "7c5dbb446cd80a121672f00d090c78c564c62fc5"
+    "7c5dbb446cd80a121672f00d090c78c564c62fc5",
+    "69e5ca9f7c64ce01390ac1c19d20dd3ce3a2973f"
   ]
 }

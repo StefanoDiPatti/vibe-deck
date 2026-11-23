@@ -1,19 +1,13 @@
-// Caricamento configurazione JSON con:
-// - copia automatica dei default (config/defaults) al primo avvio
-// - commenti // e /* */ ammessi nei file
-// - ricarica a caldo quando un file cambia (niente riavvio)
 const fs = require('fs');
 const path = require('path');
 const paths = require('./paths');
 const log = require('./log');
 
 const FILES = ['dock', 'apps', 'commands', 'services', 'layout'];
-// layout.json è scritto dal pannello di controllo sul PC: se manca va bene così.
 const OPTIONAL = { layout: true };
-const cache = {};   // name -> { mtime, data }
-const errors = {};  // name -> messaggio dell'ultimo errore di parsing
+const cache = {};
+const errors = {};
 
-// Rimuove i commenti dal JSON senza toccare le stringhe.
 function stripJsonComments(text) {
   let out = '';
   let inString = false;
@@ -43,7 +37,6 @@ function stripJsonComments(text) {
   return removeTrailingCommas(out);
 }
 
-// Virgole finali tollerate ( [1,2,] / {"a":1,} ), senza toccare le stringhe.
 function removeTrailingCommas(text) {
   let out = '';
   let inString = false;
@@ -70,7 +63,6 @@ function parseJson(text) {
   return JSON.parse(stripJsonComments(text.replace(/^﻿/, '')));
 }
 
-// Copia config/defaults/*.json in config/ se mancano. Ritorna i file copiati.
 function ensureUserConfig() {
   const copied = [];
   if (!fs.existsSync(paths.CONFIG_DIR)) fs.mkdirSync(paths.CONFIG_DIR, { recursive: true });
@@ -85,14 +77,10 @@ function ensureUserConfig() {
   return copied;
 }
 
-// Impronta di un file di config, uguale su Windows (CRLF) e Linux (LF).
 function fingerprint(text) {
   return require('crypto').createHash('sha1').update(String(text).replace(/^\uFEFF/, '').replace(/\r\n/g, '\n')).digest('hex');
 }
 
-// I file in config/ ancora identici a un default precedente (nessuno li ha toccati)
-// passano alla versione nuova: così gli aggiornamenti arrivano anche a chi li ha già.
-// Ritorna i file aggiornati. (Le cartelle si possono cambiare per i test.)
 function upgradeUserConfig(configDir, defaultsDir) {
   configDir = configDir || paths.CONFIG_DIR;
   defaultsDir = defaultsDir || paths.DEFAULTS_DIR;
@@ -153,13 +141,8 @@ function get(name) {
   }
 }
 
-// Sistema di questo PC nei file di config: "windows" | "linux" | "darwin".
 function currentOs() { return process.platform === 'win32' ? 'windows' : process.platform; }
 
-// Pagine e pulsanti per sistema operativo:
-//   "os": "linux" (o una lista)  -> compare solo lì
-//   "linux": { "label": ... }    -> campi sostituiti su quel sistema (anche "windows")
-// Ritorna null se l'elemento non vale per questo sistema.
 function forOs(item, osKey) {
   if (!item || typeof item !== 'object') return item;
   if (item.os) {
@@ -171,8 +154,6 @@ function forOs(item, osKey) {
   return out;
 }
 
-// Griglia scelta in base al numero di celle occupate: niente buchi inutili e
-// celle di forma comoda sul tablet (orizzontale). Meno pulsanti = pulsanti più grandi.
 function autoGrid(tiles) {
   let cells = 0, minCols = 1, minRows = 1;
   tiles.forEach(function (t) { cells += (t.w || 1) * (t.h || 1); minCols = Math.max(minCols, t.w || 1); minRows = Math.max(minRows, t.h || 1); });
@@ -187,8 +168,6 @@ function autoGrid(tiles) {
   return best ? { columns: best.columns, rows: best.rows } : { columns: 8, rows: 6 };
 }
 
-// Le pagine i cui pulsanti si scelgono e ordinano dal pannello: solo pulsanti, oppure
-// (con "buttonGrid") pulsanti in griglia a sinistra e widget a destra (pagina VIBER).
 function editablePage(p) {
   const buttons = p.tiles.filter(function (t) { return !t.widget; });
   return buttons.length > 0 && (buttons.length === p.tiles.length || !!p.buttonGrid);
@@ -200,8 +179,6 @@ function clampInt(v, min, max, def) {
   return Math.max(min, Math.min(max, n));
 }
 
-// Normalizza dock.json: id per ogni tile, dimensioni valide, default sensati.
-// layout = scelte del pannello di controllo; osKey = sistema (per i test).
 function normalizeDock(raw, layout, osKey) {
   raw = raw || {};
   layout = layout || {};
@@ -216,13 +193,11 @@ function normalizeDock(raw, layout, osKey) {
     if (!p || typeof p.id !== 'string' || seenPages[p.id]) return;
     p = forOs(p, osKey);
     if (!p) return;
-    // HOME scelta dal pannello (layout.json -> homePage): sostituisce i widget della pagina main
     p = require('./home').apply(p, layout);
     seenPages[p.id] = true;
     let cols = clampInt(p.columns, 1, 8, columns);
     let rws = clampInt(p.rows, 1, 6, rows);
     const seenTiles = {};
-    // gli id automatici si calcolano prima del filtro per sistema: restano uguali ovunque
     let all = (Array.isArray(p.tiles) ? p.tiles : []).map(function (t, i) {
       t = Object.assign({}, t || {});
       let id = typeof t.id === 'string' && t.id ? t.id : p.id + '-' + i;
@@ -232,9 +207,6 @@ function normalizeDock(raw, layout, osKey) {
       return t;
     }).map(function (t) { return forOs(t, osKey); }).filter(Boolean);
 
-    // Pulsanti scelti dal pannello: "show" in ordine, "hide" nascosti,
-    // quelli nuovi (in nessuna delle due liste) in fondo.
-    // "hidden": true = pulsante disponibile ma nascosto finché non lo mostri dal pannello.
     const custom = tileLayout[p.id];
     const row = !!p.buttonGrid;
     const editable = editablePage({ tiles: all, buttonGrid: row });
@@ -250,8 +222,6 @@ function normalizeDock(raw, layout, osKey) {
       shownButtons = shown.map(function (id) { return byId[id]; })
         .concat(buttons.filter(function (t) { return shown.indexOf(t.id) < 0 && hide.indexOf(t.id) < 0 && !t.hidden; }));
     }
-    // widget prima, poi i pulsanti. Con "buttonGrid" la griglia è solo per i widget (a destra):
-    // i pulsanti li dispone il tablet a sinistra, togliendo quelli che non si possono usare.
     let tiles = editable ? fixed.concat(shownButtons) : all;
     const changed = tiles.length !== all.length || tiles.some(function (t, i) { return t !== all[i]; });
     if (!row && (p.autoGrid || useCustom || changed)) {
@@ -283,8 +253,6 @@ function normalizeDock(raw, layout, osKey) {
   }
   let home = raw.home && seenPages[raw.home] ? raw.home : pages[0].id;
 
-  // Pannello di controllo (layout.json): quali pagine stanno nella barra in basso e in che ordine.
-  // Le altre restano raggiungibili dai pulsanti { "type": "page" }.
   if (Array.isArray(layout.tabs)) {
     const order = layout.tabs.filter(function (id, i) { return seenPages[id] && layout.tabs.indexOf(id) === i; });
     if (order.length) {
@@ -304,14 +272,9 @@ function normalizeDock(raw, layout, osKey) {
   };
 }
 
-// ------------------------------------------------------------ un file per voce
-// Cartelle con un file JSON per pagina, app o comando:
-//   config/defaults/<tipo>/<id>.json  (progetto)   config/<tipo>/<id>.json  (tue, vincono)
-// Ogni cartella si rilegge solo se cambia qualche file (nome o data di modifica).
 const DIR_KINDS = ['pages', 'apps', 'commands'];
-// Cartelle dei plugin (plugins/<nome>/pages, apps, commands): valgono come i default.
 function pluginDirs() { return require('./plugins').configDirs(); }
-const dirCache = {};   // cartella -> { stamp, items: { id: dati } }
+const dirCache = {};
 
 function readDir(base, kind) {
   const dir = path.join(base, kind);
@@ -341,7 +304,6 @@ function readDir(base, kind) {
   return items;
 }
 
-// Pagine dei file, per id (l'id scritto nel file, altrimenti il nome del file).
 function pagesIn(base) {
   const files = readDir(base, 'pages');
   const out = {};
@@ -354,8 +316,6 @@ function pagesIn(base) {
   return out;
 }
 
-// App o comandi dei file: un file = una voce (id = nome del file),
-// oppure { "apps": { ... } } / { "commands": { ... } } con più voci.
 function entriesIn(base, kind) {
   const files = readDir(base, kind);
   const out = {};
@@ -368,16 +328,10 @@ function entriesIn(base, kind) {
   return out;
 }
 
-// dock.json + le pagine dei file:
-//  - in "pages" ogni voce è un id (pagina da file: prima config/pages, poi i default) o una pagina scritta lì;
-//  - le tue pagine in config/pages non elencate vanno in fondo;
-//  - le pagine predefinite che il tuo dock.json non elenca (arrivate con un aggiornamento)
-//    vanno in fondo come "disponibili", fuori dalla barra finché non le attivi dal pannello.
-const missingPages = {};   // id elencati in dock.json senza file
+const missingPages = {};
 function mergedDock() {
   const d = get('dock');
   const mine = pagesIn(paths.CONFIG_DIR);
-  // pagine dei plugin insieme a quelle predefinite (un default con lo stesso id vince)
   const defaults = {};
   pluginDirs().forEach(function (dir) { Object.assign(defaults, pagesIn(dir)); });
   Object.assign(defaults, pagesIn(paths.DEFAULTS_DIR));
@@ -405,8 +359,6 @@ function mergedDock() {
   return Object.assign({}, d, { pages: out });
 }
 
-// Il dock.json predefinito con le sue pagine prese dai file di config/defaults/pages
-// (senza le tue modifiche): per i test e per confrontare con i default.
 function defaultDock() {
   let d = {};
   try { d = parseJson(fs.readFileSync(path.join(paths.DEFAULTS_DIR, 'dock.json'), 'utf8')); } catch (e) { return { pages: [] }; }
@@ -415,7 +367,6 @@ function defaultDock() {
   return Object.assign({}, d, { pages: pages });
 }
 
-// Pagine con "source": "games": i pulsanti sono i giochi scelti dal pannello (data/games.json).
 function withGames(d) {
   if (!Array.isArray(d.pages) || !d.pages.some(function (p) { return p && p.source === 'games'; })) return d;
   const games = require('./services/games');
@@ -426,7 +377,6 @@ function withGames(d) {
 
 function dock() { return normalizeDock(withGames(mergedDock()), get('layout')); }
 
-// Il dock per il tablet: senza i dati che servono solo al pannello.
 function tabletDock() {
   const d = dock();
   return Object.assign({}, d, {
@@ -438,12 +388,10 @@ function tabletDock() {
   });
 }
 
-// Una sezione ("apps" o "commands") del file predefinito, letto direttamente.
 function defaultSection(name) {
   try { return parseJson(fs.readFileSync(path.join(paths.DEFAULTS_DIR, name + '.json'), 'utf8'))[name] || {}; } catch (e) { return {}; }
 }
 
-// App: default (apps.json e cartella apps/) < le tue (apps.json e config/apps/) < giochi del pannello.
 function apps() {
   const games = require('./services/games').apps();
   const user = (get('apps').apps) || {};
@@ -451,14 +399,12 @@ function apps() {
   return Object.assign({}, defaults, entriesIn(paths.DEFAULTS_DIR, 'apps'), fromPlugins('apps'), user, entriesIn(paths.CONFIG_DIR, 'apps'), games);
 }
 
-// Comandi consentiti: come le app (default < tuoi, anche un file per comando in config/commands/).
 function commands() {
   const user = (get('commands').commands) || {};
   const defaults = fileFor('commands') === path.join(paths.DEFAULTS_DIR, 'commands.json') ? {} : defaultSection('commands');
   return Object.assign({}, defaults, entriesIn(paths.DEFAULTS_DIR, 'commands'), fromPlugins('commands'), user, entriesIn(paths.CONFIG_DIR, 'commands'));
 }
 
-// App o comandi di tutti i plugin.
 function fromPlugins(kind) {
   const out = {};
   pluginDirs().forEach(function (dir) { Object.assign(out, entriesIn(dir, kind)); });
@@ -475,12 +421,10 @@ function findTile(pageId, tileId) {
   return null;
 }
 
-// data/games.json (giochi scelti dal pannello): anche lui cambia la pagina GAMES.
 function gamesStamp() {
   try { return Math.round(fs.statSync(path.join(paths.DATA_DIR, 'games.json')).mtimeMs); } catch (e) { return 0; }
 }
 
-// Cartelle dei file singoli: un'impronta corta che cambia quando cambia un file.
 function dirsStamp() {
   const parts = [];
   [paths.DEFAULTS_DIR, paths.CONFIG_DIR].concat(pluginDirs()).forEach(function (base) {
@@ -492,7 +436,6 @@ function dirsStamp() {
   return require('crypto').createHash('sha1').update(parts.join('#')).digest('hex').slice(0, 8);
 }
 
-// Cambia quando uno dei file di config cambia: il client lo usa per ricaricarsi.
 function version() {
   return FILES.map(function (name) {
     get(name);
@@ -500,10 +443,6 @@ function version() {
   }).concat([gamesStamp(), dirsStamp()]).join('-');
 }
 
-// Salva le scelte del pannello di controllo. Ritorna il dock aggiornato.
-//  tabs/home : pagine nella barra e pagina iniziale
-//  tiles     : { idPagina: { show: [id pulsanti in ordine], hide: [id nascosti] } }
-//              (se manca restano le scelte già salvate)
 function saveLayout(tabs, home, tiles) {
   const all = normalizeDock(withGames(mergedDock()), {});
   const ids = {};
@@ -519,7 +458,6 @@ function saveLayout(tabs, home, tiles) {
       const page = ids[pageId];
       const t = tiles[pageId];
       if (!page || !page.editable || !t) return;
-      // pulsanti di altri sistemi (es. Windows se sei su Linux): restano dove sono
       const known = {};
       page.allTiles.forEach(function (x) { if (!x.widget) known[x.id] = true; });
       const clean = function (list) { return (Array.isArray(list) ? list : []).map(String).filter(function (id, i, a) { return known[id] && a.indexOf(id) === i; }); };
@@ -534,7 +472,7 @@ function saveLayout(tabs, home, tiles) {
   }
   const data = { tabs: tabs, home: home };
   if (Object.keys(outTiles).length) data.tiles = outTiles;
-  if (previous.homePage) data.homePage = previous.homePage;   // la HOME si salva a parte (saveHome)
+  if (previous.homePage) data.homePage = previous.homePage;
   writeLayout(data);
   return dock();
 }
@@ -542,16 +480,11 @@ function saveLayout(tabs, home, tiles) {
 function writeLayout(data) {
   const file = path.join(paths.CONFIG_DIR, 'layout.json');
   if (!fs.existsSync(paths.CONFIG_DIR)) fs.mkdirSync(paths.CONFIG_DIR, { recursive: true });
-  const text = '// Scritto dal pannello di controllo (doppio clic sull\'icona Vibe Deck).\n' +
-    '// tabs = pagine nella barra del tablet, in ordine. home = pagina iniziale.\n' +
-    '// tiles = per pagina, i pulsanti mostrati (show, in ordine) e quelli nascosti (hide).\n' +
-    '// homePage = i widget della HOME scelti dal pannello (griglia e misure).\n' +
-    JSON.stringify(data, null, 2) + '\n';
+  const text = JSON.stringify(data, null, 2) + '\n';
   fs.writeFileSync(file + '.tmp', text);
   fs.renameSync(file + '.tmp', file);
 }
 
-// HOME dal pannello: { columns, rows, tiles: [{ widget, w, h }] }; null = torna alla pagina main dei file.
 function saveHome(h) {
   const data = Object.assign({}, get('layout') || {});
   if (h === null) delete data.homePage;
@@ -560,10 +493,9 @@ function saveHome(h) {
   return dock();
 }
 
-// Torna alle pagine definite in dock.json ("tab": true/false).
 function resetLayout() {
   const file = path.join(paths.CONFIG_DIR, 'layout.json');
-  try { fs.unlinkSync(file); } catch (e) { /* già assente */ }
+  try { fs.unlinkSync(file); } catch (e) { }
   return dock();
 }
 

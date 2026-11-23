@@ -1,5 +1,3 @@
-// Conversazioni in memoria lato server, una per id. Il tablet manda solo il
-// nuovo messaggio: meno dati sul Wi-Fi e storia sempre "append-only".
 const crypto = require('crypto');
 
 const MAX_SESSIONS = 30;

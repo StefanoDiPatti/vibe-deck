@@ -1,13 +1,3 @@
-// Posta in arrivo sul tablet (pagina EMAIL), letta da Thunderbird sul PC.
-//
-// L'unico modo di collegare un account è aggiungerlo a Thunderbird: l'accesso
-// (Gmail con la conferma sul telefono, Microsoft 365 di università e aziende,
-// iCloud, Libero...) lo fa e lo rinnova Thunderbird, con i metodi ufficiali.
-// La dock non chiede e non salva password né token: legge in SOLA LETTURA i
-// file del profilo di Thunderbird (vedi thunderbird.js). Non segna le email
-// come lette, non le sposta e non le cancella.
-//
-// data/mail.json tiene solo quali account mostrare sul tablet.
 const fs = require('fs');
 const path = require('path');
 const { simpleParser } = require('mailparser');
@@ -20,13 +10,13 @@ const tb = require('./thunderbird');
 
 const FILE = path.join(paths.DATA_DIR, 'mail.json');
 const LIST_SIZE = 40;
-const MAX_SOURCE = 3 * 1024 * 1024;   // oltre, il messaggio viene letto solo in parte
+const MAX_SOURCE = 3 * 1024 * 1024;
 const MAX_TEXT = 20000;
-const PROFILE_TTL = 15000;            // ogni quanto rileggere prefs.js (account nuovi)
+const PROFILE_TTL = 15000;
 
-let store = null;                     // { hidden: [id...] }
+let store = null;
 let found = { at: 0, profile: null, accounts: [] };
-const cache = {};                     // id -> { stamp, messages, unread, total, error }
+const cache = {};
 
 function fail(msg, code) { return Object.assign(new Error(msg), { code: code || 'UNAVAILABLE' }); }
 
@@ -34,7 +24,6 @@ function load() {
   if (store) return store;
   store = secrets.loadJson(FILE, log) || {};
   if (store.accounts) {
-    // account IMAP della versione vecchia (con password): non servono più, si tolgono dal disco
     delete store.accounts;
     save();
     log.info('mail', 'account IMAP vecchi rimossi da data/mail.json: ora la posta si legge da Thunderbird');
@@ -44,7 +33,6 @@ function load() {
 }
 function save() { secrets.writeJson(FILE, store); }
 
-// Profilo e account di Thunderbird (riletti ogni tanto: si possono aggiungere account).
 function discover(force) {
   if (!force && found.at && Date.now() - found.at < PROFILE_TTL) return found;
   const profile = tb.findProfile();
@@ -66,7 +54,6 @@ function stampOf(file) {
   try { const s = fs.statSync(file); return s.size + ':' + s.mtimeMs; } catch (e) { return ''; }
 }
 
-// Lettura in un thread a parte (thunderbird-worker.js): la dock non si blocca.
 function parseInWorker(job) {
   return new Promise(function (resolve, reject) {
     const w = new Worker(path.join(__dirname, 'thunderbird-worker.js'), { workerData: job });
@@ -76,8 +63,7 @@ function parseInWorker(job) {
   });
 }
 
-// Elenco completo della posta in arrivo, rifatto solo se i file di Thunderbird cambiano.
-const pending = {};   // id -> lettura in corso
+const pending = {};
 function readInbox(a) {
   const inbox = tb.inboxPath(a);
   const stamp = stampOf(inbox + '.msf') + '|' + stampOf(inbox);
@@ -86,7 +72,7 @@ function readInbox(a) {
   if (pending[a.key] && pending[a.key].stamp === stamp) return pending[a.key].promise;
   const promise = parseInWorker({ inbox: inbox, maildir: a.maildir }).then(function (r) {
     if (r.error) {
-      if (c) return c;   // Thunderbird sta scrivendo il file: si tiene l'elenco di prima
+      if (c) return c;
       if (r.error === 'missing') throw fail('Posta in arrivo di ' + a.email + ' non ancora scaricata: apri Thunderbird e aspetta che finisca di sincronizzare', 'UNAVAILABLE');
       throw fail('File di Thunderbird illeggibile (' + r.error + ')', 'UNAVAILABLE');
     }
@@ -104,17 +90,14 @@ function readInbox(a) {
   pending[a.key] = { stamp: stamp, promise: promise };
   return promise.then(function (d) { delete errors[a.key]; return d; });
 }
-const errors = {};    // id -> ultimo errore di lettura
+const errors = {};
 
-// Rilegge Thunderbird e la posta in arrivo di tutti gli account: all'avvio della dock
-// e dal pulsante "Controlla di nuovo" del pannello.
 async function check() {
   const f = discover(true);
   await Promise.all(f.accounts.map(function (a) { return readInbox(a).catch(function () { return null; }); }));
   return f;
 }
 
-// Riga per il log all'avvio
 async function startupCheck() {
   const f = await check();
   if (!f.profile) { log.info('mail', 'Thunderbird non trovato: la pagina EMAIL resta vuota (vedi pannello > Email)'); return; }
@@ -130,7 +113,6 @@ function visible() {
   return discover().accounts.filter(function (a) { return hidden.indexOf(a.key) < 0; });
 }
 
-// Nome del servizio dal server (imap.gmail.com -> Gmail), se l'account non ha un nome suo.
 const SERVICES = [[/gmail|googlemail/, 'Gmail'], [/outlook|office365|hotmail|live./, 'Outlook'], [/icloud|me.com|mac.com/, 'iCloud'],
   [/yahoo/, 'Yahoo'], [/libero/, 'Libero'], [/virgilio/, 'Virgilio'], [/aruba/, 'Aruba'], [/tiscali/, 'Tiscali']];
 function accountLabel(a) {
@@ -145,8 +127,6 @@ function publicAccount(a) {
   const err = errors[a.key] || '';
   return { id: a.key, label: accountLabel(a), provider: 'thunderbird', email: a.email, unread: c ? c.unread : null, status: c ? 'ready' : err ? 'error' : pending[a.key] ? 'loading' : 'idle', error: c ? '' : err };
 }
-
-// ------------------------------------------------------------ API per il tablet
 
 function state() {
   return { accounts: visible().map(publicAccount) };
@@ -210,7 +190,6 @@ async function message(id, uid) {
   };
 }
 
-// "APRI SUL PC": apre Thunderbird.
 async function openWebmail() {
   const exe = tb.executable();
   if (exe) await platform.launch({ path: exe });
@@ -218,8 +197,6 @@ async function openWebmail() {
   else throw fail('Thunderbird non trovato sul PC', 'UNSUPPORTED');
   return { message: 'Thunderbird aperto sul PC' };
 }
-
-// ------------------------------------------------------------ pannello di controllo
 
 function panelInfo() {
   const f = discover(true);
@@ -231,14 +208,12 @@ function panelInfo() {
     profile: !!(f.profile && f.profile.dir),
     exe: !!tb.executable(),
     accounts: f.accounts.map(function (a) {
-      // la lettura parte in sottofondo: il pannello si aggiorna da solo ogni 5 secondi
       readInbox(a).catch(function () {});
       return Object.assign(publicAccount(a), { host: a.host, shown: hidden.indexOf(a.key) < 0, offline: a.offline });
     })
   };
 }
 
-// Mostra o nasconde un account di Thunderbird sul tablet.
 function setShown(id, shown) {
   account(id);
   const s = load();

@@ -1,24 +1,3 @@
-// Plugin: cartelle in app/plugins/<nome>/ caricate da sole all'avvio.
-//
-//   plugins/<nome>/
-//     index.js          (facoltativo) codice del server: azioni e rotte
-//     pages/*.json      pagine (come config/defaults/pages: le attivi dal pannello)
-//     apps/*.json       app      commands/*.json   comandi consentiti
-//     public/*.js       script del tablet (ES5): Widgets.register(...), Icons.register(...)
-//     public/*.css      stile dei widget (niente flexbox: browser di Android 4)
-//     home.json         come compaiono i widget nel catalogo della HOME (nome, icona, misure)
-//
-// index.js esporta:
-//   {
-//     description: 'Cosa fa',
-//     actions: { saluta: async function (azione, ctx) { return { message: 'Ciao' }; } },  // tipo "<nome>.saluta"
-//     routes: function (router, ctx) { router.get('/dati', ...) }                           // /api/plugins/<nome>/dati
-//   }
-// ctx = { name, dir, dataDir, ensureDataDir(), config, log, platform, paths, execute(azione), route(fn) }
-//
-// Cartelle che iniziano con "_" o "." sono ignorate (es. plugins/_esempio, o per spegnerne uno).
-// Il codice dei plugin si carica una volta sola: dopo una modifica a index.js riavvia la dock.
-// Pagine, app, comandi e script del tablet invece si ricaricano da soli.
 const fs = require('fs');
 const path = require('path');
 const paths = require('./paths');
@@ -28,7 +7,6 @@ const NAME_RE = /^[a-z0-9][a-z0-9_-]*$/;
 
 function baseDir() { return process.env.DOCK_PLUGINS_DIR || path.join(paths.ROOT, 'plugins'); }
 
-// Nomi delle cartelle dei plugin attivi (lettura leggera: non carica il codice).
 function names() {
   let list = [];
   try {
@@ -42,11 +20,9 @@ function names() {
 
 function dirOf(name) { return path.join(baseDir(), name); }
 
-// Cartelle dei plugin che hanno pagine/app/comandi: config.js le usa come quelle predefinite.
 function configDirs() { return names().map(dirOf); }
 
-// ------------------------------------------------------------ codice del server
-let loaded = null;   // { nome: { name, dir, module, error, actions: [tipi] } }
+let loaded = null;
 
 function context(name) {
   const dataDir = path.join(paths.DATA_DIR, 'plugins', name);
@@ -62,12 +38,8 @@ function context(name) {
       error: function (m) { log.error('plugin:' + name, m); }
     },
     paths: paths,
-    // esegue un'altra azione della dock (launch, hotkey, media...)
     execute: function (a) { return require('./actions').execute(a); },
-    // cartella dati personale del plugin (creata al primo uso)
     ensureDataDir: function () { fs.mkdirSync(dataDir, { recursive: true }); return dataDir; },
-    // rotta che restituisce un valore (anche async): diventa { ok: true, data } come le altre API,
-    // e un errore diventa { ok: false, error } che il tablet mostra (D.api.get/post)
     route: function (fn) {
       return function (req, res) {
         Promise.resolve().then(function () { return fn(req, res); }).then(function (data) {
@@ -102,7 +74,6 @@ function load() {
   return loaded;
 }
 
-// Aggiunge le azioni dei plugin al motore delle azioni, come "<plugin>.<azione>".
 function registerActions(HANDLERS) {
   const all = load();
   Object.keys(all).forEach(function (name) {
@@ -125,7 +96,6 @@ function registerActions(HANDLERS) {
   });
 }
 
-// Rotte dei plugin sotto /api/plugins/<nome>/ (dopo il controllo del codice d'accesso).
 function mountRoutes(app, express) {
   const all = load();
   Object.keys(all).forEach(function (name) {
@@ -142,8 +112,6 @@ function mountRoutes(app, express) {
   });
 }
 
-// ------------------------------------------------------------ script del tablet
-// File .js (o .css) in plugins/<nome>/public, con la data di modifica (per ?v= nella pagina).
 function scripts(ext) {
   const re = ext === 'css' ? /\.css$/i : /\.js$/i;
   const out = [];
@@ -161,7 +129,6 @@ function scripts(ext) {
 }
 function styles() { return scripts('css'); }
 
-// Nomi registrati negli script del tablet: Widgets.register('meteo', ...) e Icons.register('sole', ...).
 function registered(kind) {
   const re = new RegExp(kind + "\\.register\\(\\s*['\"]([A-Za-z0-9_.-]+)['\"]", 'g');
   const out = {};
@@ -175,10 +142,6 @@ function registered(kind) {
 }
 function widgets() { return registered('Widgets'); }
 
-// Widget del plugin per il catalogo della HOME: plugins/<nome>/home.json (JSON con commenti,
-// riletto da solo). Ogni voce: { "label", "icon", "description", "w", "h", "minW", "minH",
-// "widget" (se diverso dalla chiave), "props" (campi in più per la tile, es. { "città": "Roma" }) }.
-// I widget registrati senza voce in home.json entrano lo stesso, con nome e misure di partenza.
 function homeWidgets() {
   const out = [];
   const reg = widgets();
@@ -221,7 +184,6 @@ function homeWidgets() {
 }
 function icons() { return registered('Icons'); }
 
-// Per il pannello e il controllo della configurazione.
 function info() {
   const all = load();
   const w = widgets();
@@ -245,11 +207,10 @@ function info() {
   });
 }
 
-// Solo per i test: dimentica i plugin caricati.
 function reset() {
   if (loaded) Object.keys(loaded).forEach(function (n) {
     const main = path.join(loaded[n].dir, 'index.js');
-    try { delete require.cache[require.resolve(main)]; } catch (e) { /* non c'era */ }
+    try { delete require.cache[require.resolve(main)]; } catch (e) { }
   });
   loaded = null;
 }

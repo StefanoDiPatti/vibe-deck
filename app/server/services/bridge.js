@@ -1,11 +1,8 @@
-// Ponte con l'estensione del browser (cartella extension/): Apple Music web,
-// YouTube e YouTube Music mandano qui il loro stato e ricevono i comandi.
-// Funziona uguale su Windows e Linux (Chrome, Brave, Edge).
 const log = require('../log');
 
-const PLAYING_TTL = 12000;   // una scheda che suona aggiorna ogni secondo
-const PAUSED_TTL = 150000;   // in pausa e in background il browser rallenta i timer
-const tabs = {};             // key -> { key, state, at, commands: [] }
+const PLAYING_TTL = 12000;
+const PAUSED_TTL = 150000;
+const tabs = {};
 let lastSeen = 0;
 
 function clean() {
@@ -20,7 +17,6 @@ function clean() {
 function num(v, def) { const n = Number(v); return isFinite(n) ? n : def; }
 function str(v, max) { return typeof v === 'string' ? v.slice(0, max || 300) : ''; }
 
-// Normalizza quello che arriva dal browser: non ci si fida dei tipi.
 function sanitize(s) {
   s = s || {};
   const queue = Array.isArray(s.queue) ? s.queue.slice(0, 120).map(function (q, i) {
@@ -81,13 +77,11 @@ function send(key, command) {
   log.debug('bridge', 'comando ' + command.type + ' -> ' + key);
 }
 
-// C'è una scheda aperta di quel sito (anche senza musica)?
 function hasSite(site) {
   clean();
   return Object.keys(tabs).some(function (k) { return tabs[k].state && tabs[k].state.site === site; });
 }
 
-// Comando a tutte le schede di un sito (es. chiudere Apple Music)
 function sendSite(site, command) {
   clean();
   Object.keys(tabs).forEach(function (k) {

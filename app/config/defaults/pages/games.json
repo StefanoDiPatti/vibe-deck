@@ -1,12 +1,9 @@
-// Pagina GAMES (id "games"): una pagina per file, vedi la guida per sviluppatori nel README.
-// Per cambiarla copiala in config/pages/games.json e modifica la copia: quella vince su questa.
 {
   "id": "games",
   "title": "GAMES",
   "icon": "gamepad",
   "description": "I tuoi giochi, aggiunti dal pannello di controllo (pallino verde se aperti)",
   "tab": false,
-  // i pulsanti sono i giochi scelti dal pannello (data/games.json)
   "source": "games",
   "tiles": []
 }

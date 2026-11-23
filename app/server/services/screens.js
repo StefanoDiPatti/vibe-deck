@@ -1,10 +1,3 @@
-// Schermi: monitor del PC, finestre aperte e disposizione nelle zone
-// (come le "snap layouts" di Windows quando trascini una finestra in alto).
-//
-// - "target" = monitor su cui aprire le app avviate dal tablet (data/screens.json).
-//   null = decide Windows.
-// - Le zone sono frazioni dell'area utile del monitor (senza barra delle applicazioni).
-//   Sui monitor verticali le stesse disposizioni vengono ruotate (colonne -> righe).
 const fs = require('fs');
 const path = require('path');
 const paths = require('../paths');
@@ -14,7 +7,6 @@ const log = require('../log');
 const FILE = path.join(paths.DATA_DIR, 'screens.json');
 const T = 1 / 3;
 
-// [x, y, w, h] in frazioni dell'area utile
 const LAYOUTS = [
   { id: 'full', name: 'Intero', zones: [[0, 0, 1, 1]] },
   { id: 'half', name: 'Metà', zones: [[0, 0, 0.5, 1], [0.5, 0, 0.5, 1]] },
@@ -46,7 +38,6 @@ function save(patch) {
   fs.renameSync(FILE + '.tmp', FILE);
 }
 
-// Monitor da sinistra a destra (poi dall'alto): il numero è la posizione, come li vedi sulla scrivania.
 function monitors(force) {
   if (!supported()) return Promise.reject(unsupported());
   if (!force && monCache.list && Date.now() - monCache.at < 15000) return Promise.resolve(monCache.list);
@@ -64,7 +55,6 @@ function monitors(force) {
 }
 
 function zonesFor(layout, mon) {
-  // Monitor verticale: colonne -> righe (scambia x/y e w/h)
   return layout.zones.map(function (z) { return mon && mon.portrait ? [z[1], z[0], z[3], z[2]] : z.slice(); });
 }
 
@@ -98,7 +88,6 @@ async function setTarget(id) {
   return info();
 }
 
-// Finestre aperte, dalla più in alto. Escluse quelle della dock stessa.
 async function windows() {
   if (!supported()) throw unsupported();
   const list = await platform.windowList();
@@ -112,8 +101,6 @@ async function findWindow(id) {
   return w;
 }
 
-// Mette una finestra in una zona di una disposizione su un monitor.
-// focus = la porta anche in primo piano (tocco sulla finestra); false col trascinamento.
 async function place(windowId, monitorId, layoutId, zone, focus) {
   const w = await findWindow(windowId);
   const list = await monitors();
@@ -124,7 +111,6 @@ async function place(windowId, monitorId, layoutId, zone, focus) {
   const zones = zonesFor(layout, mon);
   const z = zones[parseInt(zone, 10)];
   if (!z) throw Object.assign(new Error('Zona non valida'), { code: 'BAD_REQUEST' });
-  // "Intero" = massimizzata su quel monitor (come il doppio clic sulla barra del titolo)
   await platform.placeWindow(w.id, zoneRect(mon, z), layout.id === 'full', focus !== false);
   return { placed: w.title };
 }
@@ -137,7 +123,6 @@ async function act(windowId, action) {
   return { done: true };
 }
 
-// Sposta una finestra su un altro monitor mantenendo dimensioni e posizione relative.
 async function moveToMonitor(w, mon) {
   const list = await monitors();
   const from = list.filter(function (m) { return m.id === w.monitor; })[0];
@@ -153,7 +138,6 @@ async function moveToMonitor(w, mon) {
   return true;
 }
 
-// Trascinamento dal tablet: la finestra va su quel monitor, stessa misura e posizione relativa.
 async function moveWindowToMonitor(windowId, monitorId) {
   if (!supported()) throw unsupported();
   const w = await findWindow(windowId);
@@ -163,9 +147,6 @@ async function moveWindowToMonitor(windowId, monitorId) {
   return { moved: moved, title: w.title, monitor: mon.n };
 }
 
-// Prima di avviare un'app dal tablet: ricorda le finestre già aperte, poi
-// sposta sul monitor scelto la prima finestra nuova di quell'app.
-// processes = nomi dei processi attesi (vuoto = qualsiasi finestra nuova in primo piano).
 function followLaunch(processes) {
   const t = target();
   if (!t || !supported()) return null;
@@ -180,7 +161,7 @@ function followLaunch(processes) {
       if (!known) return;
       const mon = (await monitors()).filter(function (m) { return m.id === t; })[0];
       if (!mon) return;
-      const until = Date.now() + 45000;   // i giochi e i launcher sono lenti
+      const until = Date.now() + 45000;
       let found = null;
       while (!found && Date.now() < until) {
         await new Promise(function (r) { setTimeout(r, 700); });
@@ -190,7 +171,6 @@ function followLaunch(processes) {
           (Date.now() > until - 40000 ? fresh.filter(function (w) { return w.active; })[0] : null);
       }
       if (!found) return;
-      // la finestra a volte si ridisegna appena aperta: un attimo di pazienza
       await new Promise(function (r) { setTimeout(r, 400); });
       const now = (await windows().catch(function () { return []; })).filter(function (w) { return w.id === found.id; })[0];
       if (now && await moveToMonitor(now, mon)) log.info('screens', '"' + now.title + '" spostata sul monitor ' + mon.n);

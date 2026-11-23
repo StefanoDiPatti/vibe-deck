@@ -1,10 +1,6 @@
-/* Traduzioni inglesi del tablet (italiano -> inglese). ES5.
- * Chiavi senza badare a maiuscole: "SALVA" e "Salva" usano la stessa voce.
- * Aggiungi qui i testi nuovi; un plugin usa I18n.add({ ... }) nei suoi script. */
 (function () {
   'use strict';
 
-  // ---------------------------------------------------------------- pagine e pulsanti
   I18n.add({
     'Musica': 'Music', 'App': 'Apps', 'Giochi': 'Games', 'Schermi': 'Screens', 'Desktop virtuali': 'Virtual desktops',
     'Email': 'Email', 'Note': 'Notes', 'Diagnostica': 'Diagnostics', 'Rete': 'Network',
@@ -29,7 +25,6 @@
     'KDE: quanti desktop e come': 'KDE: how many desktops and how', 'Desktop': 'Desktop', 'Nuovo': 'New'
   });
 
-  // ---------------------------------------------------------------- descrizioni delle pagine
   I18n.add({
     'Musica, stato del PC e TODO delle Memo': 'Music, PC status and TODO from Sticky Notes',
     'Musica, stato del PC e TODO': 'Music, PC status and TODO',
@@ -55,7 +50,6 @@
     'precedente': 'previous', 'successivo': 'next', 'qui': 'here', '+ qui': '+ here', 'app qui': 'apps here', 'tutte le schede': 'all tabs', 'Live Coding · Ctrl+Alt+F11': 'Live Coding · Ctrl+Alt+F11'
   });
 
-  // ---------------------------------------------------------------- tablet: avvio, collegamento, avvisi
   I18n.add({
     'Connessione al PC…': 'Connecting to the PC…', 'Il PC non risponde': 'The PC is not responding',
     'Il PC non risponde. Nuovo tentativo…': 'The PC is not responding. Retrying…',
@@ -74,7 +68,6 @@
     'Niente schermata con l\'ora per il risparmio energetico.': 'No power-saving clock screen.'
   });
 
-  // ---------------------------------------------------------------- musica
   I18n.add({
     'Niente in riproduzione': 'Nothing playing', 'Niente in riproduzione.': 'Nothing playing.', 'Titolo sconosciuto': 'Unknown title',
     'Nessun player musicale attivo': 'No music player running', 'Now Playing non disponibile': 'Now Playing not available',
@@ -85,7 +78,6 @@
     'Questa app': 'This app', 'questa app': 'this app'
   });
 
-  // ---------------------------------------------------------------- TODO, Claude, chat
   I18n.add({
     'Nuova attività…': 'New task…', 'Nessuna attività': 'No tasks', 'Nessuna completata': 'None completed', 'completate rimosse': 'completed removed',
     'da fare': 'to do', 'Attività non trovata': 'Task not found', 'TODO sincronizzati con GitHub': 'TODO synced with GitHub', 'Memo': 'Sticky Notes',
@@ -109,7 +101,6 @@
     'Testo mancante': 'Missing text', 'Testo vuoto': 'Empty text'
   });
 
-  // ---------------------------------------------------------------- Discord, Viber, email, GitHub, giochi
   I18n.add({
     'Collega Discord dal pannello sul PC': 'Connect Discord from the panel on the PC', 'Discord non collegato': 'Discord not connected',
     'Discord da collegare': 'Discord to connect', 'Discord è chiuso': 'Discord is closed', 'Collegamento a Discord…': 'Connecting to Discord…',
@@ -130,7 +121,6 @@
     'Aggiungi i giochi': 'Add your games', 'dal pannello di controllo sul PC': 'from the control panel on the PC'
   });
 
-  // ---------------------------------------------------------------- schermi e desktop virtuali
   I18n.add({
     'Carico i monitor…': 'Loading monitors…', 'Monitor': 'Monitor', 'sei qui': 'you are here', 'un desktop nuovo': 'a new desktop',
     'Finestre aperte': 'Open windows', 'tocca per passarci · trascinaci una finestra': 'tap to switch · drag a window here',
@@ -181,7 +171,6 @@
     'Sposta la finestra sull\'altro monitor.': 'Moves the window to the other monitor.'
   });
 
-  // ---------------------------------------------------------------- guida ai comandi git
   I18n.add({
     'In rosso i comandi che buttano via lavoro: usali solo se sei sicuro.': 'In red the commands that throw work away: use them only if you are sure.',
     'Nella cartella del progetto (es. vibe-deck), in PowerShell o nel terminale di VS Code.': 'In the project folder (e.g. vibe-deck), in PowerShell or in the VS Code terminal.',
@@ -222,7 +211,6 @@
     'git config --global user.name "Nome"': 'git config --global user.name "Name"'
   });
 
-  // ---------------------------------------------------------------- messaggi del PC (errori comuni)
   I18n.add({
     'Aperto sul PC': 'Opened on the PC', 'Scritto sul PC': 'Typed on the PC', 'Inviato sul PC': 'Sent to the PC', 'Macro completata': 'Macro completed',
     'Azione non valida': 'Invalid action', 'Azione mancante': 'Missing action', 'Comando non valido': 'Invalid command', 'Canale non valido': 'Invalid channel',
@@ -234,7 +222,6 @@
     'Gestione schermi disponibile su Windows e su Linux con KDE Plasma': 'Screen management is available on Windows and on Linux with KDE Plasma'
   });
 
-  // ---------------------------------------------------------------- pagine per sviluppatori: BROWSER DEV, ANDROID, deploy
   I18n.add({
     'Scorciatoie del browser per sviluppare: ricarica pulita, DevTools, console, dispositivo, localhost': 'Browser shortcuts for web development: hard reload, DevTools, console, device mode, localhost',
     'adb e logcat: dispositivi, errori e crash, screenshot, schermo con scrcpy, React Native': 'adb and logcat: devices, errors and crashes, screenshots, phone screen with scrcpy, React Native',
@@ -249,39 +236,30 @@
     'Logcat svuotato': 'Logcat cleared', 'Server adb fermato': 'adb server stopped', 'Server adb avviato': 'adb server started'
   });
 
-  // ---------------------------------------------------------------- trovati dal controllo a tappeto (2026-11-20)
   I18n.add({
-    // SCHERMI e desktop virtuali
     'Apri le app su': 'Open apps on', 'Auto': 'Auto', 'ora tocca una finestra a destra': 'now tap a window on the right',
     'Nessuna finestra aperta': 'No open windows', 'Finestre e monitor (utili insieme)': 'Windows and monitors (useful together)',
     'Spostare le finestre tra i desktop': 'Moving windows between desktops',
     'Super + PagSu / PagGiù': 'Super + PgUp / PgDn', 'Super + Shift + PagSu / PagGiù': 'Super + Shift + PgUp / PgDn',
     'Intero': 'Full', 'Metà': 'Half', 'Metà + 2': 'Half + 2', 'Terzi': 'Thirds', 'Quarti': 'Quarters',
-    // AUDIO
     'Uscita': 'Output', 'Ingresso': 'Input', 'Suoni di sistema': 'System sounds', 'Nessun dispositivo': 'No devices',
     'Nessuna app sta usando l\'audio': 'No app is playing audio',
-    // GITHUB
     'Il tuo flusso: una modifica dall\'inizio alla fine': 'Your workflow: one change from start to finish',
-    // CLAUDE
     'Sul PC': 'On the PC', 'Carico le sessioni…': 'Loading sessions…', 'App desktop di Claude non trovata su questo PC.': 'Claude desktop app not found on this PC.',
     'Scrivi o detta un messaggio.': 'Write or dictate a message.', 'Non inviato:': 'Not sent:',
     'Scrivi il primo messaggio: la sessione si apre nell\'app sul PC, nella stessa cartella delle altre di questa sezione.': 'Write the first message: the session opens in the app on the PC, in the same folder as the others in this section.',
     'Qui ci sono le chat fatte dal tablet. Quelle di claude.ai e dell\'app restano sul tuo account e non sono leggibili dal PC.': 'Here are the chats made from the tablet. Those from claude.ai and the app stay in your account and cannot be read from the PC.',
-    // DISCORD
     'Nessun server': 'No servers', 'Nessun canale vocale': 'No voice channels', 'Tocca un canale vocale per entrare.': 'Tap a voice channel to join.',
     'Volume per te': 'Volume for you', 'Vale solo per te, gli altri non lo vedono.': 'Only for you, the others do not see it.', 'muto per te': 'muted for you',
     '· collegamento…': '· connecting…',
-    // EMAIL
     'La posta in arrivo è vuota.': 'The inbox is empty.', 'Nessun account email.': 'No email accounts.',
     'La posta arriva da Thunderbird sul PC:': 'Mail comes from Thunderbird on the PC:', 'pannello di controllo, sezione Email.': 'control panel, Email section.',
     'Messaggio lungo: il resto è sul PC (APRI SUL PC).': 'Long message: the rest is on the PC (OPEN ON PC).', 'Thunderbird aperto sul PC': 'Thunderbird opened on the PC',
-    // tablet
     'pronto': 'done', 'tocca per riattivare': 'tap to wake up', '(nessun output)': '(no output)', 'il PC': 'the PC', 'ora': 'now', 'ieri': 'yesterday',
     'Widget già esistente:': 'Widget already exists:', 'Mute inviato a Discord (scorciatoia)': 'Mute sent to Discord (shortcut)',
     'Silenzia inviato a Discord (scorciatoia)': 'Deafen sent to Discord (shortcut)'
   });
 
-  // ---------------------------------------------------------------- testi con numeri o nomi
   var DAYS = { dom: 'Sun', lun: 'Mon', mar: 'Tue', mer: 'Wed', gio: 'Thu', ven: 'Fri', sab: 'Sat' };
   I18n.rules([
     [/^(\d+) finestre$/, '$1 windows'], [/^1 finestra$/, '1 window'],
@@ -300,7 +278,6 @@
     [/^Macro interrotta al passo (\d+): (.+)$/, 'Macro stopped at step $1: $2'],
     [/^App "(.+)" non trovata(.*)$/, 'App "$1" not found$2'], [/^Comando "(.+)" non consentito(.*)$/, 'Command "$1" not allowed$2'],
     [/^Sincronizzazione: (.+)$/, 'Sync: $1'], [/^Desktop virtuali · (.+)$/i, 'VIRTUAL DESKTOPS · $1'],
-    // date relative (D.ago) e messaggi delle azioni sul PC
     [/^(\d+) min fa$/, '$1 min ago'], [/^(\d+) h fa$/, '$1 h ago'], [/^(\d+) giorni fa$/, '$1 days ago'],
     [/^tocca una zona del monitor (\d+)$/, 'tap a zone of monitor $1'],
     [/^(.+): fatto$/, function (m, a) { return I18n.t(a) + ': done'; }],

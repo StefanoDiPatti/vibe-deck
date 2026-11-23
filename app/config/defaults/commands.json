@@ -1,9 +1,3 @@
-// Comandi consentiti per i pulsanti { "type": "command", "id": "<id>" }.
-// Il tablet può solo scegliere un id di questa lista: nessuna shell libera.
-//  cmd / args     : programma e argomenti (varianti "windows" / "linux")
-//  showOutput     : mostra l'output sul tablet in una finestra
-//  timeoutMs      : tempo massimo (default 20s)
-//  "linux" può essere una lista di alternative: vale la prima installata
 {
   "commands": {
     "lock_pc": {
@@ -13,7 +7,6 @@
     },
     "monitor_off": {
       "label": "Schermo spento",
-      // {root} = cartella della dock
       "windows": { "cmd": "powershell.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", "{root}\\scripts\\windows\\monitor-off.ps1"] },
       "linux": [
         { "cmd": "kscreen-doctor", "args": ["--dpms", "off"] },
@@ -22,7 +15,6 @@
     },
     "show_desktop": {
       "label": "Mostra desktop",
-      // KDE: la scorciatoia "Show Desktop" di KWin; altrimenti wmctrl (X11)
       "linux": [
         { "cmd": "qdbus6", "args": ["org.kde.kglobalaccel", "/component/kwin", "org.kde.kglobalaccel.Component.invokeShortcut", "Show Desktop"] },
         { "cmd": "qdbus", "args": ["org.kde.kglobalaccel", "/component/kwin", "org.kde.kglobalaccel.Component.invokeShortcut", "Show Desktop"] },

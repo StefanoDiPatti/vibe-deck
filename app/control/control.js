@@ -1,7 +1,3 @@
-// Pannello di controllo di Vibe Deck (solo su questo PC).
-// Pagine del tablet: ordine, visibilità e pagina iniziale -> config/layout.json.
-// Pulsanti delle pagine: quali mostrare e in che ordine -> config/layout.json (tiles).
-// Discord: credenziali dell'applicazione personale e autorizzazione.
 (function () {
   'use strict';
 
@@ -9,18 +5,18 @@
   const icon = (name) => (window.Icons && Icons.html(name)) || '';
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  let info = null;          // ultimo stato dal server
-  let tabs = [];            // pagine nella barra, in ordine
+  let info = null;
+  let tabs = [];
   let home = '';
-  let saved = '';           // per capire se ci sono modifiche
-  let drag = null;          // { id }
-  let buttons = {};         // pagina -> { show: [id in ordine], hide: [id] }
-  let touched = {};         // pagine dei pulsanti modificate (solo queste vanno salvate)
-  let btPage = 'apps';      // pagina dei pulsanti mostrata
-  let tdrag = null;         // trascinamento di un pulsante
-  let pairSel = 0;          // rete scelta per il QR
-  let mlKey = '';           // per ridisegnare la sezione email solo se cambia
-  let pairShown = '';       // link del QR mostrato
+  let saved = '';
+  let drag = null;
+  let buttons = {};
+  let touched = {};
+  let btPage = 'apps';
+  let tdrag = null;
+  let pairSel = 0;
+  let mlKey = '';
+  let pairShown = '';
 
   async function api(method, url, body) {
     const res = await fetch(url, {
@@ -46,8 +42,6 @@
   const snapshot = () => JSON.stringify({ tabs: tabs, home: home, buttons: buttons });
   const dirty = () => snapshot() !== saved;
   const page = (id) => info.pages.find((p) => p.id === id);
-
-  // ------------------------------------------------------------ pagine
 
   function render() {
     renderPreview();
@@ -113,7 +107,6 @@
     render();
   }
 
-  // Clic sui pulsanti delle righe
   document.addEventListener('click', (e) => {
     const b = e.target.closest('.ibtn[data-act]');
     if (!b || b.disabled) return;
@@ -128,8 +121,6 @@
     }
   });
 
-  // ---- trascinamento (eventi del puntatore: mouse, penna e tocco)
-  // La riga segue il puntatore; un segnaposto mostra dove cadrà.
   function clearDrop() {
     document.querySelectorAll('.list.drop').forEach((l) => l.classList.remove('drop'));
     const g = document.querySelector('.ghost-gap');
@@ -204,7 +195,6 @@
     clearDrop();
     if (e && e.type === 'pointercancel') { render(); return; }
     if (d.target === 'on') {
-      // posizione tra le pagine in barra, senza quella trascinata
       if (tabs.indexOf(d.id) < 0 && tabs.length >= 10) { toast('Al massimo 10 pagine nella barra', 'err'); render(); return; }
       tabs = tabs.filter((t) => t !== d.id);
       tabs.splice(Math.max(0, Math.min(d.index, tabs.length)), 0, d.id);
@@ -216,12 +206,8 @@
   document.addEventListener('pointercancel', endDrag);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && drag && drag.started) endDrag({ type: 'pointercancel', pointerId: drag.pid }); });
 
-  // ------------------------------------------------------------ pulsanti delle pagine
-
   const bpage = (id) => (info.buttons || []).find((b) => b.id === id);
 
-  // Stessa regola del server (config.js -> autoGrid): niente buchi inutili,
-  // celle di forma comoda sul tablet orizzontale.
   function autoGrid(tiles) {
     let cells = 0, minCols = 1, minRows = 1;
     tiles.forEach((t) => { cells += (t.w || 1) * (t.h || 1); minCols = Math.max(minCols, t.w || 1); minRows = Math.max(minRows, t.h || 1); });
@@ -236,8 +222,6 @@
     return best || { columns: 8, rows: 6 };
   }
 
-  // Stessa regola del tablet (app.js -> layout, "buttonGrid"): pulsanti nella parte sinistra,
-  // celle di forma comoda e pochi buchi. Tablet: area tile circa 1280 x 698.
   function sideGrid(n, widgetWidth) {
     const W = 1280 * (1 - widgetWidth), H = 698, gap = 8;
     let best = null;
@@ -266,7 +250,6 @@
     $('os-pill').textContent = os ? 'PULSANTI PER ' + String(os).toUpperCase() : '';
     if (!list.length) return;
     if (!bpage(btPage)) btPage = list[0].id;
-    // APP sempre per prima (è quella che si cambia più spesso), poi le altre nell'ordine delle pagine
     const chips = list.filter((b) => b.id === 'apps').concat(list.filter((b) => b.id !== 'apps'));
     $('bt-pages').innerHTML = chips.map((b) => '<button class="chip' + (b.id === btPage ? ' on' : '') + '" type="button" role="tab" aria-selected="' + (b.id === btPage) + '" data-bpage="' + esc(b.id) + '">' + icon(b.icon) + esc(b.title) + (touched[b.id] ? ' •' : '') + '</button>').join('');
     const b = bpage(btPage);
@@ -274,7 +257,6 @@
     const byId = {};
     b.all.forEach((t) => { byId[t.id] = t; });
     const shown = st.show.map((id) => byId[id]).filter(Boolean);
-    // pagina VIBER ("buttonGrid"): pulsanti a sinistra, riquadro a destra
     const fixed = b.fixed || [];
     const g = b.grid ? sideGrid(shown.length, b.widgetWidth || 0.5) : autoGrid(shown);
     const grid = $('bt-on');
@@ -282,7 +264,6 @@
     grid.style.gridTemplateRows = 'repeat(' + g.rows + ', minmax(0, 1fr))';
     let cells = 0;
     shown.forEach((t) => { cells += (t.w || 1) * (t.h || 1); });
-    // riquadro fisso (non si sposta), poi i pulsanti
     let html = b.grid ? fixed.map((f) => '<div class="bfixed" style="grid-column:' + (g.columns + 1) + ';grid-row:1 / span ' + g.rows + '">' + esc(f.label) + '<small>fisso · sul tablet i pannelli che non sono aperti in Viber escono dalla griglia da soli</small></div>').join('') : '';
     html += shown.map((t) => tileHtml(t, true)).join('');
     for (let i = cells; i < g.columns * g.rows; i++) html += '<div class="bcell" aria-hidden="true"></div>';
@@ -295,7 +276,6 @@
     $('bt-all').disabled = !hidden.length && st.show.join() === b.all.map((t) => t.id).join();
   }
 
-  // Sposta un pulsante in "show" o "hide" alla posizione index
   function moveTile(id, to, index) {
     const st = buttons[btPage];
     if (to === 'hide' && st.show.length === 1 && st.show[0] === id) { toast('Serve almeno un pulsante sulla pagina', 'err'); renderButtons(); return; }
@@ -320,7 +300,6 @@
     render();
   });
 
-  // ---- trascinamento dei pulsanti (griglia del tablet <-> nascosti)
   function tileListAt(x, y) {
     for (const id of ['bt-on', 'bt-off']) {
       const r = $(id).getBoundingClientRect();
@@ -328,7 +307,6 @@
     }
     return null;
   }
-  // Posizione d'arrivo: il primo pulsante che sta "dopo" il puntatore (per righe)
   function tileSlot(box, x, y) {
     const items = Array.from(box.querySelectorAll('.btile:not(.dragging):not(.ghost)'));
     for (let i = 0; i < items.length; i++) {
@@ -398,7 +376,6 @@
   document.addEventListener('pointercancel', endTileDrag);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tdrag && tdrag.started) endTileDrag({ type: 'pointercancel', pointerId: tdrag.pid }); });
 
-  // ---- salvataggio
   $('save').addEventListener('click', async () => {
     const b = $('save');
     b.disabled = true;
@@ -422,7 +399,6 @@
   });
   window.addEventListener('beforeunload', (e) => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
 
-  // Prende lo stato del server (senza perdere modifiche non salvate, salvo force)
   let loaded = false;
   function adopt(force) {
     if (force || !loaded || !dirty()) {
@@ -449,25 +425,18 @@
     renderHome();
   }
 
-  // ------------------------------------------------------------ HOME
-  // Editor a griglia: ogni widget ha colonna, riga, larghezza e altezza (in celle).
-  // Trascina un widget per spostarlo, trascina bordi e angoli per cambiarne la misura:
-  // si muove a scatti di una cella, mai fuori dalla griglia, mai sopra un altro widget,
-  // mai sotto la sua misura minima. Si salva solo con "Salva HOME".
-  let hm = null;            // bozza: { columns, rows, tiles: [{ id, x, y, w, h }] }
+  let hm = null;
   let hmSaved = '';
   let hmKey = '';
-  let hmOp = null;          // trascinamento in corso
+  let hmOp = null;
   const hmSnap = () => JSON.stringify(hm);
   const hmCat = (id) => (info.homeEditor.catalog || []).find((c) => c.id === id) ||
     { id: id, widget: id, label: id, icon: 'apps', page: '', description: '', w: 2, h: 2, minW: 1, minH: 1 };
 
-  // occupata da un altro widget? (skip = indice del widget che si sta muovendo)
   function hmFree(r, skip) {
     if (r.x < 0 || r.y < 0 || r.x + r.w > hm.columns || r.y + r.h > hm.rows) return false;
     return hm.tiles.every((t, i) => i === skip || r.x >= t.x + t.w || t.x >= r.x + r.w || r.y >= t.y + t.h || t.y >= r.y + r.h);
   }
-  // prima posizione libera per un widget w x h (da sinistra a destra, dall'alto in basso)
   function hmSpot(w, h) {
     for (let y = 0; y + h <= hm.rows; y++) for (let x = 0; x + w <= hm.columns; x++) if (hmFree({ x: x, y: y, w: w, h: h }, -1)) return { x: x, y: y };
     return null;
@@ -480,8 +449,7 @@
       hm = { columns: ed.columns, rows: ed.rows, tiles: ed.tiles.map((t) => ({ id: t.id, x: t.x, y: t.y, w: t.w, h: t.h })) };
       hmSaved = hmSnap();
     }
-    if (hmOp) return;   // durante un trascinamento disegna solo il trascinamento
-    // ridisegna solo se cambia qualcosa (il pannello si aggiorna ogni 5 s)
+    if (hmOp) return;
     const key = JSON.stringify(ed) + '|' + hmSnap() + '|' + hmSaved;
     if (key === hmKey) return;
     hmKey = key;
@@ -493,7 +461,6 @@
     $('hm-cols').innerHTML = opts(L.minCols, L.maxCols, hm.columns);
     $('hm-rows').innerHTML = opts(L.minRows, L.maxRows, hm.rows);
 
-    // griglia: celle tratteggiate (quelle libere si vedono) e widget sopra
     const board = $('hm-board');
     board.style.setProperty('--cols', hm.columns);
     board.style.setProperty('--rows', hm.rows);
@@ -512,7 +479,6 @@
     $('hm-free').textContent = hm.tiles.length + (hm.tiles.length === 1 ? ' widget' : ' widget') + ' · ' +
       (free ? free + (free === 1 ? ' cella libera' : ' celle libere') + ' (sul tablet restano vuote)' : 'griglia piena');
 
-    // catalogo per pagina: quelli già nella HOME sono segnati
     const inHome = hm.tiles.map((t) => t.id);
     const groups = {};
     ed.catalog.forEach((c) => { (groups[c.page || 'ALTRO'] = groups[c.page || 'ALTRO'] || []).push(c); });
@@ -530,13 +496,11 @@
     $('hm-reset').hidden = !ed.custom;
   }
 
-  // ---- aggiungi, togli, griglia
   document.addEventListener('click', (e) => {
     const add = e.target.closest('[data-hmadd]');
     if (add) {
       const c = hmCat(add.getAttribute('data-hmadd'));
       if (hm.tiles.length >= info.homeEditor.limits.maxTiles) return toast('Al massimo ' + info.homeEditor.limits.maxTiles + ' widget', 'err');
-      // misura proposta, se non c'è posto prova più piccolo (fino alla minima)
       let spot = null, w = Math.min(c.w, hm.columns), h = Math.min(c.h, hm.rows);
       while (!(spot = hmSpot(w, h)) && (w > c.minW || h > c.minH)) { if (w >= h && w > c.minW) w--; else if (h > c.minH) h--; else w--; }
       if (!spot) return toast('Non c\'è spazio per ' + c.label + ': rimpicciolisci o togli un widget (serve almeno ' + c.minW + ' × ' + c.minH + ')', 'err');
@@ -550,7 +514,6 @@
   document.addEventListener('change', (e) => {
     if (e.target.id !== 'hm-cols' && e.target.id !== 'hm-rows') return;
     hm[e.target.id === 'hm-cols' ? 'columns' : 'rows'] = +e.target.value;
-    // griglia più piccola: chi esce rientra se può (anche rimpicciolito), altrimenti viene tolto
     const keep = [], out = [];
     hm.tiles.forEach((t) => {
       const c = hmCat(t.id);
@@ -569,7 +532,6 @@
     renderHome();
   });
 
-  // ---- trascinamento: sposta (corpo del widget) o ridimensiona (bordi e angoli)
   function hmCell(e) {
     const r = $('hm-board').getBoundingClientRect();
     return { cw: r.width / hm.columns, ch: r.height / hm.rows, left: r.left, top: r.top };
@@ -582,7 +544,7 @@
     const t = hm.tiles[k];
     const h = e.target.closest('[data-hmrs]');
     hmOp = { k: k, el: w, mode: h ? h.getAttribute('data-hmrs') : 'move', sx: e.clientX, sy: e.clientY, start: Object.assign({}, t), rect: Object.assign({}, t), g: hmCell() };
-    try { w.setPointerCapture(e.pointerId); } catch (err) { /* il trascinamento funziona lo stesso dentro la griglia */ }
+    try { w.setPointerCapture(e.pointerId); } catch (err) { }
     w.classList.add('active');
     document.body.classList.add('is-dragging');
     e.preventDefault();
@@ -599,7 +561,6 @@
       if (o.mode.indexOf('w') >= 0) { const nw = Math.max(c.minW, s.w - dx); r.x = s.x + s.w - nw; r.w = nw; }
       if (o.mode.indexOf('n') >= 0) { const nh = Math.max(c.minH, s.h - dy); r.y = s.y + s.h - nh; r.h = nh; }
     }
-    // resta all'ultima posizione valida: il widget "si ferma" contro i bordi e gli altri widget
     if (hmFree(r, o.k)) o.rect = r;
     const g = $('hm-ghost');
     g.hidden = false;
@@ -640,7 +601,6 @@
     } catch (err) { toast(err.message, 'err'); }
   });
 
-  // Controllo della configurazione: file non validi e pulsanti che non possono funzionare
   function renderChecks() {
     const errs = (info.configErrors || []).map((m) => ({ level: 'error', where: 'file', message: m }));
     const list = errs.concat(info.checks || []);
@@ -649,7 +609,6 @@
     $('ck-count').className = 'pill' + (bad ? ' bad' : ' ok');
     $('ck-list').innerHTML = list.length ? '<ul class="ck-list">' + list.map((x) =>
       '<li class="' + (x.level === 'error' ? 'err' : 'info') + '"><b>' + esc(x.where) + '</b>: ' + esc(x.message) + '</li>').join('') + '</ul>' : '';
-    // plugin installati (cartelle in plugins/): cosa aggiunge ognuno
     const pl = info.plugins || [];
     const what = (p) => [
       p.pages && p.pages + (p.pages === 1 ? ' pagina' : ' pagine'),
@@ -664,9 +623,6 @@
         esc(p.error || what(p) || 'niente da mostrare') + '</li>').join('') + '</ul>' : '';
   }
 
-  // ------------------------------------------------------------ Giochi (pagina GAMES)
-
-  // gm = modulo aperto: { mode: 'new'|'icon', id, path, label, process, iconToken, icons, chosen, searching }
   let gm = null;
   let gmKey = '';
   const gmChoiceKey = (c) => (!c ? 'none' : c.token ? 't:' + c.token : 'u:' + c.url);
@@ -690,7 +646,6 @@
     renderGameForm();
   }
 
-  // Il modulo si ridisegna solo quando cambia il suo stato (non perdere quello che scrivi).
   function renderGameForm() {
     const key = gm ? [gm.mode, gm.id, gm.path, gm.iconToken, gm.searching, (gm.icons || []).length, gmChoiceKey(gm.chosen), gm.error || ''].join('|') : 'closed';
     if (key === gmKey) return;
@@ -737,7 +692,6 @@
       if (!gm) return;
       gm.icons = r.icons || [];
       if (!gm.icons.length) gm.error = 'Nessuna immagine trovata per "' + q + '": prova con un altro nome.';
-      // scelta di partenza: l'icona del file, altrimenti la prima trovata
       if (!gm.chosen && !gm.iconToken && gm.icons.length) gm.chosen = { url: gm.icons[0].url };
     } catch (e) { if (gm) gm.error = e.message; }
     if (gm) { gm.searching = false; renderGameForm(); }
@@ -763,7 +717,6 @@
         gm = { mode: 'icon', id: id, label: g ? g.label : '', icons: [], chosen: null };
         renderGameForm();
         searchGameIcons();
-        // anche l'icona del file del gioco, se si riesce a leggerla
         api('POST', '/api/control/games/fileicon', { id: id }).then((r) => {
           if (gm && gm.id === id && r.token) { gm.iconToken = r.token; if (!gm.chosen) gm.chosen = { token: r.token }; renderGameForm(); }
         }).catch(() => {});
@@ -809,10 +762,6 @@
     if (e.key === 'Enter' && e.target && e.target.id === 'gm-q') { e.preventDefault(); gameAction('search'); }
   });
 
-  // ------------------------------------------------------------ Email (da Thunderbird)
-
-  // Passaggi per collegare la posta: tutto passa da Thunderbird, che fa l'accesso con i metodi
-  // ufficiali (anche Gmail con la conferma sul telefono e le mail di università e aziende).
   function mailSteps(m) {
     return '<ol class="steps ml-steps">' +
       '<li>' + (m.installed ? '<b>Thunderbird è installato.</b>' : '<b>Scarica e installa Thunderbird</b> (gratis, open source, di Mozilla): ' +
@@ -829,7 +778,6 @@
     const shown = m.accounts.filter((a) => a.shown).length;
     $('ml-count').textContent = m.accounts.length ? shown + ' SUL TABLET' : (m.installed ? 'NESSUN ACCOUNT' : 'THUNDERBIRD NON INSTALLATO');
     $('ml-count').className = 'pill' + (shown ? ' ok' : '');
-    // stato di Thunderbird, sempre visibile, con "Controlla di nuovo" (e "Apri Thunderbird" se c'è)
     const st = !m.installed ? 'Thunderbird non è installato su questo PC.'
       : !m.profile ? 'Thunderbird è installato ma non è ancora stato aperto: aprilo e aggiungi il tuo account.'
       : !m.accounts.length ? 'Thunderbird è collegato, ma non ha account di posta: aggiungili in Thunderbird.'
@@ -848,7 +796,6 @@
         '<button class="chip' + (a.shown ? ' on' : '') + '" type="button" data-mlact="' + (a.shown ? 'hide' : 'show') + '">' + (a.shown ? 'Sul tablet' : 'Nascosto') + '</button>' +
       '</div>'
     ).join('');
-    // i passaggi si ridisegnano solo se cambia qualcosa (non far saltare la pagina ogni 5 secondi)
     const key = m.installed + '|' + m.profile + '|' + m.accounts.length;
     if (key === mlKey) return;
     mlKey = key;
@@ -890,8 +837,6 @@
     mailAction(b.dataset.mlact, row ? row.dataset.acc : '', b);
   });
 
-  // ------------------------------------------------------------ collegamento con QR
-
   function renderPairing() {
     const list = info.pairing || [];
     $('pair-card').hidden = !list.length;
@@ -920,8 +865,6 @@
     if (b) { pairSel = parseInt(b.dataset.pair, 10) || 0; renderPairing(); }
   });
 
-  // ------------------------------------------------------------ Discord
-
   let dcKey = '';
   let editing = false;
   function renderDiscord() {
@@ -935,7 +878,6 @@
     const st = map[d.status] || [d.status, ''];
     pill.textContent = st[0];
     pill.className = 'pill ' + st[1];
-    // ridisegna solo se qualcosa cambia: non cancellare quello che stai incollando
     const key = [d.status, d.configured, d.message, d.authError, d.media, d.user && d.user.id, editing].join('|');
     if (key === dcKey) return;
     dcKey = key;
@@ -1014,8 +956,6 @@
       refresh();
     }
   }
-
-  // ------------------------------------------------------------ avvio e aggiornamenti
 
   async function refresh() {
     try {

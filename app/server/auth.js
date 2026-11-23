@@ -1,11 +1,8 @@
-// Sicurezza minima per uso in LAN:
-// 1) accetta solo IP di reti private (salvo ALLOW_ANY_IP=1)
-// 2) token condiviso (DOCK_TOKEN) via cookie o header X-Dock-Token
 const crypto = require('crypto');
 const log = require('./log');
 
 const COOKIE = 'dock_token';
-const attempts = {}; // ip -> { count, since }
+const attempts = {};
 
 function token() { return (process.env.DOCK_TOKEN || '').trim(); }
 
@@ -52,7 +49,7 @@ function requestToken(req) {
 
 function isAuthorized(req) {
   const t = token();
-  if (!t) return true; // token disattivato
+  if (!t) return true;
   return safeEqual(requestToken(req), t);
 }
 
@@ -61,7 +58,6 @@ function setCookie(res) {
     '; Path=/; Max-Age=315360000; HttpOnly; SameSite=Lax');
 }
 
-// Limite tentativi di pairing: 8 al minuto per IP.
 function tooManyAttempts(ip) {
   const now = Date.now();
   const a = attempts[ip] || { count: 0, since: now };
@@ -82,9 +78,6 @@ function requireToken(req, res, next) {
   res.status(401).json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Token mancante o errato' } });
 }
 
-// GET /?t=TOKEN -> salva il cookie e ripulisce l'URL. Se il codice è giusto
-// lo passa al client nel frammento (#codice=...), che non arriva al server né
-// ai log: il tablet lo aggiunge ai codici che ricorda (vedi public/js/app.js).
 function tokenFromQuery(req, res, next) {
   if (req.path !== '/' || !req.query.t) return next();
   const given = String(req.query.t).trim();
@@ -111,7 +104,6 @@ function pairHandler(req, res) {
 }
 
 function generateToken() {
-  // 8 caratteri facili da digitare sul tablet (niente 0/O/1/I)
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const bytes = crypto.randomBytes(8);
   let out = '';

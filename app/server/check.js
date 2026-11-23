@@ -1,7 +1,3 @@
-// Controllo della configurazione: trova i pulsanti che non possono funzionare
-// (app o comando che non esiste, pagina sbagliata, icona o widget sconosciuti...)
-// e li spiega in italiano. Lo usa il pannello di controllo e il log all'avvio.
-// Non cambia niente: segnala soltanto.
 const fs = require('fs');
 const path = require('path');
 const paths = require('./paths');
@@ -9,8 +5,6 @@ const config = require('./config');
 const common = require('./platform/common');
 const plugins = require('./plugins');
 
-// Widget che il tablet sa disegnare: letti dalla mappa TYPES di public/js/widgets.js
-// (un widget nuovo si registra solo lì); più quelli dei plugin (widgetNames).
 function readWidgetTypes() {
   try {
     const js = fs.readFileSync(path.join(paths.PUBLIC_DIR, 'js', 'widgets.js'), 'utf8');
@@ -20,7 +14,6 @@ function readWidgetTypes() {
 }
 const WIDGETS = readWidgetTypes();
 
-// Nomi delle icone, letti da public/js/icons.js (riletti se il file cambia).
 let iconCache = { mtime: 0, names: null };
 function iconNames() {
   const file = path.join(paths.PUBLIC_DIR, 'js', 'icons.js');
@@ -35,13 +28,11 @@ function iconNames() {
       let m;
       const body = text.slice(start, end);
       while ((m = re.exec(body))) names[m[1]] = true;
-      // e gli alias scritti dopo l'elenco: P.unreal = P.cube;
       const alias = /^\s*P\.([a-z_][a-z0-9_]*)\s*=/gim;
       while ((m = alias.exec(text))) names[m[1]] = true;
       iconCache = { mtime: mtime, names: names };
     }
   } catch (e) { return null; }
-  // più le icone dei plugin (Icons.register('nome', ...) nei loro script del tablet)
   return Object.assign({}, iconCache.names, plugins.icons());
 }
 
@@ -53,7 +44,6 @@ function actionTypes() {
   return types;
 }
 
-// Controlla un'azione (anche i passi di una macro). where = "pagina APP › pulsante OBS".
 function checkAction(a, where, ctx, out) {
   if (!a || typeof a !== 'object') { out.push({ where: where, message: 'azione mancante o non valida' }); return; }
   if (ctx.types.indexOf(a.type) < 0) {
@@ -79,7 +69,6 @@ function checkAction(a, where, ctx, out) {
   }
 }
 
-// Tutti i problemi, in ordine di pagina. level: "error" (non funziona) o "info" (solo su questo sistema).
 function run() {
   const d = config.dock();
   const os = config.currentOs();

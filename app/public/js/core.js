@@ -1,7 +1,3 @@
-/* Vibe Deck - funzioni di base.
- * SOLO ES5: deve girare sul browser di Android 4.0+.
- * Niente let/const, arrow function, classList, closest, forEach su NodeList,
- * startsWith, includes, fetch, Promise, bind. */
 var D = (function () {
   'use strict';
 
@@ -17,13 +13,11 @@ var D = (function () {
   function hasClass(e, c) { return (' ' + e.className + ' ').indexOf(' ' + c + ' ') >= 0; }
   function addClass(e, c) { if (e && !hasClass(e, c)) e.className = (e.className ? e.className + ' ' : '') + c; }
   function removeClass(e, c) {
-    // niente scrittura se la classe non c'è: ogni modifica fa ricalcolare gli stili al tablet
     if (!e || !hasClass(e, c)) return;
     e.className = (' ' + e.className + ' ').replace(' ' + c + ' ', ' ').replace(/^\s+|\s+$/g, '');
   }
   function toggleClass(e, c, on) { if (on) addClass(e, c); else removeClass(e, c); }
 
-  // Primo antenato (o se stesso) con la classe indicata, fino a "stop".
   function closestClass(e, c, stop) {
     while (e && e !== stop && e.nodeType === 1) {
       if (hasClass(e, c)) return e;
@@ -58,12 +52,11 @@ var D = (function () {
       } catch (e) { return def; }
     },
     set: function (k, v) {
-      try { window.localStorage.setItem('dock:' + k, JSON.stringify(v)); } catch (e) { /* storage pieno o disattivato */ }
+      try { window.localStorage.setItem('dock:' + k, JSON.stringify(v)); } catch (e) { }
     },
-    remove: function (k) { try { window.localStorage.removeItem('dock:' + k); } catch (e) { /* ignora */ } }
+    remove: function (k) { try { window.localStorage.removeItem('dock:' + k); } catch (e) { } }
   };
 
-  // --- rete: XHR con timeout manuale (XHR.timeout non esiste su Android 4.0) ---
   var onUnauthorized = null;
 
   function request(method, url, body, cb, timeoutMs) {
@@ -72,7 +65,7 @@ var D = (function () {
     var timer = setTimeout(function () {
       if (done) return;
       done = true;
-      try { xhr.abort(); } catch (e) { /* ignora */ }
+      try { xhr.abort(); } catch (e) { }
       cb({ code: 'TIMEOUT', message: 'Il PC non risponde', status: 0 });
     }, timeoutMs || 8000);
 
@@ -101,9 +94,6 @@ var D = (function () {
     post: function (url, body, cb, timeoutMs) { request('POST', url, body || {}, cb || function () {}, timeoutMs); }
   };
 
-  // --- tocco: tap, pressione lunga, ripetizione, tolleranza al trascinamento ---
-  // opts: { onTap(target, x, y), hold: ms, repeat: bool, scrollable: bool }
-  // scrollable=true non blocca lo scroll della lista che contiene l'elemento.
   function bindTap(node, opts) {
     var pressed = false, moved = false, fired = false;
     var sx = 0, sy = 0, target = null, holdTimer = null, repeatTimer = null, lastTouch = 0;
@@ -140,12 +130,10 @@ var D = (function () {
     }
     function up() {
       if (!pressed) return;
-      // con "hold" parte solo tenendo premuto: un tocco breve non fa niente
       var go = !moved && !fired && !opts.hold;
       var brief = opts.hold && opts.onShort && !moved && !fired;
       cancel();
       if (go) fire();
-      // tocco breve su un pulsante da tenere premuto: spiega cosa fare invece di non fare niente
       if (brief) { try { opts.onShort(target); } catch (e) { if (window.console) console.error(e); } }
     }
 
@@ -163,10 +151,9 @@ var D = (function () {
       lastTouch = new Date().getTime();
       var wasPressed = pressed;
       up();
-      if (wasPressed) e.preventDefault(); // evita il click fantasma
+      if (wasPressed) e.preventDefault();
     }, false);
     node.addEventListener('touchcancel', cancel, false);
-    // Mouse per usarla anche dal browser del PC
     node.addEventListener('mousedown', function (e) {
       if (new Date().getTime() - lastTouch < 800 || e.button !== 0) return;
       down(e.clientX, e.clientY, e.target);
@@ -199,7 +186,6 @@ var D = (function () {
     return d === 1 ? 'ieri' : d + ' giorni fa';
   }
 
-  // Testo semplice -> HTML sicuro con ```codice```, `codice`, **grassetto**.
   function richText(text) {
     var parts = String(text || '').split('```');
     var html = '';
@@ -218,10 +204,6 @@ var D = (function () {
     return html;
   }
 
-  // ------------------------------------------------------------ risparmio energetico
-  // active = toccato da poco; idle = nessun tocco da "idleAfter" ms: aggiornamenti
-  // più lenti; asleep = salvaschermo: nessun aggiornamento. Con la pagina nascosta
-  // (browser in secondo piano) i timer non chiamano il PC.
   var power = { lastInput: new Date().getTime(), idleAfter: 60000, asleep: false, listeners: [] };
   function isHidden() { return !!(document.hidden || document.webkitHidden); }
   function powerState() {
@@ -230,19 +212,18 @@ var D = (function () {
   }
   function notifyWake() {
     for (var i = 0; i < power.listeners.length; i++) {
-      try { power.listeners[i](); } catch (e) { /* ignora */ }
+      try { power.listeners[i](); } catch (e) { }
     }
   }
   function onInput() {
     var was = powerState();
     power.lastInput = new Date().getTime();
-    if (was === 'idle') notifyWake();   // dal salvaschermo si esce con wake()
+    if (was === 'idle') notifyWake();
   }
   document.addEventListener('touchstart', onInput, true);
   document.addEventListener('mousedown', onInput, true);
   document.addEventListener('keydown', onInput, true);
 
-  // Ripete fn ogni activeMs (idleMs a riposo). Ritorna un timer da fermare con D.stop().
   function every(activeMs, idleMs, fn) {
     var t = { stopped: false, id: null };
     function tick() {

@@ -1,8 +1,3 @@
-/* Vibe Deck - stile per tablet Android 4.x
- * Vincoli: niente flexbox, grid, gap, var(), calc(). Prefissi -webkit- per
- * transizioni e animazioni. Le posizioni delle tile sono calcolate in JS.
- * Palette: fondo #0b0f14, superficie #18212c, testo #e8eef4, accento #3d8bfd */
-
 * { margin: 0; padding: 0; -webkit-box-sizing: border-box; box-sizing: border-box; }
 html, body { height: 100%; overflow: hidden; }
 body {
@@ -17,7 +12,6 @@ body {
 .hidden { display: none !important; }
 svg.ic { fill: #ffffff; display: inline-block; vertical-align: middle; }
 
-/* ---------------------------------------------------------- barra in alto */
 #topbar {
   position: absolute; left: 0; right: 0; top: 0; height: 44px; line-height: 44px;
   background: #0f151c; border-bottom: 1px solid #1d2733; padding: 0 12px;
@@ -36,7 +30,6 @@ svg.ic { fill: #ffffff; display: inline-block; vertical-align: middle; }
 .tb-right { position: absolute; right: 12px; top: 0; height: 44px; }
 #mini { color: #8b9bab; font-size: 14px; margin-right: 16px; }
 #clock { font-weight: bold; font-size: 18px; padding: 0 4px; }
-/* pulsante dei temi accanto all'orario e il suo menu */
 #settings-btn { display: inline-block; width: 40px; height: 44px; text-align: center; margin-right: 6px; vertical-align: top; }
 #settings-btn svg.ic { width: 24px; height: 24px; fill: #9fb3c8; margin-top: -3px; }
 #settings-btn.pressed svg.ic { fill: #3d8bfd; }
@@ -50,7 +43,6 @@ svg.ic { fill: #ffffff; display: inline-block; vertical-align: middle; }
 .theme-opt.pressed { background: #223041; }
 .theme-sw { display: inline-block; vertical-align: middle; margin: -4px 12px 0 0; height: 26px; width: 66px; border: 1px solid #000000; border-radius: 6px; overflow: hidden; }
 .theme-sw i { float: left; width: 22px; height: 26px; }
-/* menù impostazioni: due colonne (temi | lingua e schermo), entra anche nel telefono in orizzontale */
 .set-menu { width: 540px; max-width: 94%; }
 .set-menu:after { content: ""; display: block; clear: both; }
 .set-col { float: left; width: 50%; padding-right: 5px; -webkit-box-sizing: border-box; box-sizing: border-box; }
@@ -71,7 +63,6 @@ svg.ic { fill: #ffffff; display: inline-block; vertical-align: middle; }
   background: #8b1d1d; color: #fff; text-align: center; font-weight: bold; font-size: 14px; letter-spacing: 1px;
 }
 
-/* ---------------------------------------------------------- area tile */
 #stage { position: absolute; left: 0; right: 0; top: 44px; bottom: 58px; overflow: hidden; }
 body.no-tabs #stage { bottom: 0; }
 body.kb-open #stage { top: 0; bottom: 0; }
@@ -80,7 +71,6 @@ body.kb-open #stage { top: 0; bottom: 0; }
   background: #18212c; border: 1px solid #222e3b;
 }
 
-/* pulsanti */
 .tile.btn {
   background-color: #1d2835;
   -webkit-transition: -webkit-transform 0.08s, background-color 0.15s;
@@ -88,7 +78,6 @@ body.kb-open #stage { top: 0; bottom: 0; }
   cursor: pointer;
 }
 .tile.btn:after {
-  /* riflesso sottile in alto: dà profondità ai tasti colorati */
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: 50%;
   background: rgba(255, 255, 255, 0.04); pointer-events: none;
 }
@@ -98,7 +87,6 @@ body.kb-open #stage { top: 0; bottom: 0; }
 .tile.btn.busy .t-icon { opacity: 0.45; }
 .t-icon { position: absolute; left: 0; right: 0; top: 14%; height: 40%; text-align: center; }
 .t-icon svg { height: 100%; width: 100%; }
-/* immagine al posto dell'icona (pulsanti dei giochi): più grande, adattata senza deformarla */
 .t-img { left: 8%; right: 8%; top: 8%; height: 62%; background-repeat: no-repeat; background-position: center; -webkit-background-size: contain; background-size: contain; }
 .tile.short .t-img { top: 6%; height: 56%; }
 .t-label {
@@ -116,14 +104,12 @@ body.kb-open #stage { top: 0; bottom: 0; }
 .tile.short .t-label { bottom: 22%; font-size: 0.9em; }
 .tile.short .t-sub { display: none; }
 
-/* app già aperta: pallino verde e bordo (un altro tocco la chiude) */
 .tile.btn.running { border-color: #3fb950; -webkit-box-shadow: inset 0 0 0 2px rgba(63, 185, 80, 0.55); box-shadow: inset 0 0 0 2px rgba(63, 185, 80, 0.55); }
 .tile.btn.running:before {
   content: ""; position: absolute; top: 9px; right: 9px; width: 13px; height: 13px; border-radius: 7px; z-index: 2;
   background: #3fb950; -webkit-box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35);
 }
 
-/* pulsanti da tenere premuti */
 .t-hold { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(0, 0, 0, 0.3); }
 .t-hold i { display: block; height: 100%; width: 0; background: #ffb454; }
 .tile.btn.confirm.holding .t-hold i {
@@ -131,7 +117,6 @@ body.kb-open #stage { top: 0; bottom: 0; }
   -webkit-transition: width 0.9s linear; transition: width 0.9s linear;
 }
 
-/* ---------------------------------------------------------- barra pagine */
 #tabs {
   position: absolute; left: 0; right: 0; bottom: 0; height: 58px; background: #0f151c;
   border-top: 1px solid #1d2733; white-space: nowrap; overflow: hidden; z-index: 10;
@@ -147,10 +132,6 @@ body.kb-open #stage { top: 0; bottom: 0; }
 .tab.pressed { background: #223041; }
 body.kb-open #topbar, body.kb-open #tabs { display: none; }
 
-/* ---------------------------------------------------------- telefono
- * Lato corto sotto i 600 px: la dock resta orizzontale. In verticale app.js dà al
- * body le misure girate (larghezza = altezza dello schermo) e qui lo si ruota di 90°.
- * Barre più basse per lasciare spazio alle tile. Il tablet non ha la classe "phone". */
 body.rot {
   right: auto; bottom: auto;
   -webkit-transform-origin: 0 0; transform-origin: 0 0;
@@ -159,7 +140,6 @@ body.rot {
 body.phone #topbar { height: 38px; line-height: 38px; font-size: 14px; }
 body.phone .tb-left, body.phone .tb-right, body.phone #settings-btn { height: 38px; }
 body.phone #banner { top: 38px; }
-/* 6 px in più sotto: tra le tile e la barra delle pagine resta un po' d'aria (l'ombra del Neo-brutalista si vede) */
 body.phone #stage { top: 38px; bottom: 54px; }
 body.phone.no-tabs #stage { bottom: 0; }
 body.phone.kb-open #stage { top: 0; bottom: 0; }
@@ -169,7 +149,6 @@ body.phone .tab svg.ic { width: 20px; height: 20px; margin-bottom: 2px; }
 body.phone #toast { bottom: 60px; }
 body.phone .tile.btn.short .t-label { letter-spacing: 0; }
 
-/* ---------------------------------------------------------- toast e modale */
 #toast {
   position: absolute; left: 50%; bottom: 76px; width: 520px; margin-left: -260px; z-index: 50;
   background: #26313d; color: #fff; padding: 12px 16px; border-radius: 10px; text-align: center;
@@ -215,7 +194,6 @@ body.phone .tile.btn.short .t-label { letter-spacing: 0; }
 .pair-go { height: 56px; line-height: 56px; background: #3d8bfd; border-radius: 10px; font-weight: bold; font-size: 18px; letter-spacing: 2px; }
 .pair-go.pressed { background: #2f6fd0; }
 #boot { background: #0b0f14; }
-/* PC non raggiungibile (altra rete o dock spenta): sopra a tutto tranne il salvaschermo */
 #offline { z-index: 65; background: rgba(5, 8, 12, 0.94); }
 #offline-host { color: #fff; }
 #offline-wait { margin-bottom: 12px; font-size: 13px; }
@@ -224,11 +202,9 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .boot-title { position: absolute; left: 0; right: 0; top: 38%; font-size: 26px; font-weight: bold; letter-spacing: 6px; }
 #boot-msg { position: absolute; left: 0; right: 0; top: 50%; text-align: center; color: #8b9bab; font-size: 16px; }
 
-/* ---------------------------------------------------------- widget: comuni */
 .tile.widget { padding: 10px 12px; }
 .w-head { height: 34px; line-height: 30px; position: relative; white-space: nowrap; overflow: hidden; }
 .w-title { font-weight: bold; letter-spacing: 2px; font-size: 14px; color: #9fb3c8; overflow: hidden; text-overflow: ellipsis; }
-/* spazio per i pulsanti a destra solo se ci sono */
 .w-head.tools .w-title { margin-right: 150px; }
 .w-head .sbtn, .w-head .chat-tools { position: absolute; right: 0; top: 0; }
 .sbtn {
@@ -245,7 +221,6 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .empty { color: #8b9bab; font-size: 15px; padding: 14px 6px; text-align: center; line-height: 1.4; }
 .empty.err { color: #ff9c94; }
 
-/* ---------------------------------------------------------- widget: system */
 .m-list { position: absolute; left: 12px; right: 12px; top: 44px; bottom: 6px; }
 .metric { position: relative; white-space: nowrap; overflow: hidden; }
 .m-label { position: absolute; left: 0; top: 0; width: 3.4em; font-weight: bold; color: #9fb3c8; font-size: 0.85em; letter-spacing: 1px; }
@@ -256,13 +231,11 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
   background: #0b0f14; border-radius: 4px; overflow: hidden;
 }
 .m-nobar .bar { display: none; }
-/* niente transizione sulla larghezza: ogni 2 s faceva ricalcolare il layout a ogni fotogramma (batteria) */
 .bar i { display: block; height: 100%; width: 0; background: #3d8bfd; }
 .bar.ok i { background: #3fb950; }
 .bar.warn i { background: #d29922; }
 .bar.hot i { background: #e5534b; }
 
-/* ---------------------------------------------------------- widget: now playing */
 .w-np { padding: 0 !important; }
 .np-art { position: absolute; border-radius: 10px; overflow: hidden; background: #0b0f14; }
 .np-art img { display: none; width: 100%; height: 100%; }
@@ -278,7 +251,6 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .np-prog { height: 6px; background: #0b0f14; border-radius: 3px; overflow: hidden; }
 .np-prog i { display: block; height: 100%; width: 0; background: #e8eef4; }
 .np-times { font-size: 0.75em; color: #8b9bab; margin-top: 4px; height: 1.2em; }
-/* fila dei comandi: a tutta larghezza in fondo al widget (posizione da widgets.js) */
 .np-ctr { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 64px; text-align: center; white-space: nowrap; }
 .np-btn {
   display: inline-block; width: 19%; max-width: 92px; height: 64px; margin: 0 1%; border-radius: 12px; background: #243142;
@@ -290,7 +262,6 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .np-btn.np-play svg.ic { fill: #0b0f14; }
 .np-btn.pressed { -webkit-transform: scale(0.92); transform: scale(0.92); background: #3d8bfd; }
 .np-btn.np-vol { width: 13%; background: #18212c; border: 1px solid #2a3746; }
-/* widget stretto: solo indietro / play / avanti, più larghi */
 .np-novol .np-ctr .np-btn { width: 30%; max-width: 120px; }
 .np-compact .np-ctr { height: 50px; }
 .np-compact .np-btn { height: 50px; padding-top: 7px; }
@@ -310,7 +281,6 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .np-btn.off { opacity: 0.3; }
 .np-vollabel { display: inline-block; vertical-align: top; height: 38px; line-height: 38px; margin-left: 6px; font-size: 13px; font-weight: bold; color: #9fb3c8; min-width: 72px; }
 
-/* ---------------------------------------------------------- widget: github */
 .gh-totals { font-size: 14px; color: #b6c4d2; height: 26px; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gh-totals.err { color: #ff9c94; }
 .w-gh .w-list { top: 74px; }
@@ -329,7 +299,6 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .badge.bad { background: #8b1d1d; }
 .badge.run { background: #6b5214; }
 
-/* ---------------------------------------------------------- widget: todo */
 .todo-form { position: relative; height: 50px; margin-top: 2px; }
 .todo-mic { position: absolute; left: 0; top: 0; width: 52px; height: 46px; border-radius: 10px; background: #243142; text-align: center; padding-top: 9px; }
 .todo-mic svg.ic { width: 28px; height: 28px; }
@@ -363,14 +332,12 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .todo-group.pressed { background: #1d2835; border-radius: 8px; }
 .w-todo.todo-busy .w-head .w-title { color: #6cb6ff; }
 
-/* ---------------------------------------------------------- widget: chat */
 .chat-tools { white-space: nowrap; }
 .chat-model {
   height: 30px; font-size: 14px; max-width: 280px; background: #0b0f14; color: #fff;
   border: 1px solid #2a3746; border-radius: 8px; padding: 0 6px; vertical-align: top;
 }
 .chat-model-label { font-size: 13px; color: #8b9bab; vertical-align: top; margin-right: 4px; }
-/* chat in un riquadro stretto (HOME): niente etichetta "Modello", pulsanti solo icona */
 .chat-narrow .chat-model-label, .chat-narrow .chat-tools .sbtn span { display: none; }
 .w-chat .w-title { margin-right: 360px; }
 .chat-log {
@@ -407,13 +374,10 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .chat-send.busy { opacity: 0.4; }
 .chat-send.pressed { -webkit-transform: scale(0.94); transform: scale(0.94); }
 
-/* ---------------------------------------------------------- widget: orologio */
-/* orologio: stesso font del salvaschermo del tema; misure e centratura da widgets.js */
 .w-clock { text-align: center; }
 .clk-time { font-family: "VDClockClassic", Roboto, "Segoe UI", sans-serif; font-size: 80px; font-weight: normal; line-height: 1; letter-spacing: 2px; white-space: nowrap; }
 .clk-date { font-size: 18px; color: #9fb3c8; text-transform: capitalize; margin-top: 0.3em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* ---------------------------------------------------------- widget: coda */
 .w-queue .w-list { top: 48px; }
 .q-row { padding: 9px 12px; border-radius: 8px; margin-bottom: 4px; background: #1d2835; }
 .q-row.current { background: #1f3b63; -webkit-box-shadow: inset 4px 0 0 #3d8bfd; box-shadow: inset 4px 0 0 #3d8bfd; }
@@ -423,13 +387,11 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .q-title svg.ic { width: 16px; height: 16px; margin-right: 4px; vertical-align: -2px; }
 .q-artist { font-size: 13px; color: #9fb3c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 
-/* ---------------------------------------------------------- widget: claude */
 .w-claude { padding: 0 !important; }
 .cl-side { position: absolute; left: 0; top: 0; bottom: 0; width: 30%; border-right: 1px solid #222e3b; background: #141c25; }
 .cl-tabs { position: absolute; left: 8px; right: 8px; top: 8px; height: 40px; background: #0b0f14; border-radius: 10px; overflow: hidden; }
 .cl-tab { float: left; width: 50%; height: 40px; line-height: 40px; text-align: center; font-size: 12px; font-weight: bold; letter-spacing: 1px; color: #8b9bab; }
 .cl-tab.on { background: #c15f3c; color: #fff; }
-/* consumi dell'abbonamento, in fondo alla colonna (tocco = aggiorna) */
 .cl-usage { position: absolute; left: 8px; right: 8px; bottom: 8px; height: 136px; padding: 8px 10px; border-radius: 10px; background: #0f151c; overflow: hidden; }
 .cu-h { font-size: 11px; font-weight: bold; letter-spacing: 1px; color: #8b9bab; margin-bottom: 4px; }
 .cu-h i { font-style: normal; font-weight: normal; letter-spacing: 0; color: #ffb454; }
@@ -444,7 +406,6 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .cu-row.hot .cu-top span { color: #ff9c94; }
 .cu-reset { font-size: 10px; color: #8b9bab; margin-top: 2px; }
 .cu-err { font-size: 12px; color: #ff9c94; line-height: 1.35; }
-/* widget "claudeusage" (HOME): solo i consumi, tocco = aggiorna */
 .cu-box { position: absolute; left: 12px; right: 12px; top: 44px; bottom: 8px; overflow: auto; -webkit-overflow-scrolling: touch; }
 .cu-box .cu-h { display: none; }
 .cu-box .cu-row { margin-bottom: 12px; }
@@ -504,7 +465,6 @@ body.kb-open .cl-side, body.kb-open .cl-head { display: none; }
 body.kb-open .cl-main { left: 0; }
 body.kb-open .cl-log { top: 8px; }
 
-/* schermi piccoli (800x480) */
 @media (max-width: 860px) {
   #mini { display: none; }
   #page-title { margin: 0 25%; }
@@ -518,7 +478,6 @@ body.kb-open .cl-log { top: 8px; }
   .np-btn.np-opt span { display: none; }
 }
 
-/* ---------------------------------------------------------- widget: discord */
 .w-discord { padding: 0 !important; }
 .dc-guilds { position: absolute; left: 0; top: 0; bottom: 0; width: 24%; padding: 8px; background: #141c25; border-right: 1px solid #222e3b; overflow: auto; -webkit-overflow-scrolling: touch; }
 .dc-guild { position: relative; height: 52px; padding: 8px 6px 0 54px; border-radius: 10px; margin-bottom: 4px; font-size: 14px; font-weight: bold; line-height: 18px; overflow: hidden; }
@@ -560,7 +519,6 @@ svg.ic.dc-flag { width: 16px; height: 16px; fill: #e5534b; vertical-align: -3px;
 .dc-btn svg.ic { display: block; width: 26px; height: 26px; margin: 0 auto 5px; }
 .dc-btn.on { background: #2f6b3a; }
 .dc-live.on { background: #c0392b; position: relative; -webkit-box-shadow: 0 0 0 3px rgba(229, 83, 75, 0.45); box-shadow: 0 0 0 3px rgba(229, 83, 75, 0.45); }
-/* in live: pallino che lampeggia (pulsante e intestazione della stanza) */
 .dc-livedot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #fff; -webkit-animation: dcblink 1s infinite; animation: dcblink 1s infinite; }
 .dc-live .dc-livedot { position: absolute; right: 8px; top: 8px; }
 @-webkit-keyframes dcblink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
@@ -584,7 +542,6 @@ svg.ic.dc-camflag { fill: #3fb950; }
 .w-discord.dc-off .dc-leave, .w-discord.dc-off .dc-cam, .w-discord.dc-off .dc-live { display: none; }
 .w-discord.dc-off .dc-mute, .w-discord.dc-off .dc-deaf { width: 49%; }
 .w-discord.dc-off .dc-deaf { margin-right: 0; }
-/* menu di una persona: volume e muto per te */
 .dc-pop { position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 5; background: #141c25; padding: 10px 12px; }
 .dc-phead { position: relative; height: 50px; line-height: 50px; padding-left: 54px; padding-right: 52px; }
 .dc-phead .dc-av { left: 2px; top: 6px; }
@@ -615,7 +572,6 @@ svg.ic.dc-camflag { fill: #3fb950; }
 .dc-setup b { display: block; font-size: 20px; color: #fff; margin-bottom: 8px; }
 .dc-setup p { font-size: 15px; line-height: 1.45; margin: 0 auto; max-width: 420px; }
 
-/* ---- Schermi: monitor, disposizioni, finestre */
 .w-screens { padding: 0 !important; }
 .sc-left { position: absolute; left: 0; top: 0; bottom: 0; width: 60%; }
 .sc-head { position: absolute; left: 12px; right: 12px; top: 8px; height: 24px; line-height: 24px; white-space: nowrap; overflow: hidden; }
@@ -654,11 +610,9 @@ svg.ic.dc-camflag { fill: #3fb950; }
 .sc-right { position: absolute; right: 0; top: 0; bottom: 0; width: 40%; background: #141c25; border-left: 1px solid #222e3b; }
 .sc-whead { position: absolute; left: 12px; right: 12px; top: 8px; height: 24px; line-height: 24px; font-size: 13px; font-weight: bold; letter-spacing: 1px; color: #8b9bab; }
 .sc-wins { position: absolute; left: 6px; right: 6px; top: 36px; bottom: 180px; overflow: auto; -webkit-overflow-scrolling: touch; }
-/* desktop virtuali: in basso, alti quanto le schede; tutto lo spazio sopra va alle finestre */
 .sc-dhead { position: absolute; left: 12px; right: 12px; bottom: 142px; height: 24px; line-height: 24px; font-size: 13px; font-weight: bold; letter-spacing: 1px; color: #8b9bab; white-space: nowrap; overflow: hidden; border-top: 1px solid #222e3b; padding-top: 6px; }
 .sc-dsub { font-size: 11px; font-weight: normal; letter-spacing: 0; color: #6e7f90; margin-left: 8px; }
 .sc-desks { position: absolute; left: 6px; right: 6px; bottom: 6px; height: 132px; overflow: hidden; }
-/* una scheda per desktop (3 per riga: al massimo 3 desktop, il "+" finché c'è posto) */
 .sc-dk { float: left; width: 32%; margin: 0 2% 8px 0; position: relative; height: 124px; padding-top: 14px; border-radius: 10px; background: #172029; border: 2px solid transparent; text-align: center; -webkit-box-sizing: border-box; box-sizing: border-box; }
 .sc-dk:nth-child(3n) { margin-right: 0; }
 .sc-dk.on { border-color: #3d8bfd; background: #10203a; }
@@ -668,14 +622,12 @@ svg.ic.dc-camflag { fill: #3fb950; }
 .sc-dkn { position: absolute; left: 50%; top: 22px; width: 24px; margin-left: -12px; font-size: 14px; line-height: 20px; color: #fff; }
 .sc-dkname { display: block; margin-top: 6px; padding: 0 4px; font-size: 15px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sc-dksub { display: block; margin-top: 2px; font-size: 12px; color: #8b9bab; white-space: nowrap; overflow: hidden; }
-/* trascinamento di una finestra su un desktop virtuale o un monitor */
 .sc-win { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .sc-win.dragging { opacity: 0.4; }
 .sc-ghost { position: absolute; z-index: 800; padding: 9px 14px; border-radius: 10px; background: #1f3b63; border: 2px solid #3d8bfd; color: #ffffff; font-size: 14px; font-weight: bold; white-space: nowrap; pointer-events: none; -webkit-box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); }
 .sc-ghost svg.ic { width: 18px; height: 18px; margin: -3px 8px 0 0; }
 .sc-dragging .sc-dk, .sc-dragging .sc-mon { border-color: #3b5170; border-style: dashed; }
 .sc-dragging .sc-dk.drop, .sc-dragging .sc-mon.drop { border-color: #6cb6ff; border-style: solid; background: #1f3b63; }
-/* telefono: pagina più bassa, finestre (scorrono) e desktop virtuali più compatti */
 body.phone .sc-wins { bottom: 140px; }
 body.phone .sc-dhead { bottom: 104px; }
 body.phone .sc-desks { height: 96px; }
@@ -694,7 +646,6 @@ body.phone .sc-map { bottom: 120px; }
 .sc-dkx.holding { background: #c0392b; }
 .sc-dknew { background: #131a22; border: 2px dashed #2a3746; padding-top: 26px; color: #8b9bab; }
 .sc-dbusy .sc-desks { opacity: 0.55; }
-/* GUIDA ai desktop virtuali, sopra tutta la pagina */
 .sc-left .sc-help { position: absolute; right: 10px; top: 4px; z-index: 3; }
 .sc-head { right: 110px; }
 .sc-guide { position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 6; background: #18212c; padding: 10px 12px; }
@@ -710,7 +661,6 @@ body.phone .sc-map { bottom: 120px; }
 .sc-wbtn[data-act="minimize"] { right: 50px; }
 .sc-wbtn[data-act="maximize"] { right: 6px; }
 
-/* TODO: stato della sincronizzazione con GitHub */
 .todo-sync { display: inline-block; margin-left: 10px; padding: 0 8px; height: 22px; line-height: 22px; border-radius: 11px; background: #1d2732; color: #8b9bab; font-size: 11px; vertical-align: 1px; }
 .todo-sync svg.ic { width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; fill: currentColor; }
 .todo-sync i { font-style: normal; font-weight: bold; letter-spacing: .5px; }
@@ -719,7 +669,6 @@ body.phone .sc-map { bottom: 120px; }
 .todo-sync.hidden { display: none; }
 .todo-sync.pressed { background: #26354a; }
 
-/* ---------------------------------------------------------- widget: email */
 .w-mail .ml-tools { white-space: nowrap; }
 .w-head .ml-tools { position: absolute; right: 0; top: 0; }
 .w-mail .ml-tools .sbtn { position: static; }
@@ -748,17 +697,14 @@ body.phone .sc-map { bottom: 120px; }
 .ml-note { margin-top: 14px; padding: 8px 10px; border-radius: 8px; background: #1d2835; color: #9fb3c8; font-size: 13px; }
 .ml-note svg.ic { width: 16px; height: 16px; fill: #9fb3c8; }
 
-/* ---------------------------------------------------------- salvaschermo */
 .saver { position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 900; background: #000; }
 .saver.hidden { display: none; }
 .saver.waking { background: transparent; }
 .saver.waking .saver-clock, .saver.waking .saver-hint { display: none; }
-/* orario del salvaschermo: un font per tema (public/fonts, solo cifre e ":"; i temi lo cambiano) */
 @font-face { font-family: "VDClockClassic"; src: url("../fonts/clock-classic.ttf") format("truetype"); }
 .saver-clock { position: absolute; font-family: "VDClockClassic", Roboto, "Segoe UI", sans-serif; font-size: 104px; font-weight: normal; line-height: 1; letter-spacing: 2px; color: #3c4c5e; white-space: nowrap; }
 .saver-hint { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; font-size: 13px; letter-spacing: 2px; color: #1c242d; text-transform: uppercase; }
 
-/* ---- Audio: dispositivi e volume delle app */
 .w-audio { padding: 0 !important; }
 .au-left { position: absolute; left: 0; top: 0; bottom: 0; width: 46%; border-right: 1px solid #222e3b; }
 .au-right { position: absolute; left: 46%; right: 0; top: 0; bottom: 0; background: #141c25; }
@@ -793,7 +739,6 @@ body.phone .sc-map { bottom: 120px; }
 .au-ctl.muted .au-mute { background: #8b1d1d; }
 .au-ctl.muted .au-bar i { background: #4d5d70; }
 
-/* ---- Viber: colonne Progetti e Task a tutta altezza (a sinistra i pulsanti della pagina) */
 .w-viber { padding: 0 !important; }
 .vb-col { position: absolute; top: 0; bottom: 0; }
 .vb-colp { left: 0; width: 45%; border-right: 1px solid #222e3b; }
@@ -825,12 +770,9 @@ body.phone .sc-map { bottom: 120px; }
 .vb-task.doing .vb-chip { background: #1f3b63; color: #6cb6ff; }
 .vb-step { position: relative; font-size: 12px; color: #9fb3c8; padding: 3px 0 0 20px; line-height: 1.3; }
 .vb-step svg.ic { position: absolute; left: 0; top: 4px; width: 14px; height: 14px; fill: #6e7f90; }
-/* HOME: una colonna sola ("show": "projects" | "tasks") */
 .vb-only-projects .vb-colt, .vb-only-tasks .vb-colp { display: none; }
 .vb-only-projects .vb-colp, .vb-only-tasks .vb-colt { left: 0; right: 0; width: auto; border-right: 0; background: transparent; }
 
-/* ---------------------------------------------------------- widget piccoli per la HOME */
-/* desktop virtuali */
 .dk-list { position: absolute; left: 10px; right: 10px; top: 44px; bottom: 10px; overflow: hidden; }
 .dk-item { position: relative; height: 44px; line-height: 44px; padding: 0 10px 0 46px; margin-bottom: 6px; border-radius: 10px; background: #172029; border: 2px solid transparent; white-space: nowrap; overflow: hidden; }
 .dk-item b { position: absolute; left: 8px; top: 8px; width: 26px; height: 24px; line-height: 24px; text-align: center; border-radius: 6px; background: #2a3746; font-size: 14px; }
@@ -847,7 +789,6 @@ body.phone .sc-map { bottom: 120px; }
 .dk-row .dk-item span { display: block; overflow: hidden; text-overflow: ellipsis; }
 .dk-row .dk-item small { float: none; display: block; }
 .dk-row .dk-item svg.ic { left: 50%; margin-left: -11px; top: 8px; }
-/* giochi ad avvio rapido */
 .gm-list { position: absolute; left: 8px; right: 8px; top: 44px; bottom: 8px; overflow: auto; -webkit-overflow-scrolling: touch; }
 .gm-item { position: relative; float: left; width: 88px; height: 96px; margin: 0 6px 6px 0; padding-top: 6px; border-radius: 10px; background: #172029; text-align: center; overflow: hidden; }
 .gm-item.pressed, .gm-item.busy { background: #26354a; }
@@ -855,7 +796,6 @@ body.phone .sc-map { bottom: 120px; }
 .gm-pic svg.ic { width: 40px; height: 40px; margin-top: 8px; fill: #8b9bab; }
 .gm-item span { display: block; margin-top: 5px; padding: 0 4px; font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gm-item.running:before { content: ""; position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 5px; background: #3fb950; }
-/* Discord compatto */
 .dm-room { font-size: 16px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dm-people { margin-top: 6px; max-height: 58px; overflow: hidden; }
 .dm-p { display: inline-block; margin: 0 4px 4px 0; padding: 2px 8px; border-radius: 10px; background: #172029; font-size: 12px; color: #b6c4d2; border: 1px solid transparent; }
@@ -871,7 +811,6 @@ body.phone .sc-map { bottom: 120px; }
 .vb-step.done svg.ic { fill: #3fb950; }
 .vb-step.in_progress { color: #ffffff; }
 .vb-step.in_progress svg.ic { fill: #6cb6ff; }
-/* telefono: colonne strette, testo più piccolo */
 body.phone .vb-h { left: 8px; right: 8px; font-size: 11px; }
 body.phone .vb-projs, body.phone .vb-tasks { left: 4px; right: 4px; top: 32px; bottom: 4px; }
 body.phone .vb-pr { padding: 5px 6px 5px 20px; margin-bottom: 4px; }
@@ -882,10 +821,8 @@ body.phone .vb-task { padding: 6px 7px; }
 body.phone .vb-ttext { font-size: 12px; }
 body.phone .vb-step { font-size: 11px; padding-left: 16px; }
 body.phone .vb-step svg.ic { width: 12px; height: 12px; }
-/* pulsante del pannello attivo in Viber */
 .tile.btn.vb-on { border-color: #3d8bfd; -webkit-box-shadow: inset 0 0 0 3px #3d8bfd; box-shadow: inset 0 0 0 3px #3d8bfd; }
 
-/* ---- GitHub: guida ai comandi git */
 .gh-tools { position: absolute; right: 0; top: 0; white-space: nowrap; }
 .gh-tools .sbtn { position: static; display: inline-block; margin-left: 6px; }
 .gh-tools .sbtn.on { background: #1f3b63; }

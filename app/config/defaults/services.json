@@ -1,19 +1,10 @@
-// Impostazioni dei servizi. I segreti (token, chiavi API) vanno nel file .env.
 {
   "system": {
-    // false per non interrogare nvidia-smi
-    "gpu": true,
-    // Temperatura CPU su Windows: avvia LibreHardwareMonitor con
-    // "Remote Web Server" attivo e scommenta la riga sotto.
-    // "libreHardwareMonitorUrl": "http://127.0.0.1:8085/data.json"
+    "gpu": true
   },
 
   "github": {
-    // Vuoto = i repository aggiornati più di recente del tuo account
-    // (serve GITHUB_TOKEN nel .env, oppure GitHub CLI "gh" con login fatto).
-    // Esempio: ["tuo-utente/progetto-uno", "tuo-utente/progetto-due"]
     "repositories": [],
-    // Senza token: utente pubblico di cui mostrare i repository
     "owner": "",
     "autoRepos": 6,
     "refreshSeconds": 60
@@ -21,7 +12,6 @@
 
   "ollama": {
     "url": "http://127.0.0.1:11434",
-    // Vuoto = il primo modello installato
     "defaultModel": "",
     "timeoutMs": 180000,
     "keepAlive": "10m",
@@ -29,23 +19,14 @@
   },
 
   "claude": {
-    // "auto" = API se c'è ANTHROPIC_API_KEY nel .env, altrimenti Claude Code (comando "claude")
-    // "api"  = solo Claude API      "cli" = solo Claude Code (usa il tuo abbonamento)
     "backend": "auto",
-    // Solo per backend "api"
     "model": "claude-opus-5-5",
     "effort": "low",
     "maxTokens": 16000,
-    // Solo per backend "cli": modello (vuoto = predefinito) e cartella di lavoro
     "cliModel": "",
     "cliCwd": "~",
-    // Permessi di Claude Code quando lo comandi dal tablet. Vuoto = come da
-    // tue impostazioni (gli strumenti che chiedono conferma vengono negati).
-    // "acceptEdits" = può modificare file senza chiedere.
     "cliPermissionMode": "",
     "system": "Rispondi in italiano, in modo conciso: il testo viene letto su un tablet da 8 pollici. Evita tabelle larghe e blocchi di codice lunghi se non richiesti.",
-    // Finestre in cui il tablet può "scrivere come una tastiera" (modalità PC).
-    // focus = nome del processo da portare in primo piano (vuoto = finestra attiva)
     "remoteTargets": [
       { "label": "Finestra attiva", "focus": "" },
       { "label": "Claude (app)", "focus": "claude" },
@@ -56,44 +37,25 @@
   },
 
   "media": {
-    // Sorgenti musicali di sistema accettate oltre a quelle predefinite
-    // (Spotify, VLC, Tidal, Deezer, MusicBee, ...). Regex sull'id dell'app.
     "allowApps": [],
-    // Mai considerate musica (giochi, launcher...)
     "blockApps": ["riot", "league", "valorant", "steam", "discord", "nvidia", "xbox", "game", "epic", "battle"],
-    // Senza l'estensione del browser, usa i controlli del browser come ripiego
     "browserFallback": true
   },
 
   "todo": {
-    // "memo" = usa le Memo di Windows (Sticky Notes) se ci sono, "local" = lista della dock
     "source": "memo",
-    // Memo in cui aggiungere le nuove attività (parte del titolo, cioè la prima riga in grassetto).
-    // Vuoto = la memo modificata più di recente. Dal tablet puoi scegliere toccando il titolo.
     "memo": "",
-    // TODO uguali su tutti i PC: copia su GitHub nel branch "dock-todo" del remote scelto
-    // (stesse credenziali git del push). Su Linux la lista arriva con i gruppi delle Memo.
-    // Spenta di default: le TODO finiscono nel remote, usalo solo se la repo è PRIVATA (o usa un remote a parte).
     "sync": { "enabled": false, "remote": "origin", "branch": "dock-todo", "intervalSec": 120 }
   },
 
-  // Batteria del tablet/telefono
   "tablet": {
-    // dopo quanti secondi senza tocchi gli aggiornamenti rallentano
     "idleAfterSec": 60,
-    // stato del PC: ogni quanti secondi da toccato e a riposo
     "pollSec": 3,
     "idlePollSec": 15,
-    // dopo quanti minuti senza tocchi parte il salvaschermo (schermo nero, nessun
-    // aggiornamento; un tocco lo riattiva). 0 = mai
     "sleepAfterMin": 10
   },
 
   "voice": {
-    // Trascrizione sul PC degli audio registrati dal tablet (opzionale).
-    // Esempio con whisper.cpp:
-    // "command": "C:\\whisper\\whisper-cli.exe",
-    // "args": ["-m", "C:\\whisper\\ggml-small.bin", "-l", "it", "-nt", "-f", "{file}"]
     "command": ""
   }
 }

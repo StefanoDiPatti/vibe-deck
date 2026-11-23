@@ -1,303 +1,313 @@
 # Vibe Deck
 
-**La Stream Deck da developer, per developer.**
+**The Stream Deck from developer to developers.**
 
-Trasforma un **vecchio tablet Android o il telefono che hai in tasca** in una **Stream Deck wireless** per il PC.
-Sul PC (Windows o Linux) gira un piccolo server Node.js; tablet o telefono aprono una pagina web: niente app da installare.
+Turn an **old Android tablet or the phone in your pocket** into a **wireless Stream Deck** for your PC.
+A small Node.js server runs on the PC (Windows or Linux); the tablet or phone opens a web page: nothing to install on it.
 
 <p align="center">
-  <a href="https://github.com/StefanoDiPatti/vibe-deck/releases/latest"><img src="docs/screenshots/promo.gif" width="720" alt="Video promo di Vibe Deck: il vecchio tablet diventa una Stream Deck"></a><br>
-  <sub>I video in alta qualità (orizzontale e verticale, in mp4) sono tra i file della <a href="https://github.com/StefanoDiPatti/vibe-deck/releases/latest">release</a>.</sub>
+  <a href="https://github.com/StefanoDiPatti/vibe-deck/releases/latest"><img src="docs/screenshots/promo.gif" width="720" alt="Vibe Deck promo video: an old tablet becomes a Stream Deck"></a><br>
+  <sub>High-quality videos (landscape and vertical, mp4) are attached to the <a href="https://github.com/StefanoDiPatti/vibe-deck/releases/latest">release</a>.</sub>
 </p>
 
-![Pagina HOME sul tablet: musica, note e diagnostica del PC](docs/screenshots/tablet-main.png)
+![HOME page on the tablet: music, notes and PC diagnostics](docs/screenshots/tablet-main.png)
 
-## Cosa fa
+## Features
 
-- **Pulsanti** configurabili: app, scorciatoie, testo, macro, comandi. Un pallino verde dice se l'app è già aperta.
-- **Musica**: copertina, coda, salto a un punto del brano, shuffle, ripeti e volume dell'app (Apple Music e YouTube nel browser, Spotify, VLC...).
-- **Stato del PC**: CPU, RAM, GPU NVIDIA (uso, temperatura, VRAM) e rete.
-- **Discord**: server, canali vocali, chi parla, mute, webcam e Go Live.
-- **Audio**: uscita e microfono predefiniti, volume di ogni app.
-- **Schermi**: su quale monitor aprire le app, finestre nelle zone (come Snap), desktop virtuali, trascinamento delle finestre.
-- **Claude Code**: le sessioni dell'app desktop divise per sezioni; scrivi o detti dal tablet e il messaggio parte sul PC. Consumi dell'abbonamento.
-- **Giochi** scelti dal pannello, con la loro icona. **Email** da Thunderbird, in sola lettura.
-- **TODO** sulle Memo di Windows (o in locale su Linux), con dettatura. GitHub, Ollama, Viber, scorciatoie per Blender e DaVinci Resolve.
-- **Quattro temi** (Classico, Material, Neon Elgato, Neo-brutalista) sul tablet e nel pannello del PC.
-- **Pannello di controllo** sul PC per ordinare pagine e pulsanti con il trascinamento, e **QR code** per collegare un telefono.
+- **Buttons** you configure: apps, shortcuts, text, macros, commands. A green dot shows when the app is already running.
+- **Music**: cover art, queue, seek, shuffle, repeat and per-app volume (Apple Music and YouTube in the browser, Spotify, VLC...).
+- **PC status**: CPU, RAM, NVIDIA GPU (load, temperature, VRAM) and network.
+- **Discord**: servers, voice channels, who is talking, mute, webcam and Go Live.
+- **Audio**: default output and microphone, volume of every app.
+- **Screens**: which monitor apps open on, window zones (like Snap), virtual desktops, drag windows around.
+- **Claude Code**: the desktop app sessions grouped by section; type or dictate on the tablet and the message is sent on the PC. Subscription usage.
+- **Games** picked from the control panel, with their own icons. **Email** from Thunderbird, read-only.
+- **TODO** on Windows Sticky Notes (or a local list on Linux), with dictation. GitHub, Ollama, Viber, shortcuts for Blender and DaVinci Resolve.
+- **Four themes** (Classic, Material, Neon Elgato, Neo-brutalist) on the tablet and in the PC control panel.
+- **Tablet UI in English or Italian**, switched from the gear in the top bar.
+- **Control panel** on the PC to arrange pages and buttons by drag and drop, and a **QR code** to connect a phone.
 
-| Pulsanti (pagina APP) | Sessioni di Claude Code |
+| Buttons (APPS page) | Claude Code sessions |
 |---|---|
-| ![Pagina APP](docs/screenshots/tablet-apps.png) | ![Pagina CLAUDE](docs/screenshots/tablet-claude.png) |
-| **Audio, tema Neon Elgato** | **GitHub con deploy, tema Neo-brutalista, in inglese** |
-| ![Pagina AUDIO, tema Neon Elgato](docs/screenshots/tablet-audio-neon.png) | ![Pagina GITHUB in inglese, tema Neo-brutalista](docs/screenshots/tablet-github-brutal-en.png) |
+| ![APPS page](docs/screenshots/tablet-apps.png) | ![CLAUDE page](docs/screenshots/tablet-claude.png) |
+| **Audio, Neon Elgato theme** | **GitHub with deployments, Neo-brutalist theme, in English** |
+| ![AUDIO page, Neon Elgato theme](docs/screenshots/tablet-audio-neon.png) | ![GITHUB page in English, Neo-brutalist theme](docs/screenshots/tablet-github-brutal-en.png) |
 
-*Screenshot dalla demo con dati finti (`npm run demo`, poi `npm run screenshots`).*
+*Screenshots from the demo with fake data (`npm run demo`, then `npm run screenshots`).*
 
-### Pannello di controllo sul PC
+### Control panel on the PC
 
-| Neon Elgato | Neo-brutalista | Material |
+| Neon Elgato | Neo-brutalist | Material |
 |---|---|---|
-| ![Pannello, tema Neon Elgato](docs/screenshots/pannello-neon.png) | ![Pannello, tema Neo-brutalista](docs/screenshots/pannello-brutal.png) | ![Pannello, tema Material](docs/screenshots/pannello-material.png) |
+| ![Control panel, Neon Elgato theme](docs/screenshots/pannello-neon.png) | ![Control panel, Neo-brutalist theme](docs/screenshots/pannello-brutal.png) | ![Control panel, Material theme](docs/screenshots/pannello-material.png) |
 
-## Indice
+## Contents
 
-1. [Guida all'installazione](#1-guida-allinstallazione): requisiti, Windows, Linux, collegare il tablet, aggiornare.
-2. [Guida utente](#2-guida-utente): il tablet, le pagine, il pannello di controllo, i servizi da collegare.
-3. [Guida per sviluppatori](#3-guida-per-sviluppatori-personalizza-la-tua-vibe-deck): pagine, pulsanti, app e comandi a file singoli, azioni, plugin (widget e azioni nuove) e codice.
+1. [Installation guide](#1-installation-guide): requirements, Windows, Linux, connecting the tablet, updating.
+2. [User guide](#2-user-guide): the tablet, the pages, the control panel, services to connect.
+3. [Developer guide](#3-developer-guide-make-vibe-deck-your-own): pages, buttons, apps and commands as single files, actions, plugins (new widgets and actions) and the code.
 
-Il riferimento completo di ogni funzione è in [`app/README.md`](app/README.md).
+The full reference for every feature is in [`app/README.md`](app/README.md).
 
 ---
 
-# 1. Guida all'installazione
+# 1. Installation guide
 
-## Requisiti
+## Requirements
 
-- PC con **Windows 10/11** o **Linux** (KDE Plasma consigliato; GNOME va, senza la pagina SCHERMI).
-- **Node.js 18+**: se manca, lo script di avvio propone di installarlo.
-- Un tablet o telefono con un browser qualsiasi, anche molto vecchio (il client è in ES5).
-- PC e tablet sulla **stessa rete**.
+- A PC with **Windows 10/11** or **Linux** (KDE Plasma recommended; GNOME works, without the SCREENS page).
+- **Node.js 18+**: if it is missing, the start script offers to install it.
+- A tablet or phone with any browser, even a very old one (the client is ES5).
+- PC and tablet on the **same network**.
 
-## Scaricare
+## Download
 
 ```bash
 git clone https://github.com/StefanoDiPatti/vibe-deck.git
 cd vibe-deck/app
 ```
 
-(oppure scarica lo ZIP da GitHub ed estrailo; tutto quello che serve è nella cartella `app/`).
+(or download the ZIP from GitHub and extract it; everything you need is in the `app/` folder).
 
-Vuoi solo vedere com'è? `npm run demo` (in `app/`, dopo `npm install`) apre una dock con **dati finti** su
-`http://127.0.0.1:8790/?t=DEMO1234`, senza toccare la tua configurazione.
+Just want a look? `npm run demo` (in `app/`, after `npm install`) starts a deck with **fake data** at
+`http://127.0.0.1:8790/?t=DEMO1234`, without touching your configuration.
 
 ## Windows
 
-1. Doppio clic su **`app\start.bat`**.
-2. Al primo avvio lo script fa tutto da solo: propone di installare Node.js (con winget) se manca, installa le dipendenze,
-   crea il file `.env` con un **codice di accesso** casuale e la tua configurazione in `app\config\`.
-3. Poi chiede se aprire la porta nel firewall, creare il collegamento **Vibe Deck** sul desktop e attivare l'avvio automatico.
-4. La dock gira **in background**: la trovi come icona (quattro quadratini blu) vicino all'orologio, anche sotto la freccetta.
-   Dal suo menu apri il pannello di controllo, vedi indirizzo e codice per il tablet, apri il log, riavvii o chiudi la dock.
+1. Double-click **`app\start.bat`**.
+2. On the first run the script does everything: it offers to install Node.js (with winget) if missing, installs the dependencies,
+   creates the `.env` file with a random **access code** and your configuration in `app\config\`.
+3. Then it asks whether to open the firewall port, create the **Vibe Deck** shortcut on the desktop and start automatically at login.
+4. The deck runs **in the background**: look for its icon (four small blue squares) next to the clock, possibly under the arrow.
+   From its menu you open the control panel, see the address and code for the tablet, open the log, restart or quit.
 
-> **Rete "Pubblica":** la regola del firewall vale solo per le reti private. Se il tablet non si collega,
-> imposta la rete di Windows come *Privata* (Impostazioni → Rete e Internet → la tua rete).
+> **"Public" network:** the firewall rule only applies to private networks. If the tablet cannot connect,
+> set the Windows network to *Private* (Settings → Network & Internet → your network).
 
-Per ripetere le domande: `start.bat --setup`. Per vedere i messaggi in una finestra: `start.bat --console`.
+To answer the setup questions again: `start.bat --setup`. To see the messages in a window: `start.bat --console`.
 
 ## Linux
 
 ```bash
 cd vibe-deck/app
-./start.sh            # al primo avvio: dipendenze, .env, configurazione, domande come su Windows
+./start.sh
 ```
 
-Programmi consigliati (servono a musica, scorciatoie e pagina SCHERMI):
+The first run installs dependencies, creates `.env` and the configuration, and asks the same questions as on Windows.
+
+Recommended programs (used by music, shortcuts and the SCREENS page):
 
 ```bash
-# Arch / CachyOS
 sudo pacman -S playerctl wtype
-paru -S kdotool                  # pagina SCHERMI (KDE Plasma 6)
-# Debian / Ubuntu
-sudo apt install playerctl xdotool wtype pulseaudio-utils
-# firewall, se attivo
-sudo ufw allow 8787/tcp
+paru -S kdotool
 ```
 
-Per farla girare in background con un'icona sul desktop e nel menu delle app:
+on Arch / CachyOS (`kdotool` is for the SCREENS page on KDE Plasma 6), or on Debian / Ubuntu:
 
 ```bash
-scripts/linux/vibe-deck.sh install            # icona (doppio clic = avvia e apre il pannello)
-scripts/linux/vibe-deck.sh install autostart  # avvio automatico all'accesso (facoltativo)
+sudo apt install playerctl xdotool wtype pulseaudio-utils
 ```
 
-## Collegare il tablet
+If a firewall is active: `sudo ufw allow 8787/tcp`.
 
-1. Il modo più veloce: inquadra il **QR code** in cima al pannello di controllo (o nel terminale all'avvio).
-2. Oppure apri sul tablet il **link diretto** che trovi nel menu dell'icona, per esempio `http://192.168.1.50:8787/?t=ABCD2345`:
-   il codice viene salvato e non te lo chiede più.
-3. Chrome: menu → *Aggiungi a schermata Home*. Dall'icona la dock si apre a schermo intero.
-4. Per tenere lo schermo acceso: *Opzioni sviluppatore → Rimani attivo* (con il tablet in carica).
+To run it in the background with an icon on the desktop and in the app menu:
 
-Il **pannello di controllo** si apre solo dal PC: doppio clic sull'icona Vibe Deck, oppure `http://127.0.0.1:8787/control`.
+```bash
+scripts/linux/vibe-deck.sh install
+scripts/linux/vibe-deck.sh install autostart
+```
 
-## Cosa trovi al primo avvio (configurazione standard)
+The first command adds the icon (double-click = start and open the control panel), the second one (optional) starts the deck at login.
 
-Una Vibe Deck semplice, pensata per chiunque (non serve essere sviluppatori né giocatori):
+## Connecting the tablet
 
-| Nella barra | Cosa fa |
+1. The quickest way: scan the **QR code** at the top of the control panel (or in the terminal at startup).
+2. Or open on the tablet the **direct link** shown in the icon menu, for example `http://192.168.1.50:8787/?t=ABCD2345`:
+   the code is saved and you will not be asked again.
+3. Chrome: menu → *Add to Home screen*. From that icon the deck opens full screen.
+4. To keep the screen on: *Developer options → Stay awake* (with the tablet charging), and turn on **Always on** in the deck's
+   settings (gear in the top bar) so the clock screensaver never starts.
+
+The **control panel** only opens on the PC: double-click the Vibe Deck icon, or go to `http://127.0.0.1:8787/control`.
+
+## What you get on the first run (standard setup)
+
+A simple Vibe Deck, made for anyone (you do not need to be a developer or a gamer):
+
+| In the bar | What it does |
 |---|---|
-| **HOME** | musica in riproduzione, note e TODO, stato del PC (diagnostica) |
-| **MUSICA** | copertina, comandi, coda e volume dell'app |
-| **APP** | Apple Music, Discord, cartelle, screenshot, mostra desktop, blocca PC, spegni schermo, volume |
-| **SCHERMI** | monitor, disposizione delle finestre e desktop virtuali (su Linux serve KDE Plasma: la aggiungi tu) |
-| **AUDIO** | uscita, microfono e volume di ogni app |
+| **HOME** | music playing, notes and TODO, PC status (diagnostics) |
+| **MUSIC** | cover art, controls, queue and app volume |
+| **APPS** | Apple Music, Discord, folders, screenshot, show desktop, lock PC, screen off, volume |
+| **SCREENS** | monitors, window layout and virtual desktops (on Linux it needs KDE Plasma: add it yourself) |
+| **AUDIO** | output, microphone and the volume of every app |
 
-Tutto il resto è già pronto tra le **pagine disponibili** del pannello di controllo: CLAUDE, GITHUB, DEV, OLLAMA, VIBER,
-DISCORD, GIOCHI, EMAIL, BROWSER DEV, ANDROID, BLENDER, DAVINCI, UNREAL. Trascinale nella barra quando ti servono.
-Nella pagina APP i programmi per sviluppatori (VS Code, Docker, Blender…) sono tra i **nascosti**: *Pulsanti delle pagine* >
-APP > *Mostra tutti*, oppure trascina solo quelli che vuoi. La HOME la cambi dal pannello (*HOME*), la lingua e il tema dal tablet
-(rotellina in alto). Per tornare a questa configurazione: *Predefinite* nella barra in fondo al pannello.
+Everything else is ready among the **available pages** of the control panel: CLAUDE, GITHUB, DEV, OLLAMA, VIBER,
+DISCORD, GAMES, EMAIL, BROWSER DEV, ANDROID, BLENDER, DAVINCI, UNREAL. Drag them into the bar when you need them.
+On the APPS page the developer programs (VS Code, Docker, Blender…) are **hidden**: *Pulsanti delle pagine* (page buttons) >
+APP > *Mostra tutti* (show all), or drag only the ones you want. You change the HOME from the control panel (*HOME*), language and
+theme from the tablet (gear at the top). To go back to this setup: *Predefinite* (defaults) in the bar at the bottom of the panel.
 
-## Aggiornare
+> The control panel on the PC is in Italian for now; the tablet can be switched to English.
+
+## Updating
 
 ```bash
 cd vibe-deck
 git pull
 ```
 
-Poi riavvia la dock (menu dell'icona → *Riavvia*). I file di configurazione che non hai mai modificato passano da soli
-alla versione nuova; quelli che hai cambiato restano come sono. I tuoi dati (`app/data/`, `app/config/`, `app/.env`) non sono in git.
+Then restart the deck (icon menu → *Riavvia* / restart). Configuration files you never changed are upgraded automatically;
+the ones you changed stay as they are. Your data (`app/data/`, `app/config/`, `app/.env`) is not in git.
 
-Se qualcosa non va: [Problemi comuni](app/README.md#problemi-comuni).
+If something goes wrong: [Troubleshooting](app/README.md#troubleshooting).
 
 ---
 
-# 2. Guida utente
+# 2. User guide
 
-## Il tablet
+## The tablet
 
-- **Barra in basso**: le pagine. Quali e in che ordine lo scegli dal pannello di controllo.
-- **Pulsanti**: un tocco esegue l'azione. Quelli con la barra arancione in basso (es. BLOCCA) vanno **tenuti premuti** circa
-  un secondo. Volume e annulla si ripetono se tieni premuto. Il **pallino verde** dice che l'app è aperta.
-- **In alto a destra**: rete del PC, velocità, la **rotellina delle impostazioni** e l'orologio (toccalo per lo schermo intero).
-  La rotellina apre un menù con **tema**, **lingua** (IT / EN) e **Sempre attivo** (niente salvaschermo con l'ora).
-  Le scelte si ricordano sul tablet; il pannello di controllo sul PC resta in italiano.
-- **Batteria**: dopo un minuto senza tocchi la dock aggiorna i dati più lentamente; dopo 10 minuti parte il **salvaschermo**
-  (orologio fioco). Un tocco la riattiva.
-- **Telefono**: funziona anche da telefono, in orizzontale.
-- Per aprire direttamente una pagina: `http://IP:8787/#media`, `#claude`, `#games`...
+- **Bottom bar**: the pages. You choose which ones and their order in the control panel.
+- **Buttons**: a tap runs the action. Buttons with an orange bar at the bottom (e.g. LOCK) must be **held** for about
+  a second. Volume and undo repeat while you hold them. The **green dot** means the app is running.
+- **Top right**: PC network, speed, the **settings gear** and the clock (tap it for full screen).
+  The gear opens a menu with **theme**, **language** (IT / EN) and **Always on** (no clock screensaver).
+  The choices are remembered on the tablet.
+- **Battery**: after a minute without touches the deck refreshes data more slowly; after 10 minutes the **screensaver**
+  starts (a dim clock). One tap wakes it up.
+- **Phone**: it works on a phone too, in landscape.
+- To open a page directly: `http://IP:8787/#media`, `#claude`, `#games`...
 
-## Le pagine
+## The pages
 
-| Pagina | Cosa fa | Windows | Linux |
+| Page | What it does | Windows | Linux |
 |---|---|---|---|
-| HOME | Musica, stato del PC e TODO; **la scegli tu dal pannello** (consumi di Claude, GitHub, email, orologio…) | ✅ | ✅ (TODO in una lista della dock invece delle Memo) |
-| MUSICA | Copertina, coda, posizione nel brano, volume dell'app | ✅ | ✅ con `playerctl` |
-| APP | Pulsanti delle app e del sistema (anche Docker Desktop) | ✅ | ✅ (Terminale, Monitor di sistema, Spectacle al posto di quelli di Windows) |
-| DEV | Strumenti da sviluppatore | ✅ | ✅ |
-| GITHUB | Repository, PR, issue, CI e **stato dei deploy** (GitHub Actions); guida ai comandi git | ✅ | ✅ |
-| OLLAMA | Chat con un modello locale | ✅ | ✅ |
-| CLAUDE | Sessioni di Claude Code, consumi, chat | ✅ (app desktop di Claude) | ✅ (con `claude -p`) |
-| DISCORD | Server, canali vocali, mute, webcam, Go Live | ✅ | ✅ |
-| GAMES | I tuoi giochi, con pallino verde se aperti | ✅ | ✅ |
-| EMAIL | Posta in arrivo da Thunderbird, in sola lettura | ✅ | ✅ |
-| SCHERMI | Monitor, zone delle finestre, desktop virtuali, trascinamento | ✅ | ⚠️ solo KDE Plasma 6 con `kdotool` |
-| AUDIO | Uscita, microfono, volume di ogni app | ✅ | ✅ con `pactl` |
-| VIBER | Pannelli, progetti e task di Viber | ✅ | ✅ |
-| BLENDER, DAVINCI RESOLVE, UNREAL | Scorciatoie dei tre programmi (Unreal: play, compila C++, strumenti e viste) | ✅ | ✅ |
-| BROWSER DEV | Scorciatoie del browser per sviluppare: ricarica pulita, DevTools, console, modalità dispositivo, localhost | ✅ | ✅ |
-| ANDROID | adb e logcat: dispositivi, errori e crash, screenshot, schermo del telefono (scrcpy), React Native | ✅ serve adb | ✅ serve adb |
-| DESKTOP VIRTUALI | Guida alle scorciatoie | ❌ (è dentro SCHERMI) | ✅ |
+| HOME | Music, PC status and TODO; **you design it in the control panel** (Claude usage, GitHub, email, clock…) | ✅ | ✅ (TODO in a deck list instead of Sticky Notes) |
+| MUSIC | Cover art, queue, position in the track, app volume | ✅ | ✅ with `playerctl` |
+| APPS | App and system buttons (Docker Desktop too) | ✅ | ✅ (Terminal, System Monitor, Spectacle instead of the Windows ones) |
+| DEV | Developer tools | ✅ | ✅ |
+| GITHUB | Repositories, PRs, issues, CI and **deployment status** (GitHub Actions); git command guide | ✅ | ✅ |
+| OLLAMA | Chat with a local model | ✅ | ✅ |
+| CLAUDE | Claude Code sessions, usage, chat | ✅ (Claude desktop app) | ✅ (with `claude -p`) |
+| DISCORD | Servers, voice channels, mute, webcam, Go Live | ✅ | ✅ |
+| GAMES | Your games, with a green dot when running | ✅ | ✅ |
+| EMAIL | Inbox from Thunderbird, read-only | ✅ | ✅ |
+| SCREENS | Monitors, window zones, virtual desktops, drag and drop | ✅ | ⚠️ KDE Plasma 6 only, with `kdotool` |
+| AUDIO | Output, microphone, volume of every app | ✅ | ✅ with `pactl` |
+| VIBER | Viber panels, projects and tasks | ✅ | ✅ |
+| BLENDER, DAVINCI RESOLVE, UNREAL | Shortcuts for the three programs (Unreal: play, compile C++, tools and views) | ✅ | ✅ |
+| BROWSER DEV | Browser shortcuts for web development: hard reload, DevTools, console, device mode, localhost | ✅ | ✅ |
+| ANDROID | adb and logcat: devices, errors and crashes, screenshot, phone screen (scrcpy), React Native | ✅ needs adb | ✅ needs adb |
+| VIRTUAL DESKTOPS | Shortcut guide | ❌ (it is inside SCREENS) | ✅ |
 
-Al primo avvio nella barra ci sono HOME, MUSICA, APP, SCHERMI e AUDIO (vedi *Cosa trovi al primo avvio*): le altre le aggiungi dal pannello di controllo.
+On the first run the bar holds HOME, MUSIC, APPS, SCREENS and AUDIO (see *What you get on the first run*): add the others from the control panel.
 
-## Il pannello di controllo
+## The control panel
 
-Si apre sul PC (doppio clic sull'icona **Vibe Deck**). Da qui:
+It opens on the PC (double-click the **Vibe Deck** icon). From here:
 
-- **Pagine**: trascinale per cambiare l'ordine della barra, spostale tra *Nella barra* e *Disponibili*; la stella sceglie la pagina iniziale.
-- **HOME**: costruisci la pagina HOME sulla griglia del tablet. Dal catalogo a destra (un widget per pagina: Musica, Note e TODO,
-  Diagnostica, Orologio, Consumi di Claude, GitHub, Email, Audio, Discord (stanza e microfono), Desktop virtuali, Viber progetti
-  e Viber task, Ollama, Giochi, più i widget dei plugin) un tocco mette il widget nel primo posto libero. **Trascina** un widget
-  per spostarlo, trascina **bordi e angoli** per cambiarne la misura: si muove a scatti di una cella, si ferma contro gli altri
-  e non scende sotto la sua misura minima. Le celle tratteggiate sono libere. **Salva HOME**; *Torna alla HOME predefinita* annulla tutto.
-- **Pulsanti delle pagine**: riordinali o nascondili; la griglia si adatta da sola. **Salva sul tablet** e il tablet si aggiorna.
-- **Giochi**: *Aggiungi un gioco* apre il selettore di file; scegli nome e icona (quella del file o una trovata sul web).
-- **Email**: stato di Thunderbird, account trovati e quali mostrare sul tablet.
-- **Discord**: collegamento e autorizzazione.
-- **QR code** per collegare un telefono o un tablet, e il **tema** del pannello.
+- **Pages**: drag them to change the order of the bar, move them between *Nella barra* (in the bar) and *Disponibili* (available); the star picks the start page.
+- **HOME**: build the HOME page on the tablet grid. From the catalog on the right (one widget per page: Music, Notes and TODO,
+  Diagnostics, Clock, Claude usage, GitHub, Email, Audio, Discord (room and microphone), Virtual desktops, Viber projects
+  and Viber tasks, Ollama, Games, plus plugin widgets) a tap puts the widget in the first free spot. **Drag** a widget
+  to move it, drag its **edges and corners** to resize it: it snaps to cells, stops against the others
+  and never goes below its minimum size. Dashed cells are free. **Salva HOME** saves; *Torna alla HOME predefinita* resets everything.
+- **Page buttons**: reorder or hide them; the grid adapts by itself. **Salva sul tablet** and the tablet updates.
+- **Games**: *Aggiungi un gioco* (add a game) opens the file picker; choose name and icon (the file's own or one found on the web).
+- **Email**: Thunderbird status, accounts found and which ones to show on the tablet.
+- **Discord**: connection and authorization.
+- **QR code** to connect a phone or tablet, and the panel **theme**.
 
-## Servizi da collegare
+## Services to connect
 
-| Servizio | Cosa fare | Dettagli |
+| Service | What to do | Details |
 |---|---|---|
-| Email | Installa [Thunderbird](https://www.thunderbird.net/download/) e aggiungi lì i tuoi account (anche università e lavoro) | [Email](app/README.md#email) |
-| Discord | Crea un'app gratuita nel Developer Portal e autorizzala dal pannello | [Discord](app/README.md#discord) |
-| Apple Music web, YouTube | Installa l'estensione del browser inclusa (`app/extension/`) | [Musica](app/README.md#musica) |
-| Claude Code | Claude Code installato sul PC (`claude` nel terminale) | [Claude](app/README.md#claude) |
-| GitHub | Facoltativo: `gh auth login`, oppure `GITHUB_TOKEN` nel `.env` | [GitHub](app/README.md#github) |
+| Email | Install [Thunderbird](https://www.thunderbird.net/download/) and add your accounts there (university and work ones too) | [Email](app/README.md#email) |
+| Discord | Create a free app in the Developer Portal and authorize it from the control panel | [Discord](app/README.md#discord) |
+| Apple Music web, YouTube | Install the included browser extension (`app/extension/`) | [Music](app/README.md#music) |
+| Claude Code | Claude Code installed on the PC (`claude` in the terminal) | [Claude](app/README.md#claude) |
+| GitHub | Optional: `gh auth login`, or `GITHUB_TOKEN` in `.env` | [GitHub](app/README.md#github) |
 
 ---
 
-# 3. Guida per sviluppatori: personalizza la tua Vibe Deck
+# 3. Developer guide: make Vibe Deck your own
 
-## Dove stanno le cose
+## Where things live
 
-Tutti i file di configurazione sono **JSON con commenti `//`**. Quando salvi, il tablet si aggiorna da solo, senza riavviare.
-Le personalizzazioni si fanno **un file per volta**: una pagina, un'app o un comando per file.
+All configuration files are **JSON**. When you save, the tablet updates by itself, without restarting.
+Customizations are made **one file at a time**: one page, app or command per file.
 
-| In `app/` | Cosa contiene | In git? |
+| In `app/` | What it contains | In git? |
 |---|---|---|
-| `config/pages/<id>.json` | **le tue pagine** (una per file) e le copie modificate di quelle predefinite | no, sono tue |
-| `config/apps/<id>.json` | **le tue app** (una per file; `id` = nome del file) | no |
-| `config/commands/<id>.json` | **i tuoi comandi** consentiti (uno per file) | no |
-| `config/dock.json` | titolo, griglia, pagina iniziale e ordine delle pagine | no |
-| `config/apps.json`, `config/commands.json` | app e comandi predefiniti (puoi aggiungerne anche qui) | no |
-| `config/services.json` | musica, Claude, GitHub, Ollama, TODO, tempi del tablet | no |
-| `config/layout.json` | scelte del pannello (pagine nella barra, ordine dei pulsanti) | no, lo scrive il pannello |
-| `config/defaults/` | i default del progetto: `pages/` (una pagina per file) e gli altri JSON | sì |
-| `plugins/<nome>/` | **plugin**: azioni, rotte, pagine, widget e icone in più (vedi [Plugin](#plugin-widget-e-azioni-nuove)) | a scelta tua |
-| `schema/` | schemi JSON per l'editor (suggerimenti e controllo dei campi) | sì |
-| `data/` | dati personali: giochi, account da mostrare, log, segreti cifrati | no |
-| `.env` | porta, codice di accesso, token e chiavi API | no |
+| `config/pages/<id>.json` | **your pages** (one per file) and edited copies of the default ones | no, they are yours |
+| `config/apps/<id>.json` | **your apps** (one per file; `id` = file name) | no |
+| `config/commands/<id>.json` | **your allowed commands** (one per file) | no |
+| `config/dock.json` | title, grid, start page and page order | no |
+| `config/apps.json`, `config/commands.json` | default apps and commands (you can add more here too) | no |
+| `config/services.json` | music, Claude, GitHub, Ollama, TODO, tablet timings ([reference](app/README.md#servicesjson)) | no |
+| `config/layout.json` | control panel choices (pages in the bar, button order) | no, the panel writes it |
+| `config/defaults/` | the project defaults: `pages/` (one page per file) and the other JSON files | yes |
+| `plugins/<name>/` | **plugins**: extra actions, routes, pages, widgets and icons (see [Plugins](#plugins-new-widgets-and-actions)) | your choice |
+| `schema/` | JSON schemas for the editor (suggestions and field checks) | yes |
+| `data/` | personal data: games, accounts to show, log, encrypted secrets | no |
+| `.env` | port, access code, tokens and API keys | no |
 
-**Regole:**
+**Rules:**
 
-- non modificare `config/defaults/`: le tue versioni in `config/` vincono sempre su quelle predefinite;
-- per tornare al default cancella il tuo file;
-- con **VS Code** aperto sulla cartella del progetto i file di `config/pages/`, `config/apps/` e `config/commands/` hanno
-  suggerimenti e controllo dei campi (`.vscode/settings.json` collega gli schemi di `app/schema/`);
-- il **pannello di controllo**, in fondo (*Pulsanti e nuove pagine*), elenca i problemi: un pulsante che usa un'app o un comando
-  che non esiste, una pagina sbagliata, un'icona o un widget sconosciuti, un file non valido. Gli stessi errori finiscono nel log all'avvio.
+- do not edit `config/defaults/`: your versions in `config/` always win over the defaults;
+- to go back to a default, delete your file;
+- with **VS Code** open on the project folder, files in `config/pages/`, `config/apps/` and `config/commands/` get
+  suggestions and field checks (`.vscode/settings.json` links the schemas in `app/schema/`);
+- the **control panel**, at the bottom (*Pulsanti e nuove pagine*, buttons and new pages), lists the problems: a button using an app or a command
+  that does not exist, a broken page, an unknown icon or widget, an invalid file. The same errors go to the log at startup.
 
-## Aggiungere una pagina
+## Adding a page
 
-Crea `config/pages/stream.json`: la pagina compare da sola sul tablet, in fondo alla barra.
-Per partire da un file già pronto: `npm run new:page -- stream` (oppure `npm run new:page -- stream "LIVE"` per scegliere il titolo).
+Create `config/pages/stream.json`: the page appears on the tablet by itself, at the end of the bar.
+To start from a ready-made file: `npm run new:page -- stream` (or `npm run new:page -- stream "LIVE"` to choose the title).
 
 ```json
-// Pagina per lo streaming
 {
   "id": "stream",
   "title": "STREAM",
   "icon": "live",
-  "description": "Scene e microfono",
+  "description": "Scenes and microphone",
   "autoGrid": true,
   "tiles": [
     { "id": "obs", "label": "OBS", "icon": "camera", "color": "#5b3fa0", "action": { "type": "launch", "app": "obs" } },
-    { "id": "scena1", "label": "SCENA 1", "action": { "type": "hotkey", "keys": ["CTRL", "F1"], "focus": "obs64" } },
-    { "id": "mic", "label": "MUTA", "icon": "mic", "action": { "type": "discord", "command": "mute" } },
+    { "id": "scene1", "label": "SCENE 1", "action": { "type": "hotkey", "keys": ["CTRL", "F1"], "focus": "obs64" } },
+    { "id": "mic", "label": "MUTE", "icon": "mic", "action": { "type": "discord", "command": "mute" } },
     { "widget": "clock", "w": 2, "h": 1 }
   ]
 }
 ```
 
-- `"id"`: nome fisso della pagina, uguale al nome del file. Apre la pagina da un pulsante (`{ "type": "page", "page": "stream" }`) o dall'indirizzo (`#stream`).
-- `"tab": false`: la pagina è disponibile ma non nella barra (la aggiungi dal pannello).
-- `"columns"`/`"rows"`: griglia fissa; `"autoGrid": true`: si adatta al numero di pulsanti.
-- `"buttonGrid": true`: pulsanti in griglia a sinistra e widget a destra (`"widgetWidth": 0.5`), come la pagina VIBER.
-- **Widget** disponibili: `system`, `nowplaying`, `queue`, `github`, `todo`, `clock`, `claude`, `claudeusage` (solo i consumi), `chat` (con `"provider": "ollama"`),
+- `"id"`: fixed page name, same as the file name. Open the page from a button (`{ "type": "page", "page": "stream" }`) or from the address (`#stream`).
+- `"tab": false`: the page is available but not in the bar (add it from the control panel).
+- `"columns"`/`"rows"`: fixed grid; `"autoGrid": true`: adapts to the number of buttons.
+- `"buttonGrid": true`: buttons in a grid on the left and widgets on the right (`"widgetWidth": 0.5`), like the VIBER page.
+- Available **widgets**: `system`, `nowplaying`, `queue`, `github`, `todo`, `clock`, `claude`, `claudeusage` (usage only), `chat` (with `"provider": "ollama"`),
   `discord`, `screens`, `mail`, `audio`, `vdesk`, `viber`.
-- **Icone**: `home music apps code github chat sparkle check cube film lock play pause stop next prev volup voldown mute shuffle repeat
+- **Icons**: `home music apps code github chat sparkle check cube film lock play pause stop next prev volup voldown mute shuffle repeat
   folder terminal cpu camera desktop robot refresh save keyboard undo redo fullscreen cut flag back add close send trash power bolt mic link
-  headset gamepad cards tank sword layout live camoff window target mail attach`.
+  headset gamepad cards tank sword layout live camoff window target mail attach settings`.
 
-**La HOME** si sceglie dal pannello (*HOME*): finisce in `config/layout.json` (`"homePage"`, ogni widget con colonna `x`, riga `y`,
-larghezza `w` e altezza `h`) e vince sulla pagina `main` dei file. Anche nelle tue pagine `"x"` e `"y"` fissano un widget in una cella;
-senza, i widget si mettono in ordine nella prima cella libera. Per mettere un widget nel catalogo della HOME aggiungilo a `CATALOG`
-in `server/home.js` (i widget dei plugin ci sono già); widget piccoli fatti per la HOME: `claudeusage`, `desks`, `games`,
-`discordmini`, e `viber` con `"show": "projects"` o `"tasks"`.
+**The HOME** is designed in the control panel (*HOME*): it is saved in `config/layout.json` (`"homePage"`, each widget with column `x`, row `y`,
+width `w` and height `h`) and wins over the `main` page in the files. In your own pages `"x"` and `"y"` pin a widget to a cell too;
+without them, widgets go in order into the first free cell. To add a widget to the HOME catalog, add it to `CATALOG`
+in `server/home.js` (plugin widgets are already there); small widgets made for the HOME: `claudeusage`, `desks`, `games`,
+`discordmini`, and `viber` with `"show": "projects"` or `"tasks"`.
 
-**Cambiare una pagina predefinita:** copia il suo file da `config/defaults/pages/` (es. `apps.json`) in `config/pages/` e modifica
-la copia. Per l'ordine e i pulsanti nascosti basta il pannello, senza toccare i file.
+**Changing a default page:** copy its file from `config/defaults/pages/` (e.g. `apps.json`) to `config/pages/` and edit
+the copy. For order and hidden buttons the control panel is enough, no files to touch.
 
-**Ordine delle pagine:** in `config/dock.json`, `"pages"` è una lista di id (`["main", "media", "stream", ...]`). Le pagine non
-elencate vanno in fondo. Puoi ancora scrivere una pagina intera dentro `dock.json`, come nelle versioni vecchie.
+**Page order:** in `config/dock.json`, `"pages"` is a list of ids (`["main", "media", "stream", ...]`). Pages not
+listed go at the end. You can still write a whole page inside `dock.json`, as in older versions.
 
-## Aggiungere un pulsante (e la sua app)
+## Adding a button (and its app)
 
-Il pulsante va nei `tiles` della pagina (vedi `obs` nell'esempio sopra). L'app che avvia si scrive in `config/apps/obs.json`:
+The button goes in the page's `tiles` (see `obs` in the example above). The app it launches goes in `config/apps/obs.json`:
 
 ```json
 {
@@ -308,223 +318,230 @@ Il pulsante va nei `tiles` della pagina (vedi `obs` nell'esempio sopra). L'app c
 }
 ```
 
-- `"id"` del pulsante: nome fisso; il pannello lo usa per ricordare ordine e pulsanti nascosti.
-- `"sub"`: seconda riga. `"color"`: colore (si adatta al tema). `"w"`/`"h"`: celle occupate.
-- `"confirm": true`: va tenuto premuto. `"repeat": true`: si ripete tenendo premuto. `"hidden": true`: nascosto finché non lo mostri dal pannello.
-- `"toggle": true` (nell'app): pallino verde se aperta e un altro tocco la chiude. `"whenRunning": "focus"`: se è aperta la porta in primo piano.
-- Nei percorsi: `%USERPROFILE%`, `%LOCALAPPDATA%`, `~`, `$HOME`, `*` per la versione; anche collegamenti `.lnk` e `shell:AppsFolder\<AppID>` (app dello Store).
-- Più app in un file solo: `{ "apps": { "obs": { ... }, "spotify": { ... } } }`.
+- Button `"id"`: fixed name; the control panel uses it to remember order and hidden buttons.
+- `"sub"`: second line. `"color"`: color (adapts to the theme). `"w"`/`"h"`: cells taken.
+- `"confirm": true`: must be held. `"repeat": true`: repeats while held. `"hidden": true`: hidden until you show it from the panel.
+- `"toggle": true` (in the app): green dot when running, and another tap closes it. `"whenRunning": "focus"`: if it is running, bring it to the front.
+- In paths: `%USERPROFILE%`, `%LOCALAPPDATA%`, `~`, `$HOME`, `*` for the version; also `.lnk` shortcuts and `shell:AppsFolder\<AppID>` (Store apps).
+- Several apps in one file: `{ "apps": { "obs": { ... }, "spotify": { ... } } }`.
 
-## Un pulsante diverso su Windows e Linux
+All app fields: [apps.json](app/README.md#appsjson).
+
+## A different button on Windows and Linux
 
 ```json
-{ "id": "terminal", "label": "POWERSHELL", "linux": { "label": "TERMINALE" }, "action": { "type": "launch", "app": "powershell" } },
+{ "id": "terminal", "label": "POWERSHELL", "linux": { "label": "TERMINAL" }, "action": { "type": "launch", "app": "powershell" } },
 { "id": "viber", "os": "linux", "label": "VIBER", "action": { "type": "launch", "app": "viber" } }
 ```
 
-- `"os": "linux"` (o `"windows"`): il pulsante, o la pagina intera, c'è solo su quel sistema.
-- `"linux": { ... }` (o `"windows"`): i campi che cambiano su quel sistema, anche l'`action`.
-- Nelle app e nei comandi la variante `"linux"` può essere una **lista di alternative**: vale la prima installata.
+- `"os": "linux"` (or `"windows"`): the button, or the whole page, exists only on that system.
+- `"linux": { ... }` (or `"windows"`): the fields that change on that system, `action` included.
+- In apps and commands the `"linux"` variant can be a **list of alternatives**: the first one installed wins.
 
-## Tipi di azione
+## Action types
 
-| Azione | Esempio |
+| Action | Example |
 |---|---|
-| Avvia app | `{ "type": "launch", "app": "vscode" }` |
-| Scorciatoia | `{ "type": "hotkey", "keys": ["CTRL", "SHIFT", "P"], "focus": "Code" }` |
-| Tasto singolo | `{ "type": "key", "key": "F12" }` |
-| Scrivi testo | `{ "type": "text", "value": "Ciao!\n" }` |
-| Musica e volume | `{ "type": "media", "command": "play_pause" }` (`next`, `volume_up`, `app_mute`...) |
-| Apri URL / cartella | `{ "type": "open_url", "url": "https://github.com" }`, `{ "type": "open_path", "path": "~/Documents" }` |
-| Comando | `{ "type": "command", "id": "lock_pc" }` → un comando consentito (sotto) |
-| Cambia pagina | `{ "type": "page", "page": "blender" }` |
+| Launch app | `{ "type": "launch", "app": "vscode" }` |
+| Shortcut | `{ "type": "hotkey", "keys": ["CTRL", "SHIFT", "P"], "focus": "Code" }` |
+| Single key | `{ "type": "key", "key": "F12" }` |
+| Type text | `{ "type": "text", "value": "Hello!\n" }` |
+| Music and volume | `{ "type": "media", "command": "play_pause" }` (`next`, `volume_up`, `app_mute`...) |
+| Open URL / folder | `{ "type": "open_url", "url": "https://github.com" }`, `{ "type": "open_path", "path": "~/Documents" }` |
+| Command | `{ "type": "command", "id": "lock_pc" }` → an allowed command (below) |
+| Switch page | `{ "type": "page", "page": "blender" }` |
 | Discord | `{ "type": "discord", "command": "mute" }` (`deaf`, `video`, `stream`) |
 | Macro | `{ "type": "macro", "steps": [ {…}, { "type": "wait", "ms": 300 }, {…} ] }` |
 
-Tasti disponibili, opzioni e dettagli: [Tipi di azione](app/README.md#tipi-di-azione).
+Available keys, options and details: [Action types](app/README.md#action-types).
 
-## Un comando nuovo
+## A new command
 
-Il tablet non può lanciare comandi liberi: solo quelli consentiti. Crea `config/commands/indirizzi_ip.json`:
+The tablet cannot run arbitrary commands: only allowed ones. Create `config/commands/ip_addresses.json`:
 
 ```json
 {
-  "label": "Indirizzi IP",
+  "label": "IP addresses",
   "showOutput": true,
   "windows": { "cmd": "ipconfig" },
   "linux": { "cmd": "ip", "args": ["-brief", "address"] }
 }
 ```
 
-Poi il pulsante: `{ "label": "IP", "icon": "link", "action": { "type": "command", "id": "indirizzi_ip" } }`: l'output compare sul tablet.
+Then the button: `{ "label": "IP", "icon": "link", "action": { "type": "command", "id": "ip_addresses" } }`: the output shows up on the tablet.
 
-## Plugin: widget e azioni nuove
+## Plugins: new widgets and actions
 
-Un plugin aggiunge widget, azioni, icone e pagine **senza toccare i file del progetto**: è una cartella in `app/plugins/`,
-caricata da sola all'avvio. Il modo più veloce per iniziare:
+A plugin adds widgets, actions, icons and pages **without touching the project files**: it is a folder in `app/plugins/`,
+loaded automatically at startup. The quickest way to start:
 
 ```bash
 cd app
-npm run new:widget -- meteo
+npm run new:widget -- weather
 ```
 
-Crea un plugin che funziona già (un widget con l'ora del PC e un contatore, un pulsante SALUTA). Riavvia la dock e nel pannello
-aggiungi la pagina METEO alla barra. Poi cambia i file:
+It creates a working plugin (a widget with the PC time and a counter, plus a SALUTA button). Restart the deck and in the control panel
+add the WEATHER page to the bar. Then change the files:
 
-```text
-plugins/meteo/
-  index.js            server: azioni e rotte            (dopo una modifica riavvia la dock)
-  public/meteo.js     tablet: il widget e le icone      (ES5, si ricarica da solo)
-  public/meteo.css    stile del widget                  (niente flexbox)
-  pages/meteo.json    pagine del plugin                 (come config/defaults/pages)
-  apps/, commands/    app e comandi consentiti, se servono
-```
+| File | What it is | After a change |
+|---|---|---|
+| `plugins/weather/index.js` | server: actions and routes | restart the deck |
+| `plugins/weather/public/weather.js` | tablet: the widget and the icons (ES5) | reloads by itself |
+| `plugins/weather/public/weather.css` | widget style (no flexbox) | reloads by itself |
+| `plugins/weather/pages/weather.json` | plugin pages (like `config/defaults/pages`) | reloads by itself |
+| `plugins/weather/apps/`, `commands/` | apps and allowed commands, if needed | reloads by itself |
 
 **Server (`index.js`)**:
 
 ```js
 module.exports = {
-  description: 'Meteo di casa',
-  // pulsante: { "type": "meteo.aggiorna" }  (il tipo è sempre "<plugin>.<azione>")
+  description: 'Home weather',
   actions: {
-    aggiorna: async function (azione, ctx) {
-      await ctx.execute({ type: 'key', key: 'F5' });   // può usare le azioni della dock
-      return { message: 'Aggiornato' };                 // messaggio mostrato sul tablet
+    refresh: async function (action, ctx) {
+      await ctx.execute({ type: 'key', key: 'F5' });
+      return { message: 'Refreshed' };
     }
   },
-  // rotte col codice d'accesso: GET /api/plugins/meteo/oggi
   routes: function (router, ctx) {
-    router.get('/oggi', ctx.route(async function () {
-      return { gradi: 21 };                             // arriva al tablet come dato
+    router.get('/today', ctx.route(async function () {
+      return { degrees: 21 };
     }));
   }
 };
 ```
 
-`ctx` contiene `name`, `log` (scrive nel log della dock), `config`, `platform`, `paths`, `execute(azione)`, `route(fn)` e
-`ensureDataDir()` (cartella dati del plugin in `data/plugins/<nome>/`).
+- A button runs an action with `{ "type": "weather.refresh" }`: the type is always `"<plugin>.<action>"`.
+- An action can use the deck's own actions through `ctx.execute(...)`; the returned `message` is shown on the tablet.
+- Routes are protected by the access code: the one above is `GET /api/plugins/weather/today`, and what it returns reaches the tablet as data.
 
-**Tablet (`public/*.js`)**, in ES5 come il resto del client:
+`ctx` contains `name`, `log` (writes to the deck log), `config`, `platform`, `paths`, `execute(action)`, `route(fn)` and
+`ensureDataDir()` (the plugin data folder in `data/plugins/<name>/`).
+
+**Tablet (`public/*.js`)**, in ES5 like the rest of the client:
 
 ```js
 (function () {
-  Icons.register('sole', 'M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z');   // path SVG 24x24
-  Widgets.register('meteo', function (root, tile, app) {
-    var H = Widgets.helpers;                       // el, header, smallBtn, setHtml: gli stessi dei widget del progetto
-    H.header(root, 'METEO');
-    var t = H.el('div', 'pl-meteo', '…');
+  Icons.register('sun', 'M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z');
+  Widgets.register('weather', function (root, tile, app) {
+    var H = Widgets.helpers;
+    H.header(root, 'WEATHER');
+    var t = H.el('div', 'pl-weather', '…');
     root.appendChild(t);
-    function load() { D.api.get('/api/plugins/meteo/oggi', function (err, d) { D.setText(t, err ? err.message : d.gradi + '°'); }); }
+    function load() { D.api.get('/api/plugins/weather/today', function (err, d) { D.setText(t, err ? err.message : d.degrees + '°'); }); }
     load();
-    var timer = D.every(60000, 300000, load);       // ogni minuto se usato, ogni 5 a riposo
-    return { update: function (stato) {}, resize: function (w, h) {}, destroy: function () { D.stop(timer); } };
+    var timer = D.every(60000, 300000, load);
+    return { update: function (state) {}, resize: function (w, h) {}, destroy: function () { D.stop(timer); } };
   });
 })();
 ```
 
-Poi nelle pagine: `{ "widget": "meteo", "w": 2, "h": 1 }` e `"icon": "sole"`.
+- `Icons.register` takes an SVG path in a 24×24 box.
+- `Widgets.helpers` (`el`, `header`, `smallBtn`, `setHtml`) are the same helpers the project widgets use.
+- `D.every(active, idle, fn)` refreshes every minute while the tablet is in use and every 5 minutes when idle.
 
-- I nomi dei widget e delle icone del progetto non si possono sostituire.
-- Pagine, app e comandi del plugin valgono come quelli predefiniti: una tua copia in `config/` vince.
-- Una cartella che inizia con `_` è spenta (es. `plugins/_meteo`).
-- Il **pannello di controllo** elenca i plugin (cosa aggiungono) e i loro errori; il controllo della configurazione conosce
-  anche i loro widget, icone e azioni. Con VS Code le pagine dei plugin hanno gli stessi suggerimenti di quelle in `config/pages/`.
+Then in the pages: `{ "widget": "weather", "w": 2, "h": 1 }` and `"icon": "sun"`.
 
-## Un widget per la HOME
+- Project widget and icon names cannot be replaced.
+- Plugin pages, apps and commands count as defaults: your copy in `config/` wins.
+- A folder starting with `_` is disabled (e.g. `plugins/_weather`).
+- The **control panel** lists the plugins (what they add) and their errors; the configuration check also knows
+  their widgets, icons and actions. In VS Code plugin pages get the same suggestions as those in `config/pages/`.
 
-Ogni widget di un plugin compare da solo nel catalogo della HOME (pannello > HOME, gruppo *PLUGIN &lt;NOME&gt;*). Come compare
-lo decidi in `plugins/<nome>/home.json` (`npm run new:widget` lo crea già; si rilegge da solo, niente riavvio):
+## A widget for the HOME
+
+Every plugin widget appears automatically in the HOME catalog (panel > HOME, group *PLUGIN &lt;NAME&gt;*). How it appears
+is set in `plugins/<name>/home.json` (`npm run new:widget` already creates it; it is reloaded by itself, no restart):
 
 ```json
 {
-  "meteo": { "label": "Meteo", "icon": "sole", "description": "Temperatura di casa", "w": 2, "h": 2, "minW": 2, "minH": 1 },
-  // più versioni dello stesso widget, con campi diversi (il widget li legge in tile.citta)
-  "meteo-roma": { "widget": "meteo", "label": "Meteo Roma", "props": { "citta": "Roma" } }
+  "weather": { "label": "Weather", "icon": "sun", "description": "Home temperature", "w": 2, "h": 2, "minW": 2, "minH": 1 },
+  "weather-rome": { "widget": "weather", "label": "Weather Rome", "props": { "city": "Rome" } }
 }
 ```
 
-- `w`/`h`: misura proposta quando lo aggiungi; `minW`/`minH`: la più piccola in cui si legge ancora (l'editor non va sotto).
-- Il widget deve adattarsi alla misura: `resize(w, h)` riceve i pixel del riquadro. Prova la HOME con griglie 6×4 e 8×4.
-- Per i dati usa le tue rotte (`D.api.get('/api/plugins/<nome>/...')`) con `D.every(attivo, riposo, fn)`: a riposo il tablet
-  aggiorna più di rado e risparmia batteria.
+- `w`/`h`: size proposed when you add it; `minW`/`minH`: the smallest size it is still readable at (the editor will not go below).
+- Several versions of the same widget: add entries with `"widget"` and different `"props"`; the widget reads them in `tile.city`.
+- The widget must adapt to its size: `resize(w, h)` receives the box size in pixels. Try the HOME with 6×4 and 8×4 grids.
+- For data use your routes (`D.api.get('/api/plugins/<name>/...')`) with `D.every(active, idle, fn)`: when idle the tablet
+  refreshes less often and saves battery.
 
-## Mettere mano al codice
+## Working on the code
 
-```bash
-cd app
-npm install       # anche le dipendenze di sviluppo
-npm test          # test di server, azioni, configurazione, temi e compatibilità ES5 del client
-npm run server    # solo il server, senza lo script di avvio
-npm run demo      # dock con dati finti su :8790
-npm run themes    # rigenera i temi dopo una modifica a public/css/dock.css
-npm run new:page -- <id>      # pagina nuova in config/pages/
-npm run new:widget -- <nome>  # plugin con un widget in plugins/
-npm run screenshots           # rifà le immagini del README dalla demo (con npm run demo acceso)
-```
+| Command (in `app/`) | What it does |
+|---|---|
+| `npm install` | dependencies, development ones included |
+| `npm test` | tests for server, actions, configuration, themes, client ES5 compatibility and the zero-comments rule |
+| `npm run server` | the server only, without the start script |
+| `npm run demo` | deck with fake data on :8790 |
+| `npm run themes` | regenerates the themes after a change to `public/css/dock.css` |
+| `npm run new:page -- <id>` | new page in `config/pages/` |
+| `npm run new:widget -- <name>` | plugin with a widget in `plugins/` |
+| `npm run screenshots` | redoes the README images from the demo (with `npm run demo` running) |
 
-```text
-app/
-  server/index.js        API (Express) e avvio
-  server/config.js       lettura dei JSON con commenti, ricarica a caldo, unione di default, tuoi file e cartelle
-  server/check.js        controllo della configurazione (problemi mostrati nel pannello)
-  server/actions/        motore delle azioni (HANDLERS) e macro
-  server/plugins.js      caricatore dei plugin (azioni, rotte, pagine, script del tablet)
-  server/home.js         HOME dal pannello: catalogo dei widget, controlli, disposizione
-  plugins/               i plugin, uno per cartella
-  server/platform/       windows.js (+ helper PowerShell), linux.js: tutto ciò che dipende dal sistema
-  server/services/       un file per funzione: media, discord, mail, games, screens, mixer, claude...
-  public/                client del tablet (ES5, niente framework): app.js, widgets.js, icons.js, css/
-  control/               pannello di controllo del PC
-  config/defaults/       configurazione predefinita: pages/ (una pagina per file), JSON, history.json
-  schema/                schemi JSON di pagine, app e comandi (per l'editor)
-  scripts/               avvio (bootstrap.js), temi, demo, icona Windows/Linux
-  tests/                 test con node --test
-```
+| In `app/` | What it is |
+|---|---|
+| `server/index.js` | API (Express) and startup |
+| `server/config.js` | JSON loading, hot reload, merge of defaults, your files and folders |
+| `server/check.js` | configuration check (problems shown in the control panel) |
+| `server/actions/` | action engine (`HANDLERS`) and macros |
+| `server/plugins.js` | plugin loader (actions, routes, pages, tablet scripts) |
+| `server/home.js` | HOME from the control panel: widget catalog, checks, layout |
+| `plugins/` | the plugins, one per folder |
+| `server/platform/` | `windows.js` (+ PowerShell helpers), `linux.js`: everything that depends on the OS |
+| `server/services/` | one file per feature: media, discord, mail, games, screens, mixer, claude... |
+| `public/` | tablet client (ES5, no framework): `app.js`, `widgets.js`, `icons.js`, `css/` |
+| `control/` | PC control panel |
+| `config/defaults/` | default configuration: `pages/` (one page per file), JSON, `history.json` |
+| `schema/` | JSON schemas for pages, apps and commands (for the editor) |
+| `scripts/` | startup (`bootstrap.js`), themes, demo, Windows/Linux icon |
+| `tests/` | tests with `node --test` |
 
-Come aggiungere le cose più comuni **dentro il progetto** (per le tue aggiunte personali usa un [plugin](#plugin-widget-e-azioni-nuove)):
+How to add the most common things **inside the project** (for your personal additions use a [plugin](#plugins-new-widgets-and-actions)):
 
-- **Un tipo di azione**: una funzione in `HANDLERS` (`server/actions/index.js`). Se serve il sistema operativo, aggiungi il metodo
-  sia in `server/platform/windows.js` sia in `server/platform/linux.js`.
-- **Un'icona**: una riga in `public/js/icons.js` (`nome: 'path SVG'`, viewBox 24×24).
-- **Un widget**: una funzione `function mioWidget(root, tile, app)` in `public/js/widgets.js` che restituisce
-  `{ update: function (stato) {}, resize: function (w, h) {}, destroy: function () {} }`, registrata nella mappa `TYPES`
-  (il controllo della configurazione la legge da lì). Poi il suo nome nello schema (`schema/page.schema.json`, tile > widget:
-  se manca, un test te lo dice) e, per la HOME, una riga in `CATALOG` di `server/home.js`
-  (`{ id, widget, label, icon, page, description, w, h, minW, minH }`). I dati arrivano da `/api/state` (in `update`)
-  o da una rotta nuova in `server/index.js`.
-- **Una pagina predefinita**: un file nuovo in `config/defaults/pages/` e il suo id nella lista `"pages"` di `config/defaults/dock.json`.
-  Prima di cambiare un JSON in `config/defaults/` (non le pagine) aggiungi l'impronta della versione vecchia in
-  `config/defaults/history.json` (così chi non l'ha modificato riceve l'aggiornamento).
-- **Un tipo di azione nuovo**: aggiungilo anche a `schema/page.schema.json` (i test controllano che siano allineati).
+- **An action type**: a function in `HANDLERS` (`server/actions/index.js`). If it needs the operating system, add the method
+  to both `server/platform/windows.js` and `server/platform/linux.js`. Add it to `schema/page.schema.json` too (the tests check they match).
+- **An icon**: one line in `public/js/icons.js` (`name: 'SVG path'`, 24×24 viewBox).
+- **A widget**: a function `function myWidget(root, tile, app)` in `public/js/widgets.js` that returns
+  `{ update: function (state) {}, resize: function (w, h) {}, destroy: function () {} }`, registered in the `TYPES` map
+  (the configuration check reads it from there). Then its name in the schema (`schema/page.schema.json`, tile > widget:
+  if it is missing, a test tells you) and, for the HOME, a line in `CATALOG` in `server/home.js`
+  (`{ id, widget, label, icon, page, description, w, h, minW, minH }`). Data comes from `/api/state` (in `update`)
+  or from a new route in `server/index.js`.
+- **A default page**: a new file in `config/defaults/pages/` and its id in the `"pages"` list of `config/defaults/dock.json`.
+  Before changing a JSON file in `config/defaults/` (not the pages) add the fingerprint of the old version to
+  `config/defaults/history.json` (so users who never edited it get the update).
 
-**Lingua del tablet.** Il testo si scrive in italiano (codice e pagine); con l'inglese scelto il tablet traduce al volo quello che
-compare sullo schermo con il dizionario `public/js/lang-en.js` (`I18n.add({ 'Testo': 'Text' })`, senza badare alle maiuscole;
-per i testi con numeri o nomi `I18n.rules([[/^(\d+) finestre$/, '$1 windows']])`). Testo nuovo sul tablet = una riga nel dizionario.
-I testi dell'utente (brani, attività, messaggi) vanno in un elemento con `class="notr"`, così non vengono mai tradotti.
-Un plugin aggiunge le sue traduzioni con `I18n.add` nei suoi script.
+**Tablet language.** Tablet text is written in Italian (code and pages); with English selected the tablet translates what
+appears on screen on the fly, using the dictionary in `public/js/lang-en.js` (`I18n.add({ 'Testo': 'Text' })`, case-insensitive;
+for text with numbers or names `I18n.rules([[/^(\d+) finestre$/, '$1 windows']])`). New text on the tablet = one line in the dictionary.
+User text (tracks, tasks, messages) goes in an element with `class="notr"`, so it is never translated.
+A plugin adds its own translations with `I18n.add` in its scripts.
 
-Regole da rispettare:
+Rules:
 
-- Il **client del tablet** (`public/js`, `public/css`) resta **ES5 e senza flexbox**: deve girare sul browser di Android 4.
-  Lo controlla `tests/client-es5.test.js`.
-- I **temi** in `public/css/themes/` sono generati: dopo una modifica a `dock.css` esegui `npm run themes`.
-- I file **PowerShell** sono in UTF-8 con BOM.
-- I test che toccano dati, Discord o l'helper di Windows usano `DOCK_DATA_DIR` (e `DOCK_CONFIG_DIR`) per non toccare i dati veri.
+- **Zero comments**: no comments anywhere in the code, styles, scripts or configuration files. Names and small functions carry
+  the meaning; explanations go in the README, in AGENTS.md or in the pull request. `tests/no-comments.test.js` enforces it.
+- **English** for commits, pull requests, issues and documentation.
+- The **tablet client** (`public/js`, `public/css`) stays **ES5 with no flexbox**: it must run on the Android 4 browser.
+  `tests/client-es5.test.js` checks it.
+- The **themes** in `public/css/themes/` are generated: after a change to `dock.css` run `npm run themes`.
+- **PowerShell** files are UTF-8 with BOM.
+- Tests touching data, Discord or the Windows helper use `DOCK_DATA_DIR` (and `DOCK_CONFIG_DIR`) so real data is never touched.
 
 ---
 
-## Sicurezza
+## Security
 
-La dock risponde solo con il codice di accesso, il pannello solo da `127.0.0.1`, e i segreti in `data/` sono cifrati
-con il portachiavi del sistema. Alcune funzioni (scrivere testo sul PC, far lavorare Claude Code) danno al tablet molto potere:
-non condividere il codice. Dettagli: [Sicurezza](app/README.md#sicurezza).
+The deck only answers with the access code, the control panel only from `127.0.0.1`, and the secrets in `data/` are encrypted
+with the system keychain. Some features (typing text on the PC, letting Claude Code work) give the tablet a lot of power:
+do not share the code. Details: [Security](app/README.md#security).
 
-## Contribuire
+## Contributing
 
-Segnalazioni, idee e pull request sono benvenute: come fare in [CONTRIBUTING.md](CONTRIBUTING.md). Ogni modifica viene
-verificata e unita dal proprietario del repository. Se usi un assistente AI (Claude, Copilot, Cursor, Codex…) per
-scrivere widget, plugin o pagine, fagli leggere [AGENTS.md](AGENTS.md): architettura, regole e passi in un solo file.
+Bug reports, ideas and pull requests are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). Every change is
+reviewed and merged by the repository owner. If you use an AI assistant (Claude, Copilot, Cursor, Codex…) to
+write widgets, plugins or pages, have it read [AGENTS.md](AGENTS.md): architecture, rules and steps in a single file.
 
-## Licenza
+## License
 
 [MIT](LICENSE) © 2026 Stefano Di Patti

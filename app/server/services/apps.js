@@ -1,10 +1,3 @@
-// App aperte / chiuse. Per le app con "toggle": true in apps.json il pulsante
-// sul tablet mostra se l'app è aperta e, se lo è, la chiude.
-// Con "whenRunning": "focus" (i giochi) mostra se è aperta e la porta in primo piano.
-//  - di default l'app si riconosce dal nome del processo (es. Code.exe -> "code");
-//    si può forzare con "process" (anche una lista) e restringere con "title" (regex sul titolo).
-//  - con "bridge": "apple" | "youtube" | "ytmusic" si usa l'estensione del
-//    browser: aperta = c'è una scheda di quel sito, chiudi = chiude la scheda.
 const path = require('path');
 const config = require('../config');
 const platform = require('../platform');
@@ -14,7 +7,6 @@ const forPlatform = require('../platform/common').forPlatform;
 
 let cache = { at: 0, data: null, pending: null };
 
-// Nomi dei processi di un'app: "process" (stringa o lista) oppure il nome del file.
 function processNames(a) {
   if (Array.isArray(a.process)) return a.process.map(function (p) { return String(p).toLowerCase(); });
   if (a.process) return [String(a.process).toLowerCase()];
@@ -22,7 +14,6 @@ function processNames(a) {
   return [path.basename(String(file || '')).replace(/\.(exe|lnk|cmd|bat)$/i, '').toLowerCase()];
 }
 
-// App di cui serve sapere se sono aperte, già "risolte" per questo sistema.
 function trackedApps() {
   const apps = config.apps();
   const out = {};
@@ -65,7 +56,6 @@ async function compute() {
   return out;
 }
 
-// Mappa { appId: true/false }, aggiornata al massimo ogni 2,5 s.
 function running() {
   if (cache.data && Date.now() - cache.at < 2500) return Promise.resolve(cache.data);
   if (cache.pending) return cache.pending;
@@ -81,7 +71,6 @@ function running() {
 
 function invalidate() { cache.at = 0; }
 
-// Se l'app ha il toggle ed è aperta, la chiude e ritorna true.
 async function closeIfRunning(id) {
   const app = trackedApps()[id];
   if (!app || !app.toggle) return false;
@@ -99,7 +88,6 @@ async function closeIfRunning(id) {
   return true;
 }
 
-// Se l'app ha "whenRunning": "focus" ed è aperta, la porta in primo piano e ritorna true.
 async function focusIfRunning(id) {
   const app = trackedApps()[id];
   if (!app || app.whenRunning !== 'focus' || app.bridge) return false;
