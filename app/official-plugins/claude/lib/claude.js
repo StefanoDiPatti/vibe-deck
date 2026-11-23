@@ -3,11 +3,11 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
-const config = require('../config');
-const paths = require('../paths');
-const common = require('../platform/common');
+const config = require('../../../server/config');
+const paths = require('../../../server/paths');
+const common = require('../../../server/platform/common');
 const claudecode = require('./claudecode');
-const log = require('../log');
+const log = require('../../../server/log');
 
 const STORE = path.join(paths.DATA_DIR, 'claude-chats.json');
 const MAX_CHATS = 60;

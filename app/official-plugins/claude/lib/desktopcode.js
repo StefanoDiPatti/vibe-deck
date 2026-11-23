@@ -1,9 +1,9 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const platform = require('../platform');
+const platform = require('../../../server/platform');
 const claudecode = require('./claudecode');
-const log = require('../log');
+const log = require('../../../server/log');
 
 const LIST_TTL = 3000;
 const WAIT_IDLE_MS = 20 * 60000;

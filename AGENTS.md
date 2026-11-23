@@ -63,7 +63,10 @@ breaking anything. The guide for people is in the [README](README.md), section *
    (`official-plugins/<id>/` with `plugin.json`, see `schema/plugin.schema.json`), never in `config/defaults/`.
    One plugin = one feature (e.g. `blender`); a **pack** (`"type": "pack"`, e.g. `creative`) only lists plugins in
    `includes` and contains nothing but its `plugin.json`.
-   The project is moving every existing page there, one plugin per pull request, to prepare the market.
+   Server code of a plugin lives in its `index.js` and `lib/`; official plugins may require core modules
+   (`../../server/...`), plugins for the market only use `ctx`. Tablet scripts and styles go in `public/`: the
+   themes recolor plugin CSS by themselves. The project is moving every existing page there in the
+   `refactor/plugins` branch, to prepare the market.
 9. **Default files**: before changing a JSON file in `config/defaults/` that is not a page, add the fingerprint
    of the previous version to `config/defaults/history.json`. Better still: add a new file in the
    `config/defaults/pages|apps|commands/` folders, which does not need it.

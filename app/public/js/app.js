@@ -543,8 +543,8 @@
 
   function setTheme(id) {
     if (!themeOk(id) || id === app.theme) return;
-    themeLink('theme-css', id === 'classic' ? '' : 'css/themes/' + id + '.css');
     themeLink('plugin-theme-css', id === 'classic' ? '' : 'plugins-theme/' + id + '.css');
+    themeLink('theme-css', id === 'classic' ? '' : 'css/themes/' + id + '.css');
     D.removeClass(document.body, 'th-' + app.theme);
     D.addClass(document.body, 'th-' + id);
     app.theme = id;

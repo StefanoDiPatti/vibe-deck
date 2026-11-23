@@ -119,39 +119,7 @@ svg.ic { fill: #e9e9ee; }
 .q-row.current { background: #0f3b62; -webkit-box-shadow: inset 4px 0 0 #a8c7fa; box-shadow: inset 4px 0 0 #a8c7fa; }
 .q-row.pressed { background: #2c3a4f; }
 .q-artist { color: #c4c6cf; }
-.cl-side { border-right: 1px solid #26292e; background: #1d2024; }
-.cl-tabs { background: #111318; }
-.cl-tab { color: #8e9099; }
-.cl-tab.on { color: #e9e9ee; }
-.cl-usage { background: #191c20; }
-.cu-h { color: #8e9099; }
-.cu-bar { background: #32353a; }
-.cu-row.warm .cu-bar i { background: #ffb95c; }
-.cu-row.hot .cu-bar i { background: #ffb4ab; }
-.cu-row.hot .cu-top span { color: #ffb4ab; }
-.cu-reset { color: #8e9099; }
-.cu-err { color: #ffb4ab; }
-.cl-sec { color: #8e9099; border-bottom: 1px solid #26292e; }
-.cl-sec.closed .cl-sec-n { color: #74777f; }
-.cl-sec-add { background: #32353a; }
-.cl-sec-add.pressed, .cl-sec.pressed .cl-sec-add { background: #1f5a96; }
-.cl-row.on { background: #0f3b62; }
-.cl-row.pressed { background: #2c3a4f; }
-.cl-row-m { color: #8e9099; }
-.cl-dot { background: #ffb95c; }
-.cl-newchat { background: #32353a; }
-.cl-note { color: #74777f; }
-.cl-sub { color: #8e9099; }
-.cl-del.holding { background: #93000a; }
-.cl-log { background: #191c20; }
-.cl-mic { background: #32353a; }
-.cl-mic.on { background: #ffb4ab; }
-.cl-input { background: #111318; color: #e9e9ee; border: 1px solid #3a3d42; }
-.cl-stop { background: #93000a; }
-.cl-stop.holding { background: #93000a; }
-.cl-q { background: #ffb95c; }
 .msg .tool { color: #8e9099; background: #111318; }
-.cl-elapsed { color: #8e9099; }
 .dc-guilds { background: #1d2024; border-right: 1px solid #26292e; }
 .dc-guild.on { background: #33416b; }
 .dc-guild.pressed { background: #2c3a4f; }

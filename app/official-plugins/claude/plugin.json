@@ -1,0 +1,22 @@
+{
+  "id": "claude",
+  "name": "Claude",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Claude on the tablet: chats, Claude Code sessions of the desktop app, dictation and subscription usage",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "http": [
+      "api.anthropic.com"
+    ],
+    "local": [
+      "claude-cli",
+      "claude-desktop-sessions"
+    ]
+  }
+}

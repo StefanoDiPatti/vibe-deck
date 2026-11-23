@@ -113,56 +113,18 @@ svg.ic { fill: #111111; }
 .chat-log { background: #fffdf7; }
 .msg.user { background: #3d86e8; }
 .msg.assistant { background: #ffffff; }
-.claude .msg.user { background: #ffd8bd; }
 .msg.error { background: #ffd0c9; color: #c4271a; }
 .msg pre.code { background: #f4efe3; }
 .msg code { background: #f4efe3; }
 .msg.typing i { background: #9a927f; }
 .chat-input { background: #f4efe3; color: #111111; border: 1px solid #111111; }
 .chat-send { background: #3d86e8; }
-.claude .chat-send { background: #ff9f5b; }
 .clk-date { color: #2b2b2b; }
 .q-row { background: #ffffff; }
 .q-row.current { background: #9cc4ff; -webkit-box-shadow: inset 4px 0 0 #111111; box-shadow: inset 4px 0 0 #111111; }
 .q-row.pressed { background: #ffd23f; }
 .q-artist { color: #2b2b2b; }
-.cl-side { border-right: 1px solid #111111; background: #fffdf7; }
-.cl-tabs { background: #f4efe3; }
-.cl-tab { color: #5a5446; }
-.cl-tab.on { background: #ff9f5b; color: #111111; }
-.cl-usage { background: #fffdf7; }
-.cu-h { color: #5a5446; }
-.cu-h i { color: #8a5a00; }
-.cu-bar { background: #efe8d8; }
-.cu-bar i { background: #ff9f5b; }
-.cu-row.warm .cu-bar i { background: #ffd23f; }
-.cu-row.hot .cu-bar i { background: #ff6b5b; }
-.cu-row.hot .cu-top span { color: #c4271a; }
-.cu-reset { color: #5a5446; }
-.cu-err { color: #c4271a; }
-.cl-sec { color: #5a5446; border-bottom: 1px solid #111111; }
-.cl-sec.closed .cl-sec-n { color: #5a5446; }
-.cl-sec-add { background: #efe8d8; }
-.cl-sec-add.pressed, .cl-sec.pressed .cl-sec-add { background: #4d9dff; }
-.cl-row.on { background: #9cc4ff; }
-.cl-row.pressed { background: #ffd23f; }
-.cl-row-m { color: #5a5446; }
-.cl-row.busy .cl-row-m { color: #8a5a00; }
-.cl-dot { background: #ffd23f; }
-.cl-newchat { background: #efe8d8; }
-.cl-note { color: #5a5446; }
-.cl-sub { color: #5a5446; }
-.cl-del.holding { background: #ff6b5b; }
-.cl-log { background: #fffdf7; }
-.cl-mic { background: #efe8d8; }
-.cl-mic.on { background: #ff6b5b; }
-.cl-input { background: #f4efe3; color: #111111; border: 1px solid #111111; }
-.cl-send { background: #ff9f5b; }
-.cl-stop { background: #ff6b5b; }
-.cl-stop.holding { background: #ff6b5b; }
-.cl-q { background: #ffd23f; }
 .msg .tool { color: #5a5446; background: #f4efe3; }
-.cl-elapsed { color: #5a5446; }
 .dc-guilds { background: #fffdf7; border-right: 1px solid #111111; }
 .dc-guild.on { background: #c9b8ff; }
 .dc-guild.pressed { background: #ffd23f; }

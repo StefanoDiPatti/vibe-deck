@@ -93,7 +93,7 @@ Volume and undo buttons repeat while you hold them.
 | DEV *(official plugin `dev`)* | VS Code, Claude Code, PowerShell, OpenClaw, VS Code shortcuts |
 | GITHUB | PRs, issues, CI, latest deployment (GitHub Actions workflows with deploy, release, publish or pages in their name: DEPLOY ✓/✗/… badge) and latest commit of your repositories |
 | OLLAMA *(official plugin `ollama`)* | chat with local models |
-| CLAUDE | chat, Claude Code sessions, dictation, typing on the PC |
+| CLAUDE *(official plugin `claude`)* | chat, Claude Code sessions, dictation, typing on the PC |
 | DISCORD | servers, voice channels with who is inside, who is talking, mute/deafen, webcam, Go Live, per-person volume and mute just for you |
 | GAMES | the games picked in the control panel, with their icons (green dot when running; if running it is brought to the front) |
 | EMAIL *(available)* | inbox of the Thunderbird accounts chosen in the control panel, message reading, opening Thunderbird on the PC |

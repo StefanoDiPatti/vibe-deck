@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const u = require('../server/services/claudeusage');
+const u = require('../official-plugins/claude/lib/claudeusage');
 
 test('consumi: sessione, settimana e limiti per modello (chiavi vecchie e array limits)', function () {
   const r = u._normalize({

@@ -45,7 +45,7 @@ test('i widget conosciuti dal controllo sono quelli che il tablet sa disegnare',
   const m = /var TYPES = \{([^}]*)\}/.exec(js);
   const types = m[1].split(',').map(function (s) { return s.split(':')[0].trim(); }).filter(Boolean).sort();
   assert.deepStrictEqual(check.WIDGETS.slice().sort(), types);
-  assert.ok(types.indexOf('claudeusage') >= 0 && types.length >= 15, 'letti da widgets.js');
+  assert.ok(types.indexOf('nowplaying') >= 0 && types.length >= 12, 'letti da widgets.js');
   assert.ok(check.iconNames().gamepad, 'icone lette da icons.js');
 });
 

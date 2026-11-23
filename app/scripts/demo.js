@@ -113,7 +113,7 @@ demo.post('/api/todo/toggle', express.json(), function (req, res) {
   todo.forEach(function (t) { if (t.id === (req.body || {}).id) t.done = !t.done; });
   ok(res, { items: todo, source: 'memo', notes: NOTES, voiceServer: false, sync: { enabled: false, ok: null, at: 0, message: '' } });
 });
-demo.get('/api/claude/desktop', function (req, res) {
+demo.get('/api/plugins/claude/desktop', function (req, res) {
   ok(res, {
     available: true, appUi: true,
     sections: [
@@ -122,10 +122,10 @@ demo.get('/api/claude/desktop', function (req, res) {
     ]
   });
 });
-demo.get('/api/claude/usage', function (req, res) {
+demo.get('/api/plugins/claude/usage', function (req, res) {
   ok(res, { ok: true, fiveHour: { percent: 34, resetsAt: new Date(Date.now() + 2.5 * H).toISOString() }, sevenDay: { percent: 58, resetsAt: new Date(Date.now() + 60 * H).toISOString() }, models: [], at: Date.now() });
 });
-demo.get('/api/claude/chats', function (req, res) { ok(res, []); });
+demo.get('/api/plugins/claude/chats', function (req, res) { ok(res, []); });
 
 const MAIL_ACCOUNTS = [
   { id: 'demo1', label: 'Gmail', provider: 'gmail', email: 'mario.rossi@example.com', unread: 3, status: 'ok', error: '' },

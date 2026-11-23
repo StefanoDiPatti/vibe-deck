@@ -3,7 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const https = require('https');
-const log = require('../log');
+const log = require('../../../server/log');
 
 const CACHE_MS = 60000;
 let cache = null;

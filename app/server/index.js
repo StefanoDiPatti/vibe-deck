@@ -12,10 +12,8 @@ const actions = require('./actions');
 const system = require('./services/system');
 const media = require('./services/media');
 const github = require('./services/github');
-const claude = require('./services/claude');
 const todo = require('./services/todo');
 const todosync = require('./services/todosync');
-const desktopcode = require('./services/desktopcode');
 const mixer = require('./services/mixer');
 const bridge = require('./services/bridge');
 const voice = require('./services/voice');
@@ -23,7 +21,6 @@ const appsState = require('./services/apps');
 const discord = require('./services/discord');
 const screens = require('./services/screens');
 const vdesk = require('./services/vdesk');
-const claudeusage = require('./services/claudeusage');
 const pairing = require('./services/pairing');
 const mail = require('./services/mail');
 const games = require('./services/games');
@@ -384,7 +381,6 @@ app.get('/api/config', route(function () {
     power: tabletPower(),
     platform: platform.name,
     hostname: os.hostname(),
-    claude: claude.info(),
     errors: config.errors()
   };
 }));
@@ -439,31 +435,6 @@ app.post('/api/todo/remove', route(async function (req) { await todo.remove((req
 app.post('/api/todo/sync', route(async function () { await todosync.sync(); return todoState(); }));
 app.post('/api/todo/clear', route(async function () { const removed = await todo.clearDone(); return Object.assign(todoState(), { removed: removed }); }));
 
-app.get('/api/claude/info', route(function () {
-  return Object.assign(claude.info(), { voiceServer: voice.available() });
-}));
-app.get('/api/claude/usage', route(function (req) { return claudeusage.usage(req.query.refresh === '1'); }));
-app.get('/api/claude/desktop', route(function () { return desktopcode.list(); }));
-app.get('/api/claude/desktop/session', route(function (req) { return desktopcode.get(String(req.query.id || '')); }));
-app.post('/api/claude/desktop/send', route(function (req) { const b = req.body || {}; return desktopcode.send(String(b.id || ''), b.text); }));
-app.post('/api/claude/desktop/cancel', route(function (req) { return desktopcode.cancel(String((req.body || {}).id || '')); }));
-app.post('/api/claude/desktop/stop', route(function (req) { return desktopcode.stop(String((req.body || {}).id || '')); }));
-app.post('/api/claude/desktop/open', route(function (req) { return desktopcode.openOnPc(String((req.body || {}).id || '')); }));
-app.post('/api/claude/desktop/new', route(function (req) { const b = req.body || {}; return desktopcode.create(String(b.section || ''), b.text); }));
-app.get('/api/claude/chats', route(function () { return claude.listChats(); }));
-app.get('/api/claude/chat', route(function (req) { return claude.getChat(String(req.query.kind || ''), String(req.query.id || '')); }));
-app.post('/api/claude/send', route(function (req) {
-  const b = req.body || {};
-  return claude.send(String(b.kind || ''), b.id ? String(b.id) : null, String(b.text || '').slice(0, 12000), b.cwd ? String(b.cwd) : null);
-}));
-app.get('/api/claude/job', route(function (req) { return claude.getJob(String(req.query.id || '')); }));
-app.post('/api/claude/delete', route(function (req) { return claude.deleteChat(String((req.body || {}).id || '')); }));
-app.post('/api/claude/chat', route(function (req) {
-  const b = req.body || {};
-  if (!b.text || !String(b.text).trim()) throw badRequest('Messaggio vuoto');
-  return claude.chat(b.sessionId, String(b.text).slice(0, 8000));
-}));
-
 app.post('/api/remote/type', route(async function (req) {
   const b = req.body || {};
   const text = String(b.text || '');
@@ -514,8 +485,6 @@ function banner() {
   console.log('  Pannello di controllo (solo da questo PC):  http://127.0.0.1:' + PORT + '/control');
   const caps = platform.capabilities();
   (caps.notes || []).forEach(function (n) { console.log('  Nota: ' + n); });
-  const ci = claude.info();
-  console.log('  Claude: ' + (ci.available ? ci.backend + ' (' + ci.model + ')' : 'non configurato'));
   config.errors().forEach(function (e) { console.log('  ERRORE CONFIG: ' + e); });
   console.log(line);
   console.log(process.env.DOCK_SERVICE === '1'

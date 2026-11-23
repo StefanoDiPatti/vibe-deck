@@ -13,7 +13,7 @@
     (function () {
       try {
         var t = JSON.parse(window.localStorage.getItem('dock:theme') || '"classic"');
-        if (/^(material|neon|brutal)$/.test(t)) document.write('<link id="theme-css" rel="stylesheet" href="css/themes/' + t + '.css"><link id="plugin-theme-css" rel="stylesheet" href="plugins-theme/' + t + '.css">');
+        if (/^(material|neon|brutal)$/.test(t)) document.write('<link id="plugin-theme-css" rel="stylesheet" href="plugins-theme/' + t + '.css"><link id="theme-css" rel="stylesheet" href="css/themes/' + t + '.css">');
       } catch (e) { }
     })();
   </script>
