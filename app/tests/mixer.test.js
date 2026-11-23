@@ -27,8 +27,8 @@ test('API audio: richiedono il token e rifiutano richieste senza modifiche', asy
   const server = await new Promise(function (resolve) { const s = app.listen(0, '127.0.0.1', function () { resolve(s); }); });
   try {
     const base = 'http://127.0.0.1:' + server.address().port;
-    assert.strictEqual((await fetch(base + '/api/audio')).status, 401);
-    const r = await fetch(base + '/api/audio/app', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Dock-Token': 'TESTCODE' }, body: JSON.stringify({ id: 'non-esiste', volume: 50 }) });
+    assert.strictEqual((await fetch(base + '/api/plugins/audio')).status, 401);
+    const r = await fetch(base + '/api/plugins/audio/app', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Dock-Token': 'TESTCODE' }, body: JSON.stringify({ id: 'non-esiste', volume: 50 }) });
     assert.ok(r.status >= 400);
   } finally {
     server.close();

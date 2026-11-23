@@ -1,4 +1,4 @@
-const platform = require('../platform');
+const platform = require('../../../server/platform');
 
 let cache = { at: 0, data: null, pending: null };
 

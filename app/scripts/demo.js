@@ -165,7 +165,7 @@ const AUDIO = {
     { id: 'p4', pid: 0, process: 'system', name: 'Suoni di sistema', volume: 50, mute: false, active: false, device: 'Altoparlanti' }
   ]
 };
-demo.get('/api/audio', function (req, res) { ok(res, AUDIO); });
+demo.get('/api/plugins/audio', function (req, res) { ok(res, AUDIO); });
 
 demo.get('/api/plugins/github', function (req, res) {
   const repo = function (name, prs, issues, ci, deploy, msg, ago) {

@@ -98,7 +98,7 @@ Volume and undo buttons repeat while you hold them.
 | GAMES | the games picked in the control panel, with their icons (green dot when running; if running it is brought to the front) |
 | EMAIL *(available)* | inbox of the Thunderbird accounts chosen in the control panel, message reading, opening Thunderbird on the PC |
 | SCREENS *(official plugin `screens`; Windows; Linux with KDE Plasma 6 + kdotool)* | PC monitors, window layouts, monitor apps open on, **virtual desktops** (switch, create, close, drag a window onto one) and a **GUIDE** button with the shortcuts |
-| AUDIO | outputs and microphones (default, volume, mute), volume and mute of every app playing audio |
+| AUDIO *(official plugin `audio`)* | outputs and microphones (default, volume, mute), volume and mute of every app playing audio |
 | VIRTUAL DESKTOPS *(official plugin `screens`, Linux only)* | guide to virtual desktop shortcuts (KDE Plasma, GNOME, Windows too); on Windows the same guide is in the SCREENS page |
 | VIBER *(official plugin `viber`, add it from the panel)* | switch to Viber's open panels (terminal, git, browser, chat, tasks, files), change view (tabs, agents, focus), show the tasks of the open project |
 | BROWSER DEV *(available)* | official plugin `official-plugins/browserdev/`: browser shortcuts: HARD RELOAD, DEVTOOLS, CONSOLE, INSPECT, DEVICE, CLEAR DATA (hold), LOCALHOST:5173 and :3000; keys go to the window in front |

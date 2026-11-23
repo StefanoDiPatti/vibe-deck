@@ -12,7 +12,7 @@ process.env.DOCK_OFFICIAL_PLUGINS_DIR = path.join(tmp, 'official');
 process.env.DOCK_TOKEN = 'TESTCODE';
 process.env.LOG_LEVEL = 'error';
 fs.mkdirSync(process.env.DOCK_CONFIG_DIR, { recursive: true });
-['viber', 'ollama', 'claude', 'github', 'screens'].forEach(function (n) { fs.cpSync(path.join(__dirname, '..', 'official-plugins', n), path.join(process.env.DOCK_OFFICIAL_PLUGINS_DIR, n), { recursive: true }); });
+['viber', 'ollama', 'claude', 'github', 'screens', 'audio'].forEach(function (n) { fs.cpSync(path.join(__dirname, '..', 'official-plugins', n), path.join(process.env.DOCK_OFFICIAL_PLUGINS_DIR, n), { recursive: true }); });
 
 const home = require('../server/home');
 const config = require('../server/config');

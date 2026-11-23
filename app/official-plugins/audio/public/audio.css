@@ -1,0 +1,33 @@
+.w-audio { padding: 0 !important; }
+.au-left { position: absolute; left: 0; top: 0; bottom: 0; width: 46%; border-right: 1px solid #222e3b; }
+.au-right { position: absolute; left: 46%; right: 0; top: 0; bottom: 0; background: #141c25; }
+.au-h { position: absolute; left: 12px; right: 12px; top: 8px; height: 24px; line-height: 24px; font-size: 13px; font-weight: bold; letter-spacing: 1px; color: #8b9bab; }
+.au-h svg.ic { width: 18px; height: 18px; vertical-align: -4px; margin-right: 6px; }
+.au-h2 { top: 52%; }
+.au-out { position: absolute; left: 6px; right: 6px; top: 36px; bottom: 50%; }
+.au-in { position: absolute; left: 6px; right: 6px; top: 52%; margin-top: 30px; bottom: 6px; }
+.au-apps { position: absolute; left: 6px; right: 6px; top: 36px; bottom: 6px; }
+.au-list { overflow: auto; -webkit-overflow-scrolling: touch; }
+.au-dev, .au-app { border-radius: 10px; margin-bottom: 4px; padding: 6px 8px; }
+.au-dev.on { background: #172b22; }
+.au-app { background: #172029; }
+.au-dev.pressed { background: #26354a; }
+.au-name { height: 30px; line-height: 30px; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.au-dev .au-name { color: #c6d1dc; }
+.au-dev.on .au-name { color: #fff; }
+.au-name svg.ic { width: 18px; height: 18px; vertical-align: -4px; margin-right: 8px; fill: #3fb950; }
+.au-radio { display: inline-block; width: 12px; height: 12px; border-radius: 7px; border: 2px solid #4d5d70; margin: 0 10px 0 2px; vertical-align: -2px; }
+.au-sub { font-size: 11px; font-weight: normal; color: #6e7f90; margin-left: 8px; }
+.au-live { display: inline-block; width: 8px; height: 8px; border-radius: 4px; background: #3fb950; margin-right: 8px; vertical-align: 2px; }
+.au-ctl { position: relative; height: 44px; margin-top: 2px; }
+.au-b { position: absolute; top: 2px; width: 44px; height: 40px; border-radius: 8px; background: #243142; text-align: center; }
+.au-b svg.ic { width: 22px; height: 22px; margin-top: 9px; }
+.au-b.pressed { background: #3d8bfd; }
+.au-mute { left: 0; }
+.au-b[data-act="down"] { left: 50px; }
+.au-b[data-act="up"] { right: 52px; }
+.au-bar { position: absolute; left: 100px; right: 102px; top: 12px; height: 20px; border-radius: 10px; background: #0b0f14; overflow: hidden; }
+.au-bar i { display: block; height: 20px; background: #3d8bfd; border-radius: 10px; }
+.au-pct { position: absolute; right: 0; top: 2px; width: 48px; line-height: 40px; text-align: right; font-size: 14px; font-weight: bold; }
+.au-ctl.muted .au-mute { background: #8b1d1d; }
+.au-ctl.muted .au-bar i { background: #4d5d70; }

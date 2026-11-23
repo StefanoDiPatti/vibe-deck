@@ -186,24 +186,6 @@ svg.ic.dc-camflag { fill: #127a3a; }
 .ml-note { background: #ffffff; color: #2b2b2b; }
 .ml-note svg.ic { fill: #2b2b2b; }
 .saver { background: #111111; }
-.au-left { border-right: 1px solid #111111; }
-.au-right { background: #fffdf7; }
-.au-h { color: #5a5446; }
-.au-dev.on { background: #c9f5d6; }
-.au-app { background: #fffdf7; }
-.au-dev.pressed { background: #ffd23f; }
-.au-dev .au-name { color: #2b2b2b; }
-.au-dev.on .au-name { color: #111111; }
-.au-name svg.ic { fill: #127a3a; }
-.au-radio { border: 2px solid #111111; }
-.au-sub { color: #5a5446; }
-.au-live { background: #2bd96b; }
-.au-b { background: #efe8d8; }
-.au-b.pressed { background: #4d9dff; }
-.au-bar { background: #f4efe3; }
-.au-bar i { background: #4d9dff; }
-.au-ctl.muted .au-mute { background: #ff6b5b; }
-.au-ctl.muted .au-bar i { background: #bdb5a3; }
 .gm-item { background: #fffdf7; }
 .gm-item.pressed, .gm-item.busy { background: #ffd23f; }
 .gm-pic svg.ic { fill: #5a5446; }

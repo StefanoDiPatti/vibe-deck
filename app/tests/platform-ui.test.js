@@ -209,10 +209,13 @@ test('GitHub: i workflow di deploy si riconoscono dal nome o dal file', function
 });
 
 test('configurazione standard (prima installazione): barra semplice, il resto tra le disponibili', function () {
-  const sp = config.parseJson(fs.readFileSync(path.join(__dirname, '..', 'official-plugins', 'screens', 'pages', 'screens.json'), 'utf8'));
-  const withPlugin = Object.assign({}, config.defaultDock(), { pages: config.defaultDock().pages.concat([Object.assign({}, sp, { tab: sp.tab === true })]) });
+  const fromPlugins = ['audio', 'screens'].map(function (id) {
+    const p = config.parseJson(fs.readFileSync(path.join(__dirname, '..', 'official-plugins', id, 'pages', id + '.json'), 'utf8'));
+    return Object.assign({}, p, { tab: p.tab === true });
+  });
+  const withPlugin = Object.assign({}, config.defaultDock(), { pages: config.defaultDock().pages.concat(fromPlugins) });
   const tabs = function (os) { return config.normalizeDock(withPlugin, {}, os).pages.filter(function (p) { return p.tab; }).map(function (p) { return p.id; }); };
-  assert.deepStrictEqual(tabs('windows'), ['main', 'media', 'apps', 'audio', 'screens'], 'SCHERMI from its plugin, a tab because its page says "tab": true');
+  assert.deepStrictEqual(tabs('windows'), ['main', 'media', 'apps', 'audio', 'screens'], 'AUDIO and SCHERMI from their plugins, tabs because their pages say "tab": true');
   const raw = config.defaultDock();
   assert.deepStrictEqual(tabs('linux'), ['main', 'media', 'apps', 'audio'], 'SCHERMI su Linux richiede KDE: la aggiungi tu');
   const apps = page(config.normalizeDock(raw, {}, 'windows'), 'apps');

@@ -1,0 +1,18 @@
+{
+  "id": "audio",
+  "name": "Audio",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Outputs and microphones (default, volume, mute) and the volume of every app playing audio",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "local": [
+      "audio-devices"
+    ]
+  }
+}

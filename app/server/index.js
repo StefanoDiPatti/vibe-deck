@@ -13,7 +13,6 @@ const system = require('./services/system');
 const media = require('./services/media');
 const todo = require('./services/todo');
 const todosync = require('./services/todosync');
-const mixer = require('./services/mixer');
 const bridge = require('./services/bridge');
 const voice = require('./services/voice');
 const appsState = require('./services/apps');
@@ -323,11 +322,6 @@ app.get('/api/discord/img', function (req, res) {
     res.type(im.type).send(im.body);
   }).catch(function () { res.status(404).end(); });
 });
-
-app.get('/api/audio', route(function () { return mixer.state(); }));
-app.post('/api/audio/default', route(function (req) { return mixer.setDefault(String((req.body || {}).id || '')); }));
-app.post('/api/audio/device', route(function (req) { const b = req.body || {}; return mixer.device(String(b.id || ''), b); }));
-app.post('/api/audio/app', route(function (req) { const b = req.body || {}; return mixer.app(String(b.id || ''), b); }));
 
 function tabletPower() {
   const t = (config.get('services') || {}).tablet || {};
