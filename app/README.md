@@ -1,61 +1,61 @@
 # Vibe Deck
 
-Trasforma un vecchio tablet Android 4.x in una **Stream Deck wireless** per il PC.
-Il PC (Windows o Linux) fa girare un piccolo server Node.js. Il tablet apre una pagina web dal browser: niente app da installare.
+Turn an old Android 4.x tablet into a **wireless Stream Deck** for your PC.
+The PC (Windows or Linux) runs a small Node.js server. The tablet opens a web page in its browser: nothing to install on it.
 
-> Questo è il **riferimento completo**. Per cominciare leggi le tre guide nel [README principale](../README.md): installazione, guida utente e guida per sviluppatori.
+> This is the **full reference**. To get started read the three guides in the [main README](../README.md): installation, user guide and developer guide.
 
-- Pulsanti configurabili da JSON: avvio app, scorciatoie, testo, macro, comandi.
-- **Musica**: copertina, coda dei brani, salto a un punto del brano, shuffle e ripeti, volume dell'app (non di sistema). Funziona con Apple Music web e YouTube tramite un'estensione del browser, e con le app desktop (Spotify, VLC, ...). Giochi e launcher (es. Riot Client) vengono ignorati.
-- **Claude**: le sessioni di Claude Code dell'app desktop, divise per le sezioni del PC. Scrivi (o detti) dal tablet e il messaggio parte dall'app sul PC, con i permessi della sessione.
-- Monitor PC: CPU, RAM, GPU NVIDIA (uso, temperatura, VRAM), rete.
-- **Discord**: server, canali vocali, chi c'è in stanza e chi parla, mute e audio, webcam e Go Live.
-- **Games**: i tuoi giochi, aggiunti dal pannello con il selettore di file e un'icona (se il gioco è già aperto lo porta in primo piano).
-- **Audio**: scegli uscita (casse, cuffie, monitor) e microfono predefiniti, con volume e mute, e regola il volume di ogni app.
-- **Schermi**: scegli su quale monitor si aprono le app dal tablet e disponi le finestre nelle zone, come Snap di Windows.
-- **Pannello di controllo sul PC** per scegliere e ordinare con il trascinamento le pagine del tablet e i pulsanti di ogni pagina.
-- **Windows e Linux** riconosciuti da soli: su Linux i pulsanti di Windows diventano i loro equivalenti (PowerShell → Terminale, Task Mgr → Monitor di sistema...).
-- **Email**: posta in arrivo letta da Thunderbird sul PC (Gmail, Outlook, iCloud, mail di università e aziende...), in sola lettura.
-- **QR code** per collegare un telefono o un tablet: lo inquadri ed è fatta.
-- Ollama, riepilogo GitHub, TODO sulle Memo di Windows, orologio.
-- Pagine di scorciatoie per Blender e DaVinci Resolve (da aggiungere alla barra dal pannello), che mettono in primo piano il programma prima di premere i tasti.
+- Buttons configured in JSON: launch apps, shortcuts, text, macros, commands.
+- **Music**: cover art, track queue, seek, shuffle and repeat, app volume (not system volume). Works with Apple Music web and YouTube through a browser extension, and with desktop apps (Spotify, VLC, ...). Games and launchers (e.g. Riot Client) are ignored.
+- **Claude**: the Claude Code sessions of the desktop app, grouped by the PC's sections. Type (or dictate) on the tablet and the message is sent from the app on the PC, with the session's permissions.
+- PC monitor: CPU, RAM, NVIDIA GPU (load, temperature, VRAM), network.
+- **Discord**: servers, voice channels, who is in the room and who is talking, mute and deafen, webcam and Go Live.
+- **Games**: your games, added from the control panel with the file picker and an icon (if the game is already running it is brought to the front).
+- **Audio**: pick the default output (speakers, headphones, monitor) and microphone, with volume and mute, and set the volume of every app.
+- **Screens**: choose which monitor apps launched from the tablet open on and arrange windows in zones, like Windows Snap.
+- **Control panel on the PC** to choose and drag-sort the tablet pages and the buttons of each page.
+- **Windows and Linux** detected automatically: on Linux the Windows buttons become their equivalents (PowerShell → Terminal, Task Mgr → System Monitor...).
+- **Email**: inbox read from Thunderbird on the PC (Gmail, Outlook, iCloud, university and company mail...), read-only.
+- **QR code** to connect a phone or a tablet: scan it and you are done.
+- Ollama, GitHub summary, TODO on Windows Sticky Notes, clock.
+- Shortcut pages for Blender and DaVinci Resolve (add them to the bar from the control panel), which bring the program to the front before pressing the keys.
 
-## Avvio rapido
+## Quick start
 
-> Vuoi solo vederla? `npm run demo` apre una dock con **dati finti** (musica, PC, TODO, sessioni) su `http://127.0.0.1:8790/?t=DEMO1234`, senza leggere la tua configurazione né il `.env`.
+> Just want to see it? `npm run demo` starts a deck with **fake data** (music, PC, TODO, sessions) at `http://127.0.0.1:8790/?t=DEMO1234`, without reading your configuration or your `.env`.
 
-**Windows:** doppio click su `start.bat` (o sul collegamento "Vibe Deck" sul desktop).
-**Linux:** `./start.sh` (oppure `bash start.sh`).
+**Windows:** double-click `start.bat` (or the "Vibe Deck" shortcut on the desktop).
+**Linux:** `./start.sh` (or `bash start.sh`).
 
-Al primo avvio lo script fa tutto da solo:
+On the first run the script does everything:
 
-1. se manca Node.js propone di installarlo (winget su Windows, il gestore pacchetti su Linux);
-2. installa le dipendenze (`npm ci`);
-3. crea `.env` con un **codice di accesso** casuale e la tua configurazione in `config/`;
-4. chiede se aprire la porta nel firewall, creare il collegamento sul desktop e attivare l'avvio automatico;
-5. avvia il server e lo riavvia da solo se va in crash.
+1. if Node.js is missing it offers to install it (winget on Windows, the package manager on Linux);
+2. installs the dependencies (`npm ci`);
+3. creates `.env` with a random **access code** and your configuration in `config/`;
+4. asks whether to open the firewall port, create the desktop shortcut and start automatically at login;
+5. starts the server and restarts it if it crashes.
 
-Per ripetere le domande: `start.bat --setup` (o `./start.sh --setup`).
+To answer the questions again: `start.bat --setup` (or `./start.sh --setup`).
 
-### Windows: in background, con l'icona vicino all'orologio
+### Windows: in the background, with an icon next to the clock
 
-Su Windows la dock gira **in background**, senza finestre aperte. La trovi come icona (quattro quadratini blu) nell'area di notifica, sotto la freccetta vicino all'orologio. Dal menu dell'icona puoi:
+On Windows the deck runs **in the background**, with no open windows. Look for its icon (four small blue squares) in the notification area, under the arrow next to the clock. From the icon menu you can:
 
-- aprire il **pannello di controllo** (anche con doppio clic sull'icona, o sul collegamento *Vibe Deck* del desktop);
-- aprire la dock su questo PC;
-- vedere indirizzo e codice per il tablet (vengono anche copiati negli appunti);
-- aprire il log (`data/dock.log`);
-- riavviarla;
-- chiuderla.
+- open the **control panel** (also by double-clicking the icon, or the *Vibe Deck* desktop shortcut);
+- open the deck on this PC;
+- see the address and code for the tablet (they are also copied to the clipboard);
+- open the log (`data/dock.log`);
+- restart it;
+- quit it.
 
-L'icona grigia indica che la dock è ferma: il motivo è scritto nel log.
-Per vedere i messaggi in una finestra: `start.bat --console`.
+A grey icon means the deck is stopped: the reason is in the log.
+To see the messages in a window: `start.bat --console`.
 
-> Non è un "servizio" di Windows in senso stretto apposta: i servizi girano in una sessione separata e non potrebbero premere tasti né leggere la musica dell'utente. L'icona parte con il tuo account, come le altre app.
+> It is deliberately not a real Windows "service": services run in a separate session and could not press keys or read the user's music. The icon starts with your account, like your other apps.
 
-### L'indirizzo per il tablet
+### The address for the tablet
 
-Lo trovi dal menu dell'icona (Windows) o nella finestra del server (Linux / `--console`):
+You find it in the icon menu (Windows) or in the server window (Linux / `--console`):
 
 ```text
   Apri sul tablet:  http://192.168.1.50:8787   (Ethernet)
@@ -64,270 +64,318 @@ Lo trovi dal menu dell'icona (Windows) o nella finestra del server (Linux / `--c
   Pannello di controllo (solo da questo PC):  http://127.0.0.1:8787/control
 ```
 
-## Sul tablet
+That is: the address to open on the tablet, the access code, the direct link (which saves the code) and the control panel (from this PC only).
 
-0. Il modo più veloce: inquadra il **QR code** che compare nel terminale all'avvio o in cima al pannello di controllo.
-1. Apri il **link diretto**: il codice viene salvato e non te lo chiede più. In alternativa apri l'indirizzo e scrivi il codice.
-   Il tablet ricorda tutti i codici con cui si è collegato (fino a 6): se sullo stesso PC alterni Windows e Linux, ognuno con il suo codice, lo inserisci una volta per sistema e poi passa da uno all'altro da solo.
-2. Chrome: menu > *Aggiungi a schermata Home*. Dall'icona la dock si apre a schermo intero.
-3. Per tenere lo schermo acceso: *Opzioni sviluppatore > Rimani attivo* (con il tablet in carica).
-4. Tocca l'orologio in alto a destra per il fullscreen, se il browser lo supporta.
-5. Per aprire direttamente una pagina aggiungi il suo id all'indirizzo: `http://IP:8787/#media`, `#claude`, `#blender`.
+## On the tablet
 
-In alto a destra trovi la rete del PC (nome del Wi-Fi e segnale, oppure Ethernet), la velocità di download/upload e la RAM.
+1. The quickest way: scan the **QR code** shown in the terminal at startup or at the top of the control panel.
+2. Open the **direct link**: the code is saved and you will not be asked again. Otherwise open the address and type the code.
+   The tablet remembers every code it connected with (up to 6): if on the same PC you switch between Windows and Linux, each with its own code, you enter it once per system and then it switches by itself.
+3. Chrome: menu > *Add to Home screen*. From that icon the deck opens full screen.
+4. To keep the screen on: *Developer options > Stay awake* (with the tablet charging).
+5. Tap the clock at the top right for full screen, if the browser supports it.
+6. To open a page directly add its id to the address: `http://IP:8787/#media`, `#claude`, `#blender`.
 
-**Batteria:** dopo un minuto senza tocchi la dock aggiorna i dati più lentamente (stato del PC ogni 15 secondi invece di 2); dopo 10 minuti parte il salvaschermo, nero con un orologio fioco, e smette del tutto di chiamare il PC. Un tocco la riattiva, senza premere il pulsante sotto. Tempi in `services.json` → `tablet`; per non far mai partire il salvaschermo su un tablet: rotellina in alto → *Sempre attivo*. Il consumo maggiore resta lo schermo: abbassa la luminosità di Android, e se il tablet resta in carica usa *Rimani attivo* solo quando serve.
+At the top right you see the PC network (Wi-Fi name and signal, or Ethernet), download/upload speed and RAM, then the **settings gear**: theme, language (IT / EN) and **Always on**.
 
-Pulsanti con la barra arancione in basso (es. BLOCCA): vanno **tenuti premuti** circa 1 secondo.
-I pulsanti volume e annulla si ripetono se tieni premuto.
+**Battery:** after a minute without touches the deck refreshes data more slowly (PC status every 15 seconds instead of 2); after 10 minutes the screensaver starts, black with a dim clock, and it stops calling the PC entirely. One tap wakes it up, without pressing the button underneath. Timings in `services.json` → `tablet`; to never start the screensaver on a tablet: gear at the top → *Always on*. The screen is still the biggest drain: lower the Android brightness, and if the tablet stays on charge use *Stay awake* only when needed.
 
-## Pagine predefinite
+Buttons with an orange bar at the bottom (e.g. LOCK) must be **held** for about 1 second.
+Volume and undo buttons repeat while you hold them.
 
-| Pagina | Contenuto |
+## Default pages
+
+| Page | Content |
 |---|---|
-| HOME | musica (comandi base), stato del PC, todo |
-| MUSICA | lettore completo (seek, shuffle, ripeti, volume dell'app) e coda dei brani |
-| APP | programmi (pallino verde = già aperto, un altro tocco lo chiude), Claude, PowerShell/Terminale, screenshot, blocco PC, schermo spento, **volume di sistema**, Blender e DaVinci |
-| DEV | VS Code, Claude Code, PowerShell, OpenClaw, scorciatoie di VS Code |
-| GITHUB | PR, issue, CI, ultimo deploy (workflow di GitHub Actions con deploy, release, publish o pages nel nome: badge DEPLOY ✓/✗/…) e ultimo commit dei tuoi repository |
-| OLLAMA | chat con i modelli locali |
-| CLAUDE | chat, sessioni di Claude Code, dettatura, scrittura sul PC |
-| DISCORD | server, canali vocali con chi c'è dentro, chi parla, mute/audio, webcam, Go Live, volume e muto di una persona solo per te |
-<<<<<<< HEAD
-| GAMES | i giochi scelti dal pannello, con la loro icona (pallino verde se aperti; se già aperto lo porta in primo piano) |
-| EMAIL *(disponibile)* | posta in arrivo degli account scelti dal pannello, lettura dei messaggi, apertura della webmail sul PC |
-=======
-| GAMES | Hearthstone, World of Tanks, League of Legends (pallino verde se aperti; se già aperto lo porta in primo piano) |
-| EMAIL *(disponibile)* | posta in arrivo degli account di Thunderbird scelti dal pannello, lettura dei messaggi, apertura di Thunderbird sul PC |
->>>>>>> origin/main
-| SCHERMI *(Windows; Linux con KDE Plasma 6 + kdotool)* | monitor del PC, disposizioni delle finestre, monitor su cui aprire le app, **desktop virtuali** (passa, crea, chiudi, trascinaci una finestra) e pulsante **GUIDA** con le scorciatoie |
-| AUDIO | uscite e microfoni (predefinito, volume, mute), volume e mute di ogni app che usa l'audio |
-| DESKTOP VIRTUALI *(solo Linux)* | guida alle scorciatoie dei desktop virtuali (KDE Plasma, GNOME, anche Windows); su Windows la stessa guida è nella pagina SCHERMI |
-| VIBER *(aggiungila dal pannello)* | passa ai pannelli aperti di Viber (terminale, git, browser, chat, task, file), cambia vista (schede, agenti, focus), mostra le task del progetto aperto |
-| BROWSER DEV *(disponibile)* | scorciatoie del browser: RICARICA PULITA, DEVTOOLS, CONSOLE, ISPEZIONA, DISPOSITIVO, CANCELLA DATI (tenuto premuto), LOCALHOST:5173 e :3000; i tasti vanno alla finestra in primo piano |
-| ANDROID *(disponibile)* | adb (Android SDK platform-tools): DISPOSITIVI, ERRORI e CRASH di logcat, SCREENSHOT nelle Immagini, SCHERMO con scrcpy, HOME/INDIETRO/RECENTI, DEV MENU e RICARICA di React Native, METRO 8081, RIAVVIA ADB. Comandi in `config/defaults/commands/android.json` |
-| BLENDER, DAVINCI, UNREAL *(disponibili: aggiungile alla barra dal pannello)* | scorciatoie dei tre programmi (UNREAL: play, simula, compila C++ con Live Coding, strumenti W/E/R, viste) |
+| HOME | music (basic controls), PC status, todo |
+| MUSIC | full player (seek, shuffle, repeat, app volume) and track queue |
+| APPS | programs (green dot = already running, another tap closes it), Claude, PowerShell/Terminal, screenshot, lock PC, screen off, **system volume**, Blender and DaVinci |
+| DEV | VS Code, Claude Code, PowerShell, OpenClaw, VS Code shortcuts |
+| GITHUB | PRs, issues, CI, latest deployment (GitHub Actions workflows with deploy, release, publish or pages in their name: DEPLOY ✓/✗/… badge) and latest commit of your repositories |
+| OLLAMA | chat with local models |
+| CLAUDE | chat, Claude Code sessions, dictation, typing on the PC |
+| DISCORD | servers, voice channels with who is inside, who is talking, mute/deafen, webcam, Go Live, per-person volume and mute just for you |
+| GAMES | the games picked in the control panel, with their icons (green dot when running; if running it is brought to the front) |
+| EMAIL *(available)* | inbox of the Thunderbird accounts chosen in the control panel, message reading, opening Thunderbird on the PC |
+| SCREENS *(Windows; Linux with KDE Plasma 6 + kdotool)* | PC monitors, window layouts, monitor apps open on, **virtual desktops** (switch, create, close, drag a window onto one) and a **GUIDE** button with the shortcuts |
+| AUDIO | outputs and microphones (default, volume, mute), volume and mute of every app playing audio |
+| VIRTUAL DESKTOPS *(Linux only)* | guide to virtual desktop shortcuts (KDE Plasma, GNOME, Windows too); on Windows the same guide is in the SCREENS page |
+| VIBER *(add it from the panel)* | switch to Viber's open panels (terminal, git, browser, chat, tasks, files), change view (tabs, agents, focus), show the tasks of the open project |
+| BROWSER DEV *(available)* | browser shortcuts: HARD RELOAD, DEVTOOLS, CONSOLE, INSPECT, DEVICE, CLEAR DATA (hold), LOCALHOST:5173 and :3000; keys go to the window in front |
+| ANDROID *(available)* | adb (Android SDK platform-tools): DEVICES, logcat ERRORS and CRASHES, SCREENSHOT to Pictures, SCREEN with scrcpy, HOME/BACK/RECENTS, React Native DEV MENU and RELOAD, METRO 8081, RESTART ADB. Commands in `config/defaults/commands/android.json` |
+| BLENDER, DAVINCI, UNREAL *(available: add them to the bar from the panel)* | shortcuts for the three programs (UNREAL: play, simulate, compile C++ with Live Coding, W/E/R tools, views) |
 
 ## Viber
 
-La pagina **VIBER** comanda la finestra di Viber in primo piano sul PC (Windows e Linux). A sinistra **i pulsanti** in una griglia, che si scelgono e ordinano dal pannello di controllo come per BLENDER; a destra due colonne a tutta altezza, **Progetti** e **Task**:
+The **VIBER** page controls the Viber window in front on the PC (Windows and Linux). On the left **the buttons** in a grid, chosen and ordered from the control panel like for BLENDER; on the right two full-height columns, **Projects** and **Tasks**:
 
-- **Progetti**: i progetti aperti in Viber, quello mostrato evidenziato, con lo stato dei loro agenti (pallino rosso *ti aspetta*, arancione *al lavoro*, verde *pronto*). Un tocco passa a quel progetto con le scorciatoie di Viber "progetto successivo/precedente", lette dalle sue impostazioni; dopo ogni passo la dock controlla che il progetto sia cambiato. Con la tastiera italiana le scorciatoie di default (Ctrl+] e Ctrl+[) non si possono premere: in Viber > Impostazioni > Scorciatoie scegline altre (es. Ctrl+PagGiù / Ctrl+PagSu).
-- **Task**: le task del progetto mostrato, prima quelle in corso, con i loro passi. Il riquadro *Tasks* della barra del titolo di Viber non ha comandi nell'API: dal tablet non si apre.
-- **Pannelli**: terminale, git, browser, chat, task, file (e, disponibili ma nascosti, team, note, pull request, deploy, debug, simulatore). Quello attivo è acceso. Un pannello che non è tra le schede aperte in Viber non si può usare (l'API sa solo passare a una scheda già aperta): esce dalla griglia da solo (gli altri si ricompattano) e ritorna quando lo apri in Viber (**TUTTE** le rimette tutte).
-- **Disposizioni** (API di Viber): **TUTTE** (un riquadro con tutte le schede); disponibili anche **DIVIDI** (browser + terminale), **REVIEW** (git + file + terminale), **INTERO** (il pannello attivo a schermo intero).
-- **Viste** (scorciatoie Ctrl+Alt+1/2/3): **SCHEDE** (progetti in alto), **AGENTI** (barra degli agenti a sinistra); disponibile anche **FOCUS**. Viber viene portato in primo piano prima di premere i tasti.
+- **Projects**: the projects open in Viber, the one shown highlighted, with the state of their agents (red dot *waiting for you*, orange *working*, green *done*). A tap switches to that project with Viber's "next/previous project" shortcuts, read from its settings; after each step the deck checks that the project changed. With an Italian keyboard the default shortcuts (Ctrl+] and Ctrl+[) cannot be pressed: in Viber > Settings > Shortcuts pick others (e.g. Ctrl+PgDn / Ctrl+PgUp).
+- **Tasks**: the tasks of the project shown, in-progress ones first, with their steps. The *Tasks* box in Viber's title bar has no commands in the API: it cannot be opened from the tablet.
+- **Panels**: terminal, git, browser, chat, tasks, files (and, available but hidden, team, notes, pull requests, deploy, debug, simulator). The active one is lit. A panel that is not among the tabs open in Viber cannot be used (the API can only switch to an open tab): it leaves the grid by itself (the others close the gap) and comes back when you open it in Viber (**ALL** brings them all back).
+- **Layouts** (Viber API): **ALL** (one box with every tab); also available **SPLIT** (browser + terminal), **REVIEW** (git + files + terminal), **FULL** (the active panel full screen).
+- **Views** (Ctrl+Alt+1/2/3 shortcuts): **TABS** (projects at the top), **AGENTS** (agent bar on the left); **FOCUS** is also available. Viber is brought to the front before the keys are pressed.
 
-Per i pulsanti in `dock.json`: `{ "type": "viber", "panel": "terminal" }`, `{ "type": "viber", "layout": "review" }`, `{ "type": "viber", "view": "agents" }`, `{ "type": "viber", "project": "next" }`.
+For buttons in your pages: `{ "type": "viber", "panel": "terminal" }`, `{ "type": "viber", "layout": "review" }`, `{ "type": "viber", "view": "agents" }`, `{ "type": "viber", "project": "next" }`.
 
-La dock usa l'API locale di Viber: porta e token stanno in `~/.viber/browser-mcp.json`, che Viber scrive quando è aperto (si parla solo con `127.0.0.1`). Se hai più finestre di Viber, vale quella in primo piano. Se Viber rifiuta un comando (ad esempio una scheda chiusa nel frattempo) il tablet mostra l'avviso.
+The deck uses Viber's local API: port and token are in `~/.viber/browser-mcp.json`, which Viber writes while it is open (it only talks to `127.0.0.1`). With several Viber windows, the one in front wins. If Viber rejects a command (for example a tab closed in the meantime) the tablet shows a warning.
 
-## Telefono
+## Phone
 
-La dock funziona anche da telefono (inquadra il QR del pannello). La disposizione è sempre quella orizzontale del tablet:
+The deck works on a phone too (scan the QR in the control panel). The layout is always the tablet's landscape one:
 
-- con il telefono in orizzontale la pagina occupa lo schermo, con le barre in alto e in basso un po' più basse;
-- con il telefono in verticale (o con il blocco della rotazione) la pagina appare **girata di 90°**: gira il telefono con la parte alta verso sinistra e la leggi dritta.
+- with the phone in landscape the page fills the screen, with slightly shorter top and bottom bars;
+- with the phone in portrait (or with rotation lock) the page is shown **rotated by 90°**: turn the phone with its top to the left and read it straight.
 
-Vale per gli schermi con il lato corto sotto i 600 px; il tablet non cambia.
-## Temi del tablet
+This applies to screens whose short side is under 600 px; the tablet does not change.
 
-La **rotellina** nella barra in alto, accanto all'orario, apre il menù delle impostazioni: tema, lingua (IT / EN) e *Sempre attivo*. I temi:
+## Tablet themes
 
-| Tema | Com'è |
+The **gear** in the top bar, next to the clock, opens the settings menu: theme, language (IT / EN) and *Always on*. The themes:
+
+| Theme | Look |
 |---|---|
-| Classico | blu notte, quello di sempre |
-| Material | Material 3 scuro: superfici a toni, angoli molto arrotondati, pagina attiva con la pillola sotto l'icona |
-| Neon Elgato | tasti neri in rilievo come uno Stream Deck, icone colorate che brillano |
-| Neo-brutalista | chiaro: fondo crema, bordi neri spessi, ombra piena, colori pastello |
+| Classic | midnight blue, the original one |
+| Material | dark Material 3: tonal surfaces, very rounded corners, active page with a pill under the icon |
+| Neon Elgato | raised black keys like a Stream Deck, glowing colored icons |
+| Neo-brutalist | light: cream background, thick black borders, solid shadows, pastel colors |
 
-Anche l'orario del salvaschermo cambia con il tema: sottile (Classico), arrotondato (Material), digitale con bagliore (Neon), pesante con ombra piena (Neo-brutalista). I font sono in `public/fonts`, ridotti alle sole cifre (licenze in `public/fonts/LICENSE.md`).
+The screensaver clock changes with the theme too: thin (Classic), rounded (Material), digital with a glow (Neon), heavy with a solid shadow (Neo-brutalist). The fonts are in `public/fonts`, reduced to digits only (licenses in `public/fonts/LICENSE.md`).
 
-La scelta resta su quel tablet. I pulsanti con `"color"` cambiano con il tema: nel Neon il colore va sull'icona, nel Neo-brutalista diventa pastello.
+The choice stays on that tablet. Buttons with `"color"` change with the theme: in Neon the color goes on the icon, in Neo-brutalist it becomes pastel.
 
-Per chi modifica lo stile: i file in `public/css/themes/` sono generati da `public/css/dock.css` e `scripts/themes/<tema>.js` (tabelle dei colori e forme del tema). Dopo una modifica a `dock.css` esegui `npm run themes`.
+For style changes: the files in `public/css/themes/` are generated from `public/css/dock.css` and `scripts/themes/<theme>.js` (color tables and theme shapes). After a change to `dock.css` run `npm run themes`.
 
-## Pannello di controllo (sul PC)
+## Control panel (on the PC)
 
-Doppio clic sull'icona **Vibe Deck** (desktop o vicino all'orologio): si apre nel browser del PC una pagina per scegliere le pagine del tablet.
+Double-click the **Vibe Deck** icon (desktop or next to the clock): a page opens in the PC browser to choose the tablet pages. The panel is in Italian; the labels below are quoted as they appear.
 
-- **Trascina** le pagine per cambiare l'ordine della barra in basso, o spostale tra *Nella barra* e *Disponibili*.
-- La **stella** sceglie la pagina che si apre all'avvio.
-- **Pulsanti delle pagine**: scegli una pagina di pulsanti (APP, DEV, GAMES, VIBER, BLENDER, DAVINCI, UNREAL; in VIBER sono quelli a sinistra delle colonne Progetti e Task) e trascina i pulsanti per riordinarli, o spostali tra *Sul tablet* e *Nascosti* (anche con la ✕ e il + su ogni pulsante). La griglia si adatta da sola: con meno pulsanti diventano più grandi. *Mostra tutti* rimette tutti i pulsanti nell'ordine predefinito.
-- **Salva sul tablet**: il tablet si aggiorna da solo. *Predefinite* torna alle pagine e ai pulsanti di `dock.json`.
-- **Tema** (in alto a destra): Classico, Material, Neon Elgato o Neo-brutalista, gli stessi del tablet. La scelta resta su questo PC ed è separata da quella del tablet; `/control?theme=neon` apre il pannello con un tema senza ricordarlo.
+- **Drag** the pages to change the order of the bottom bar, or move them between *Nella barra* (in the bar) and *Disponibili* (available).
+- The **star** picks the page that opens at startup.
+- ***Pulsanti delle pagine*** (page buttons): pick a page of buttons (APPS, DEV, GAMES, VIBER, BLENDER, DAVINCI, UNREAL; in VIBER they are the ones left of the Projects and Tasks columns) and drag the buttons to reorder them, or move them between *Sul tablet* (on the tablet) and *Nascosti* (hidden), also with the ✕ and + on each button. The grid adapts by itself: with fewer buttons they get bigger. *Mostra tutti* (show all) puts every button back in the default order.
+- ***Salva sul tablet*** (save to tablet): the tablet updates by itself. *Predefinite* (defaults) goes back to the pages and buttons of `dock.json`.
+- **Theme** (top right): Classic, Material, Neon Elgato or Neo-brutalist, the same as the tablet. The choice stays on this PC and is separate from the tablet's; `/control?theme=neon` opens the panel with a theme without remembering it.
 
-Le scelte finiscono in `config/layout.json`, anche la **HOME** scelta dal pannello (widget delle altre pagine, misure e ordine: scheda *HOME*). I pulsanti aggiunti in seguito a `dock.json` compaiono in fondo alla pagina. Il pannello risponde solo da questo PC (`http://127.0.0.1:8787/control`), non dal tablet né dalla rete. Le pagine disponibili si raggiungono solo dai pulsanti che le aprono (`{ "type": "page" }`): per le scorciatoie di Blender e DaVinci aggiungi le loro pagine alla barra. Il contenuto delle pagine si modifica sempre in `config/dock.json`.
+The choices go to `config/layout.json`, including the **HOME** built in the panel (widgets of the other pages, sizes and order: *HOME* tab). Buttons added later to the pages appear at the end of the page. The panel only answers from this PC (`http://127.0.0.1:8787/control`), not from the tablet or the network. Available pages are reached only through buttons that open them (`{ "type": "page" }`): for the Blender and DaVinci shortcuts add their pages to the bar. Page content is always edited in the page files (`config/pages/`).
 
-### Collegare un telefono o un tablet (QR)
+### Connecting a phone or a tablet (QR)
 
-In cima al pannello c'è un QR code con il link diretto (indirizzo + codice di accesso): inquadralo con la fotocamera e la dock si apre già collegata. Se il PC è collegato sia via cavo sia in Wi-Fi scegli la rete su cui sta il telefono. Lo stesso QR compare nel terminale all'avvio (`DOCK_NO_QR=1` per nasconderlo).
+At the top of the panel there is a QR code with the direct link (address + access code): scan it with the camera and the deck opens already connected. If the PC is on both cable and Wi-Fi, pick the network the phone is on. The same QR shows up in the terminal at startup (`DOCK_NO_QR=1` hides it).
 
 ### Email
 
-La posta si collega **solo tramite [Thunderbird](https://www.thunderbird.net/download/)** (gratis, open source, di Mozilla, per Windows e Linux). È l'unico modo che funziona con tutti i servizi senza password per le app né app da registrare: l'accesso lo fa Thunderbird con i metodi ufficiali di ogni servizio (Gmail con la conferma sul telefono, Outlook, iCloud, Yahoo, Libero, e anche le mail di **università e aziende** con Microsoft 365 o Google Workspace, se l'organizzazione permette Thunderbird) e lo rinnova da solo.
+Mail is connected **only through [Thunderbird](https://www.thunderbird.net/download/)** (free, open source, by Mozilla, for Windows and Linux). It is the only way that works with every service without app passwords or apps to register: Thunderbird signs in with each service's official methods (Gmail with confirmation on the phone, Outlook, iCloud, Yahoo, Libero, and also **university and company** mail on Microsoft 365 or Google Workspace, if the organization allows Thunderbird) and renews the sign-in by itself.
 
-1. Installa Thunderbird e aggiungi i tuoi account (*Account email esistente*: per Gmail e Microsoft lascia vuota la password, si apre la pagina di accesso del servizio).
-2. Lascia attivo **"Conserva i messaggi di questo account sul computer"** (è il valore di partenza; impostazioni dell'account → Sincronizzazione e archiviazione): serve per leggere il testo dal tablet.
-3. Nella sezione **Email** del pannello gli account compaiono da soli: scegli quali mostrare sul tablet, poi aggiungi la pagina **EMAIL** alla barra.
+1. Install Thunderbird and add your accounts (*Existing email account*: for Gmail and Microsoft leave the password empty, the service's sign-in page opens).
+2. Keep **"Keep messages for this account on this computer"** on (it is the default; account settings → Synchronization & Storage): it is needed to read the text on the tablet.
+3. In the **Email** section of the panel the accounts appear by themselves: choose which ones to show on the tablet, then add the **EMAIL** page to the bar.
 
-Sul tablet vedi la posta in arrivo (le non lette in evidenza), apri un messaggio per leggerlo e con **APRI SUL PC** apri Thunderbird. Con più account, **CAMBIA** passa da uno all'altro. Thunderbird deve restare aperto (anche ridotto a icona) per scaricare le email nuove.
+On the tablet you see the inbox (unread messages highlighted), open a message to read it, and **APRI SUL PC** (open on the PC) opens Thunderbird. With several accounts, **CAMBIA** (switch) goes from one to the next. Thunderbird must stay open (even minimized) to download new mail.
 
-**Riservatezza:** la dock non chiede e non salva password o token. Legge in **sola lettura** i file del profilo di Thunderbird (`INBOX.msf` per l'elenco, il file della posta per il testo): non segna le email come lette, non le sposta e non le cancella, e le manda solo al tablet sulla rete di casa. I file della posta sul disco non sono cifrati (vale per ogni programma di posta): proteggi l'account del PC con una password e, se puoi, con la cifratura del disco. `data/mail.json` tiene solo quali account mostrare.
+**Privacy:** the deck never asks for or stores passwords or tokens. It reads the Thunderbird profile files **read-only** (`INBOX.msf` for the list, the mail file for the text): it does not mark mail as read, move or delete it, and sends it only to the tablet on your home network. Mail files on disk are not encrypted (true for every mail program): protect the PC account with a password and, if you can, with disk encryption. `data/mail.json` only keeps which accounts to show.
 
-Profili cercati: `%APPDATA%\Thunderbird` su Windows; `~/.thunderbird`, Flatpak (`~/.var/app/org.mozilla.Thunderbird/.thunderbird`) e Snap su Linux. `DOCK_THUNDERBIRD_DIR` indica un'altra cartella (quella con `profiles.ini`).
+Profiles searched: `%APPDATA%\Thunderbird` on Windows; `~/.thunderbird`, Flatpak (`~/.var/app/org.mozilla.Thunderbird/.thunderbird`) and Snap on Linux. `DOCK_THUNDERBIRD_DIR` points to another folder (the one with `profiles.ini`).
 
-### Giochi
+### Games
 
-Nella sezione **Giochi** del pannello premi **Aggiungi un gioco**: si apre il selettore di file del sistema (Windows: `.exe`, collegamenti `.lnk` e `.url` di Steam; Linux: file `.desktop`, script, AppImage). La dock propone il nome (dalle informazioni del file) e le icone:
+In the **Giochi** (games) section of the panel press **Aggiungi un gioco** (add a game): the system file picker opens (Windows: `.exe`, `.lnk` shortcuts and Steam `.url` files; Linux: `.desktop` files, scripts, AppImage). The deck suggests the name (from the file information) and the icons:
 
-- l'icona del file stesso (fino a 256 px);
-- le immagini del gioco trovate sul web: copertina e intestazione di **Steam**, immagine della voce di **Wikipedia** e loghi di **Wikimedia Commons** (nessuna chiave API). Puoi cercare con un altro nome; senza icona resta quella di riserva.
+- the file's own icon (up to 256 px);
+- game images found on the web: **Steam** cover and header, the **Wikipedia** article image and **Wikimedia Commons** logos (no API key). You can search with another name; without an icon the fallback one stays.
 
-Il campo **Processo del gioco** serve per il pallino verde e per riportare il gioco in primo piano: se il file è un launcher (Battle.net, Riot, Game Center...) scrivi il nome del processo del gioco vero (più nomi separati da virgola). Con le frecce cambi l'ordine dei pulsanti, con **Icona** ne scegli un'altra.
+The **game process** field is used for the green dot and to bring the game back to the front: if the file is a launcher (Battle.net, Riot, Game Center...) write the process name of the actual game (several names separated by commas). The arrows change the order of the buttons, **Icona** picks another icon.
 
-I giochi sono dati personali: stanno in `data/games.json` e le icone in `data/game-icons/`, solo su questo PC. Il progetto non contiene giochi né percorsi di un PC.
+Games are personal data: they live in `data/games.json` and the icons in `data/game-icons/`, on this PC only. The project contains no games and no paths from any PC.
 
 ### Discord
 
-Usa il collegamento locale dell'app Discord (lo stesso delle Stream Deck): niente bot, funziona con Discord aperto sul PC. Discord lo concede solo alle applicazioni registrate, quindi serve una configurazione, una volta sola, guidata dal pannello:
+It uses the Discord app's local connection (the same one Stream Decks use): no bot, it works with Discord open on the PC. Discord only grants it to registered applications, so a one-time setup is needed, guided by the panel:
 
-1. sul [Developer Portal](https://discord.com/developers/applications) crea una *New Application*;
-2. in *OAuth2* copia **Client ID** e **Client Secret**; sotto *Redirects* premi *Add Redirect*, scrivi `http://localhost` (senza barra finale) e premi **Save Changes**. Se manca, Discord risponde *"invalid_request: missing redirect_uri"*;
-3. incollali nel pannello e premi **Collega**: Discord chiede di autorizzare la dock.
+1. on the [Developer Portal](https://discord.com/developers/applications) create a *New Application*;
+2. under *OAuth2* copy the **Client ID** and **Client Secret**; under *Redirects* press *Add Redirect*, type `http://localhost` (no trailing slash) and press **Save Changes**. If it is missing, Discord answers *"invalid_request: missing redirect_uri"*;
+3. paste them in the panel and press **Collega** (connect): Discord asks you to authorize the deck.
 
-Dal tablet: tocca un server, poi un canale per entrarci; tocca una persona nella tua stanza per aprire il suo menu: **volume per te** da 0 a 200% (barra, − e +, 50/100/150/200%) e **MUTA PER ME**, come il tasto destro su Discord (gli altri non lo vedono); **MIC** e **AUDIO** per mutarti o silenziare; **CAM** accende la webcam; **LIVE** avvia il Go Live del gioco aperto (uno di quelli della pagina GAMES, o qualsiasi app con `"game": true`); **ESCI** (tieni premuto) per lasciare la stanza.
+From the tablet: tap a server, then a channel to join it; tap a person in your room to open their menu: **volume for you** from 0 to 200% (slider, − and +, 50/100/150/200%) and **MUTE FOR ME**, like right-click in Discord (the others do not see it); **MIC** and **AUDIO** to mute or deafen yourself; **CAM** turns on the webcam; **LIVE** starts Go Live of the running game (one from the GAMES page, or any app with `"game": true`); **LEAVE** (hold) to leave the room.
 
-Webcam e Go Live usano due comandi di Discord non documentati (`TOGGLE_VIDEO`, `TOGGLE_SCREENSHARE`) e un permesso in più: se avevi già collegato la dock, premi **Riautorizza** nel pannello. Se Discord non concede quel permesso, l'autorizzazione prosegue senza, e CAM e LIVE restano spenti. Senza configurazione MIC e AUDIO funzionano lo stesso, con le scorciatoie predefinite di Discord (Ctrl+Shift+M / Ctrl+Shift+D). Le credenziali stanno in `data/discord.json`, solo su questo PC.
+Webcam and Go Live use two undocumented Discord commands (`TOGGLE_VIDEO`, `TOGGLE_SCREENSHARE`) and one extra permission: if you had already connected the deck, press **Riautorizza** (re-authorize) in the panel. If Discord does not grant that permission, authorization goes on without it, and CAM and LIVE stay off. Without any setup MIC and AUDIO still work, through Discord's default shortcuts (Ctrl+Shift+M / Ctrl+Shift+D). Credentials live in `data/discord.json`, on this PC only.
 
-## Musica
+## Music
 
-### Estensione per Apple Music web e YouTube (consigliata)
+### Extension for Apple Music web and YouTube (recommended)
 
-Apple Music è una web app, e Windows dà pochissime informazioni sulle schede del browser: niente coda, niente volume della scheda e durate a volte sbagliate. La piccola estensione nella cartella `extension/` legge direttamente il player del sito e lo comanda.
+Apple Music is a web app, and Windows exposes very little about browser tabs: no queue, no tab volume and sometimes wrong durations. The small extension in the `extension/` folder reads the site's player directly and controls it.
 
-Installazione (una volta sola, in Brave, Chrome o Edge):
+Installation (once, in Brave, Chrome or Edge):
 
-1. Apri `brave://extensions` (o `chrome://extensions`, `edge://extensions`).
-2. Attiva **Modalità sviluppatore** (in alto a destra).
-3. **Carica estensione non pacchettizzata** e scegli la cartella `extension` di questo progetto.
-4. Le schede di Apple Music / YouTube già aperte vengono collegate da sole (senza ricaricarle).
+1. Open `brave://extensions` (or `chrome://extensions`, `edge://extensions`).
+2. Turn on **Developer mode** (top right).
+3. **Load unpacked** and pick the `extension` folder of this project.
+4. Apple Music / YouTube tabs already open are connected by themselves (no reload needed).
 
-Dopo un aggiornamento della dock, in `brave://extensions` premi la freccia circolare sull'estensione per caricare la versione nuova.
+After a deck update, in `brave://extensions` press the circular arrow on the extension to load the new version.
 
-Cliccando l'icona dell'estensione vedi se è collegata alla dock. Funziona con `music.apple.com`, `music.youtube.com` e `www.youtube.com`. L'estensione parla solo con la dock sullo stesso PC (`127.0.0.1`).
+Clicking the extension icon shows whether it is connected to the deck. It works with `music.apple.com`, `music.youtube.com` and `www.youtube.com`. The extension only talks to the deck on the same PC (`127.0.0.1`).
 
-Con l'estensione:
+With the extension:
 
-- **Coda**: nella pagina MUSICA tocchi un brano per farlo partire. Su YouTube la coda è quella della playlist aperta.
-- **Volume dell'app**: i tasti volume del lettore regolano Apple Music o YouTube, non il volume di Windows.
-- **Durata e posizione esatte**, e tocco sulla barra per spostarti nel brano.
-- **Shuffle e ripeti** (Apple Music).
+- **Queue**: on the MUSIC page tap a track to play it. On YouTube the queue is the open playlist.
+- **App volume**: the player's volume keys control Apple Music or YouTube, not the Windows volume.
+- **Exact duration and position**, and tap on the bar to seek.
+- **Shuffle and repeat** (Apple Music).
 
-### App desktop
+### Desktop apps
 
-Spotify, VLC, Tidal, Deezer, MusicBee e simili si comandano con i controlli multimediali del sistema, ognuno direttamente, senza passare dall'app che Windows considera "attiva". Il volume dei tasti del lettore è quello della singola app (mixer di Windows).
-Sono accettate solo app musicali: l'elenco si personalizza in `config/services.json` → `media` (`allowApps`, `blockApps`).
+Spotify, VLC, Tidal, Deezer, MusicBee and similar are controlled through the system media controls, each one directly, without going through the app Windows considers "active". The volume of the player keys is that single app's volume (Windows mixer).
+Only music apps are accepted: the list is customized in `config/services.json` → `media` (`allowApps`, `blockApps`).
 
-Il volume **di sistema** sta nella pagina APP (VOL -, MUTE, VOL +).
+The **system** volume is on the APPS page (VOL -, MUTE, VOL +).
 
 ## Claude
 
-La pagina CLAUDE ha due elenchi.
+The CLAUDE page has two lists.
 
-**Consumi**: in fondo alla colonna sinistra della pagina CLAUDE ci sono le barre dell'abbonamento: **sessione di 5 ore**, **settimana** e, se Anthropic li dà, i limiti settimanali per modello, ognuno con l'ora in cui si azzera (arancione dal 70%, rosso dal 90%). Tocca il riquadro per aggiornarlo. La dock usa l'accesso di Claude Code già fatto sul PC (`~/.claude/.credentials.json`, come Viber): il token resta sul PC, al tablet arrivano solo le percentuali.
+**Usage**: at the bottom of the left column of the CLAUDE page are the subscription bars: **5-hour session**, **week** and, when Anthropic provides them, the weekly per-model limits, each with the time it resets (orange from 70%, red from 90%). Tap the box to refresh it. The deck uses the Claude Code sign-in already done on the PC (`~/.claude/.credentials.json`, like Viber): the token stays on the PC, the tablet only gets the percentages.
 
-**CLAUDE CODE**: le sessioni dell'app desktop di Claude, raggruppate per le sezioni della barra laterale del PC (le tue cartelle, come Lavoro o Progetti personali). Le sessioni fuori dalle sezioni sono raggruppate per progetto, come nell'app. Il pallino arancione indica che Claude sta lavorando.
+**CLAUDE CODE**: the Claude desktop app sessions, grouped by the sections of the PC sidebar (your folders, like Work or Personal projects). Sessions outside the sections are grouped by project, as in the app. The orange dot means Claude is working.
 
-- **Scrivere**: quello che scrivi (o detti) parte dall'**app sul PC**, nella sessione vera. La dock apre la sessione nell'app, mette il testo nel campo e preme Invia tramite l'accessibilità di Windows: lo vedi comparire subito sul PC, senza riavviare l'app, e valgono i permessi scelti per quella sessione (es. *Auto*).
-- Se Claude sta lavorando, il messaggio resta **in coda** e parte quando ha finito.
-- Se sul PC c'è già del testo scritto in quella sessione, la dock non lo sovrascrive e te lo dice.
-- **STOP** (tieni premuto) ferma Claude; **SUL PC** apre la sessione nell'app.
-- **+** accanto a una sezione apre una nuova sessione lì, con lo stesso pulsante "Nuova sessione in …" della barra laterale. Le nuove sessioni da link esterno chiederebbero ogni volta di confermare la cartella sul PC, e quella conferma resta tua.
-- Mentre la dock scrive, l'app sul PC passa a quella sessione.
+- **Typing**: what you type (or dictate) is sent from the **app on the PC**, in the real session. The deck opens the session in the app, puts the text in the field and presses Send through Windows accessibility: you see it appear on the PC right away, without restarting the app, and the permissions chosen for that session apply (e.g. *Auto*).
+- If Claude is working, the message is **queued** and sent when it is done.
+- If there is already text typed in that session on the PC, the deck does not overwrite it and tells you.
+- **STOP** (hold) stops Claude; **SUL PC** (on the PC) opens the session in the app.
+- **+** next to a section opens a new session there, with the same "New session in …" button of the sidebar. New sessions from an external link would ask every time to confirm the folder on the PC, and that confirmation stays yours.
+- While the deck is typing, the app on the PC switches to that session.
 
-Senza l'app aperta (e su Linux) la dock continua la sessione con `claude -p --resume`, usando la modalità di permessi della sessione (`auto` se non ne ha una). Prima le scritture venivano negate. Le modifiche fatte così compaiono nell'app quando riapri la sessione.
+Without the app open (and on Linux) the deck continues the session with `claude -p --resume`, using the session's permission mode (`auto` if it has none). Changes made this way show up in the app when you reopen the session.
 
-**CHAT**: le conversazioni fatte dal tablet (Claude Code con il tuo abbonamento, o la Claude API con `ANTHROPIC_API_KEY` nel `.env`), salvate in `data/claude-chats.json`. Le chat di claude.ai e della scheda Chat dell'app stanno sul tuo account, non sul PC: la dock non le può leggere senza entrare nel tuo account.
+**CHAT**: conversations started from the tablet (Claude Code with your subscription, or the Claude API with `ANTHROPIC_API_KEY` in `.env`), saved in `data/claude-chats.json`. Chats on claude.ai and in the app's Chat tab live in your account, not on the PC: the deck cannot read them without signing in to your account.
 
-### TODO e Memo di Windows
+### TODO and Windows Sticky Notes
 
-Su Windows il TODO mostra le **Memo** (Sticky Notes): ogni riga di una memo è un'attività, una riga barrata è fatta, la prima riga in grassetto è il titolo. Dal tablet puoi aggiungere righe (anche a voce), spuntarle (la riga viene barrata) e toglierle; le modifiche fatte sul PC compaiono sul tablet in pochi secondi.
+On Windows the TODO shows the **Sticky Notes**: each line of a note is a task, a struck-through line is done, the bold first line is the title. From the tablet you can add lines (by voice too), tick them (the line gets struck through) and remove them; changes made on the PC show up on the tablet within a few seconds.
 
-L'app Memo non vede le modifiche fatte da fuori, quindi a ogni modifica dal tablet la dock la chiude, aggiorna la memo, la mette in coda per la sincronizzazione con il cloud e la riapre (circa un secondo). Più tocchi ravvicinati causano un solo riavvio. La dock non crea e non cancella mai memo intere.
+The Sticky Notes app does not see changes made from outside, so on every change from the tablet the deck closes it, updates the note, queues it for cloud sync and reopens it (about a second). Several quick taps cause a single restart. The deck never creates or deletes whole notes.
 
-Con più memo, tocca un titolo nel TODO per scegliere dove aggiungere. In `services.json` → `todo`: `"memo"` sceglie la memo predefinita (parte del titolo), `"source": "local"` torna alla lista interna della dock (usata anche su Linux).
+With several notes, tap a title in the TODO to choose where to add. In `services.json` → `todo`: `"memo"` picks the default note (part of its title), `"source": "local"` switches back to the deck's own list (also used on Linux).
 
-### TODO uguali su Windows e Linux (GitHub)
+### Same TODO on Windows and Linux (GitHub)
 
-I TODO possono essere copiati in `todo.json` sul branch **`dock-todo`** di un remote git, con le stesse credenziali git che usi per il push: niente token da configurare e nessun commit nella cronologia del codice.
+The TODO can be copied to `todo.json` on the **`dock-todo`** branch of a git remote, with the same git credentials you use to push: no token to configure and no commits in the code history.
 
-**È spenta di default.** Le attività finiscono sul remote, quindi accendila (`"enabled": true` in `config/services.json` → `todo.sync`) solo se il remote è **privato**: se la tua copia della dock è un fork pubblico, aggiungi un remote privato (es. `git remote add todo <url-della-repo-privata>`) e scrivi `"remote": "todo"`.
+**It is off by default.** Tasks end up on the remote, so turn it on (`"enabled": true` in `config/services.json` → `todo.sync`) only if the remote is **private**: if your copy of the deck is a public fork, add a private remote (e.g. `git remote add todo <private-repo-url>`) and set `"remote": "todo"`.
 
-- La copia si aggiorna pochi secondi dopo ogni modifica dal tablet e ogni 2 minuti. Così prende anche le modifiche fatte direttamente nelle Memo, e quelle arrivate dall'altro PC.
-- Su Windows la fonte restano le Memo: le aggiunte, le spunte e le cancellazioni fatte su Linux vengono scritte nelle Memo (il testo di una riga si cambia solo nell'app Memo). Su Linux la lista locale riceve tutto, divisa per memo come su Windows.
-- Se la stessa attività cambia su entrambi i PC tra una sincronizzazione e l'altra, vince il PC che sincronizza.
-- Al primo avvio su un PC nuovo la dock adotta la lista che trova su GitHub. Su Linux la lista locale precedente viene salvata in `data/todo.prima-della-sync.json`.
-- La nuvoletta **GitHub** nel titolo del TODO è verde quando è tutto sincronizzato e rossa in caso di errore: toccala per sincronizzare subito o leggere l'errore.
+- The copy is updated a few seconds after every change from the tablet and every 2 minutes. That way it also picks up changes made directly in Sticky Notes, and those coming from the other PC.
+- On Windows Sticky Notes remain the source: additions, ticks and deletions made on Linux are written to the notes (a line's text can only be changed in the Sticky Notes app). On Linux the local list receives everything, split by note as on Windows.
+- If the same task changes on both PCs between two syncs, the PC that syncs wins.
+- On the first start on a new PC the deck adopts the list it finds on GitHub. On Linux the previous local list is saved to `data/todo.prima-della-sync.json`.
+- The **GitHub** cloud in the TODO title is green when everything is synced and red on error: tap it to sync right away or read the error.
 
-Impostazioni in `services.json` → `todo.sync`: `enabled`, `remote` (`origin`), `branch` (`dock-todo`), `intervalSec`.
+Settings in `services.json` → `todo.sync`: `enabled`, `remote` (`origin`), `branch` (`dock-todo`), `intervalSec`.
 
-### Dettatura vocale
+### Voice dictation
 
-Il pulsante 🎤 accanto al campo di testo (Claude e TODO):
+The 🎤 button next to the text field (Claude and TODO):
 
-1. usa il riconoscimento vocale del browser, se presente;
-2. altrimenti, se hai configurato una trascrizione sul PC (`services.json` → `voice`, ad esempio whisper.cpp), apre il registratore di Android e il PC trascrive l'audio;
-3. altrimenti apre la tastiera: tocca il microfono della tastiera di Android (Google voice typing), che è il modo più affidabile su Android 4.
+1. uses the browser's speech recognition, if available;
+2. otherwise, if you configured transcription on the PC (`services.json` → `voice`, for example whisper.cpp), opens the Android recorder and the PC transcribes the audio;
+3. otherwise opens the keyboard: tap the microphone on the Android keyboard (Google voice typing), the most reliable way on Android 4.
 
-## Configurazione
+## Configuration
 
-Tutti i file accettano commenti `//`. **Salva e il tablet si aggiorna da solo**, senza riavviare.
+All files are JSON. **Save and the tablet updates by itself**, without restarting.
 
-| File | Cosa contiene |
+| File | What it contains |
 |---|---|
-| `config/pages/<id>.json` | le tue pagine, una per file (anche le copie modificate di quelle predefinite) |
-| `config/apps/<id>.json`, `config/commands/<id>.json` | le tue app e i tuoi comandi, uno per file |
-| `config/dock.json` | titolo, griglia, pagina iniziale e ordine delle pagine (`"pages"`: lista di id) |
-| `config/apps.json` | programmi avviabili (percorsi per Windows e Linux) |
-| `config/commands.json` | comandi consentiti (whitelist) |
-| `config/services.json` | musica, Claude, voce, GitHub, Ollama, monitor di sistema |
-| `.env` | porta, codice di accesso, token e chiavi API |
+| `config/pages/<id>.json` | your pages, one per file (also edited copies of the default ones) |
+| `config/apps/<id>.json`, `config/commands/<id>.json` | your apps and commands, one per file |
+| `config/dock.json` | title, grid, start page and page order (`"pages"`: list of ids) |
+| `config/apps.json` | launchable programs (paths for Windows and Linux) |
+| `config/commands.json` | allowed commands (whitelist) |
+| `config/services.json` | music, Claude, voice, GitHub, Ollama, system monitor |
+| `.env` | port, access code, tokens and API keys |
 
-I file in `config/` sono tuoi e non vanno su git. I default stanno in `config/defaults/` (le pagine in `config/defaults/pages/`, una per file): cancella un file da `config/` per ripristinarlo. Esempi passo passo nella [guida per sviluppatori](../README.md#3-guida-per-sviluppatori-personalizza-la-tua-vibe-deck); in fondo al pannello di controllo trovi l'elenco dei problemi della configurazione.
-Se un file in `config/` non l'hai mai modificato, all'avvio passa da solo alla nuova versione predefinita (dopo un `git pull`). Quelli modificati restano come sono.
+The files in `config/` are yours and do not go to git. The defaults live in `config/defaults/` (pages in `config/defaults/pages/`, one per file): delete a file from `config/` to restore it. Step-by-step examples in the [developer guide](../README.md#3-developer-guide-make-vibe-deck-your-own); at the bottom of the control panel you find the list of configuration problems.
+If you never edited a file in `config/`, it is upgraded to the new default at startup (after a `git pull`). Edited files stay as they are.
 
-### Windows e Linux
+### dock.json
 
-La dock riconosce il sistema e mostra i pulsanti adatti. In `dock.json`:
+- `"pages"`: the page order. Each entry is the id of a page stored in its own file (`config/pages/<id>.json`, then `config/defaults/pages/<id>.json`), or a whole page written inline. A new `config/pages/<id>.json` is added at the end by itself.
+- Each page is a grid (5 columns × 3 rows by default, or the page's `"columns"`/`"rows"`). Tiles are laid out left to right; `"w"`/`"h"` = cells.
+- `"description"` on a page = text shown in the control panel, where you choose which pages are in the tablet bar and in which order (`config/layout.json`).
 
-```json
-{ "id": "viber", "os": "linux", "label": "VIBER", "action": { "type": "launch", "app": "viber" } },
-{ "id": "terminal", "label": "POWERSHELL", "linux": { "label": "TERMINALE" }, "action": { "type": "launch", "app": "powershell" } }
-```
+Button tile fields:
 
-- `"os": "linux"` (o `"windows"`): il pulsante, o la pagina, c'è solo su quel sistema.
-- `"linux": { ... }` (o `"windows"`): i campi che cambiano su quel sistema, anche `action`.
-- `"id"`: nome fisso del pulsante, con cui il pannello ricorda ordine e pulsanti nascosti.
-- `"autoGrid": true` sulla pagina: colonne e righe scelte in base a quanti pulsanti ci sono.
-- `"buttonGrid": true` sulla pagina: pulsanti in griglia a sinistra, personalizzabili dal pannello, e widget a destra (`"widgetWidth": 0.5` = metà larghezza). Come la pagina VIBER.
-- `"hidden": true`: pulsante disponibile ma nascosto finché non lo mostri dal pannello.
+| Field | Meaning |
+|---|---|
+| `"label"`, `"icon"`, `"color"`, `"sub"` | text, icon, color and second line |
+| `"action"` | what the button does (see [Action types](#action-types)) |
+| `"repeat": true` | the action repeats while held (volume) |
+| `"confirm": true` | must be held for about 1 s (delicate actions) |
+| `"showRunning": "<app id>"` | green dot when that app from `apps.json` is running |
+| `"id"` | fixed button name, used by the control panel to remember order and hidden buttons (without it, the position counts) |
+| `"hidden": true` | available but hidden until you show it from the panel |
+| `"os": "linux"` / `"windows"` | button or page only on that system |
+| `"linux": { ... }` / `"windows": { ... }` | fields that change on that system, `action` included |
 
-In `apps.json` e `commands.json` la variante `"linux"` può essere una lista di alternative: vale la prima installata.
+Page fields: `"autoGrid": true` (columns and rows chosen from the number of buttons), `"buttonGrid": true` (buttons in a grid on the left, customizable from the panel, and widgets on the right; `"widgetWidth": 0.5` = half width, like the VIBER page), `"tab": false` (available but not in the bar).
+
+### apps.json
+
+Apps launched by `{ "type": "launch", "app": "<id>" }`. Each app can have a `"windows"` and/or `"linux"` variant.
+
+| Field | Meaning |
+|---|---|
+| `path` | executable, `.lnk` shortcut, absolute path or command in the PATH. `%VAR%` (Windows), `$VAR` and `~` (Linux) and `*` for versions are allowed (`Blender *\blender.exe`). Windows: `shell:AppsFolder\<AppID>` starts Store apps (find the AppID with PowerShell: `Get-StartApps`). Can also be a list of possible paths: the first one that exists wins |
+| `args`, `cwd` | argument list and working folder (optional) |
+| `toggle` | `true` = the button shows whether the app is running and, if it is, closes it (like the window X: the app may ask to save) |
+| `process` | process name, if different from the file (e.g. `"discord"`); can be a list (e.g. client and match) |
+| `whenRunning` | `"focus"` = if already running, the button brings it to the front |
+| `game` | `true` = it is a game: Discord's Go Live streams it, if it is running |
+| `title` | regex on the window title, to tell apart apps sharing the same process |
+| `bridge` | `"apple"`, `"youtube"` or `"ytmusic"` = web app recognized by the browser extension |
+
+The `"linux"` (or `"windows"`) variant can also be a **list of alternatives**: the first one installed wins (e.g. Konsole, then GNOME Terminal...). `.desktop` files (Brave/Chrome web apps, downloaded apps) are started with `gtk-launch`.
 
 ```json
 "linux": [ { "path": "konsole", "args": ["-e", "claude"] }, { "path": "gnome-terminal", "args": ["--", "claude"] } ]
 ```
 
-### Aggiungere un pulsante
+Games (GAMES page) are added from the control panel: they live in `data/games.json`, not here.
 
-In `tiles` della pagina (`config/pages/<id>.json`; per una pagina predefinita copiala prima da `config/defaults/pages/`):
+### commands.json
+
+Allowed commands for `{ "type": "command", "id": "<id>" }`. The tablet can only pick an id from this list: no free shell.
+
+| Field | Meaning |
+|---|---|
+| `cmd`, `args` | program and arguments (`"windows"` / `"linux"` variants; `"linux"` can be a list of alternatives, the first one installed wins) |
+| `showOutput` | show the output on the tablet in a window |
+| `timeoutMs` | maximum time (20 s by default) |
+
+`{root}` in arguments = the deck folder. The ANDROID page commands (adb and logcat) are in `config/defaults/commands/android.json`: on Windows the adb of the standard SDK folder is used, otherwise the one in the PATH. To change one, copy an entry to `config/commands/<id>.json`.
+
+### services.json
+
+Service settings. Secrets (tokens, API keys) go in `.env`.
+
+| Section | Keys |
+|---|---|
+| `system` | `gpu`: `false` to never query `nvidia-smi`. `libreHardwareMonitorUrl`: CPU temperature on Windows; start LibreHardwareMonitor with *Remote Web Server* on and set it to `"http://127.0.0.1:8085/data.json"` |
+| `github` | `repositories`: e.g. `["your-user/project-one", "your-user/project-two"]`; empty = the most recently updated repositories of your account (needs `GITHUB_TOKEN` in `.env`, or GitHub CLI `gh` signed in). `owner`: without a token, the public user whose repositories to show. `autoRepos`, `refreshSeconds` |
+| `ollama` | `url`, `defaultModel` (empty = the first installed model), `timeoutMs`, `keepAlive`, `system` (system prompt) |
+| `claude` | `backend`: `"auto"` = API if `ANTHROPIC_API_KEY` is in `.env`, otherwise Claude Code (`claude` command); `"api"` = Claude API only; `"cli"` = Claude Code only (uses your subscription). `model`, `effort`, `maxTokens`, `system`: API backend only. `cliModel` (empty = default) and `cliCwd`: CLI backend only. `cliPermissionMode`: Claude Code permissions when driven from the tablet; empty = your own settings (tools that ask for confirmation are denied), `"acceptEdits"` = can edit files without asking. `remoteTargets`: windows the tablet can "type into like a keyboard" (PC mode); `focus` = process to bring to the front (empty = the active window) |
+| `media` | `allowApps`: system music sources accepted on top of the default ones (Spotify, VLC, Tidal, Deezer, MusicBee, ...), regex on the app id. `blockApps`: never treated as music (games, launchers...). Without the browser extension, the browser controls are used as a fallback |
+| `todo` | `source`: `"memo"` = Windows Sticky Notes if present, `"local"` = the deck's own list. `memo`: note where new tasks go (part of the title, i.e. the bold first line); empty = the most recently edited note, and from the tablet you can choose by tapping the title. `sync`: see [Same TODO on Windows and Linux](#same-todo-on-windows-and-linux-github) |
+| `tablet` | battery: `idleAfterSec` (seconds without touches before refreshes slow down), `pollSec` and `idlePollSec` (PC status interval when in use and when idle), `sleepAfterMin` (minutes without touches before the screensaver starts: black screen, no refreshes, one tap wakes it; `0` = never) |
+| `voice` | optional PC transcription of audio recorded on the tablet. With whisper.cpp: `"command": "C:\\whisper\\whisper-cli.exe"`, `"args": ["-m", "C:\\whisper\\ggml-small.bin", "-l", "en", "-nt", "-f", "{file}"]` |
+
+### Adding a button
+
+In the page's `tiles` (`config/pages/<id>.json`; for a default page copy it first from `config/defaults/pages/`):
 
 ```json
 { "label": "OBS", "icon": "camera", "color": "#5b3fa0", "action": { "type": "launch", "app": "obs" } }
 ```
 
-e in `config/apps.json` (oppure in un file `config/apps/obs.json` con solo l'oggetto dell'app):
+and in `config/apps.json` (or in a `config/apps/obs.json` file with just the app object):
 
 ```json
 "obs": {
@@ -337,198 +385,197 @@ e in `config/apps.json` (oppure in un file `config/apps/obs.json` con solo l'ogg
 }
 ```
 
-Nei percorsi puoi usare `%USERPROFILE%`, `%LOCALAPPDATA%`, `~`, `$HOME` e `*` per la versione (`Blender *\blender.exe`). Funzionano anche i collegamenti `.lnk` (così si apre Apple Music dal collegamento sul desktop).
-Le app dello Store di Windows si avviano con `shell:AppsFolder\<AppID>`; l'AppID lo trovi in PowerShell con `Get-StartApps`.
+`.lnk` shortcuts work too (that is how Apple Music opens from the desktop shortcut).
 
 ## Audio
 
-Nella pagina **AUDIO**:
+On the **AUDIO** page:
 
-- a sinistra le **uscite** (casse, cuffie, monitor) e gli **ingressi** (microfoni): tocca il nome per renderlo predefinito; sotto quello predefinito ci sono mute, −, barra del volume (tocca un punto per impostarlo) e +;
-- a destra le **app** che usano l'audio (pallino verde = sta suonando), ognuna con il suo volume e il suo mute, come il Mixer volume di Windows.
+- on the left the **outputs** (speakers, headphones, monitors) and **inputs** (microphones): tap a name to make it the default; under the default one there are mute, −, the volume bar (tap a point to set it) and +;
+- on the right the **apps** playing audio (green dot = playing), each with its own volume and mute, like the Windows Volume Mixer.
 
-I pulsanti VOL+ / VOL− / MUTE della pagina APP restano: comandano sempre il volume di sistema.
+The VOL+ / VOL− / MUTE buttons on the APPS page stay: they always control the system volume.
 
-Su Windows usa Core Audio (il cambio di dispositivo predefinito usa la stessa interfaccia del pannello Audio di Windows, come SoundSwitch o EarTrumpet). Su Linux usa `pactl` (PulseAudio o PipeWire con pipewire-pulse, versione 15 o successiva): cambiando l'uscita predefinita anche le app che stanno suonando passano lì.
+On Windows it uses Core Audio (changing the default device uses the same interface as the Windows Sound panel, like SoundSwitch or EarTrumpet). On Linux it uses `pactl` (PulseAudio, or PipeWire with pipewire-pulse, version 15 or later): when the default output changes, apps that are playing move there too.
 
-## Schermi
+## Screens
 
-Nella pagina **SCHERMI** del tablet vedi i monitor come sono disposti sulla scrivania (numerati da sinistra) e le finestre aperte.
+On the tablet's **SCREENS** page you see the monitors as they sit on your desk (numbered from the left) and the open windows.
 
-- **Disporre le finestre**: tocca un monitor, scegli una disposizione (metà, terzi, 2/3 + 1/3, quarti, ...), tocca una zona e poi una finestra nella lista a destra. La zona successiva si seleziona da sola, come lo Snap Assist di Windows. Sui monitor verticali le colonne diventano righe.
-- Senza una zona scelta, toccare una finestra la porta in primo piano. I due pulsanti di ogni riga la riducono a icona o la ingrandiscono.
-- **Apri le app su**: AUTO lascia decidere a Windows; con un monitor scelto, le app avviate dal tablet (pulsanti *launch*) vengono spostate lì appena compare la loro finestra, mantenendo dimensioni e posizione relative.
+- **Arranging windows**: tap a monitor, pick a layout (halves, thirds, 2/3 + 1/3, quarters, ...), tap a zone and then a window in the list on the right. The next zone is selected by itself, like Windows Snap Assist. On vertical monitors columns become rows.
+- Without a zone selected, tapping a window brings it to the front. The two buttons on each row minimize or maximize it.
+- **Open apps on**: AUTO lets Windows decide; with a monitor chosen, apps started from the tablet (*launch* buttons) are moved there as soon as their window appears, keeping relative size and position.
 
-A destra le finestre aperte (usano tutto lo spazio libero, la lista scorre) e in basso i **desktop virtuali** (al massimo 3): una scheda per desktop con numero, nome e quante finestre ha (quello attivo in blu). Tocca un desktop per passarci, la scheda **+** ne crea uno e ci entra (sparisce quando ce ne sono 3), la **X** nell'angolo (da tenere premuta) lo chiude: le sue finestre non si chiudono, passano al desktop vicino. L'elenco si legge dal registro di Windows, le finestre di ogni desktop con l'API pubblica `IVirtualDesktopManager`, e i comandi sono le scorciatoie Win+Ctrl+←/→, Win+Ctrl+D e Win+Ctrl+F4. Il pulsante **GUIDA** in alto mostra tutte le scorciatoie dei desktop virtuali di Windows e Linux.
+On the right the open windows (they use all the free space, the list scrolls) and at the bottom the **virtual desktops** (at most 3): one tab per desktop with number, name and how many windows it has (the active one in blue). Tap a desktop to switch to it, the **+** tab creates one and switches to it (it disappears when there are 3), the **X** in the corner (hold it) closes it: its windows are not closed, they move to the neighboring desktop. The list is read from the Windows registry, the windows of each desktop through the public `IVirtualDesktopManager` API, and the commands are the Win+Ctrl+←/→, Win+Ctrl+D and Win+Ctrl+F4 shortcuts. The **GUIDE** button at the top shows all the virtual desktop shortcuts of Windows and Linux.
 
-**Trascinare una finestra**: tieni premuta una finestra della lista (col mouse basta trascinarla) e lasciala su un **desktop virtuale** (ci va senza che tu cambi desktop, come in Win+Tab), su **Nuovo** (crea un desktop e ce la mette) o su una **zona di un monitor** della mappa: mentre trascini ogni monitor mostra le zone della divisione scelta in basso (Metà, Terzi, Quarti...) e la finestra si ancora nella zona dove la lasci, con quella misura. Per i desktop la dock usa l'interfaccia interna di Explorer (quella di Win+Tab, non documentata: l'API pubblica sposta solo le finestre del proprio programma), con i GUID di Windows 11 24H2 e successivi; su versioni diverse il tablet dice che non riesce invece di fare danni.
+**Dragging a window**: hold a window in the list (with the mouse just drag it) and drop it on a **virtual desktop** (it goes there without you switching desktop, like in Win+Tab), on **New** (creates a desktop and puts it there) or on a **monitor zone** of the map: while dragging, every monitor shows the zones of the split chosen at the bottom (Halves, Thirds, Quarters...) and the window snaps into the zone where you drop it, with that size. For desktops the deck uses Explorer's internal interface (the one behind Win+Tab, undocumented: the public API only moves the calling program's own windows), with the GUIDs of Windows 11 24H2 and later; on other versions the tablet says it cannot do it instead of doing damage.
 
-**SCHERMI su Linux** (KDE Plasma 6, Wayland o X11): finestre, monitor, desktop virtuali e trascinamento passano da KWin, con [kdotool](https://github.com/jinliu/kdotool) 0.3 o più recente (comando `kwinscript`: la dock manda a KWin un piccolo script e legge la risposta). Su Wayland nessun altro programma vede le finestre degli altri. Installalo (`paru -S kdotool` su Arch/CachyOS, oppure `cargo install kdotool`), riavvia la dock e aggiungi la pagina SCHERMI dal pannello. Senza KDE o senza kdotool la pagina lo dice. Su Linux la finestra trascinata su **Nuovo** crea un desktop in fondo senza passarci; il **+** crea un desktop e ci va, come su Windows.
+**SCREENS on Linux** (KDE Plasma 6, Wayland or X11): windows, monitors, virtual desktops and dragging go through KWin, with [kdotool](https://github.com/jinliu/kdotool) 0.3 or later (`kwinscript` command: the deck sends KWin a small script and reads the answer). On Wayland no other program can see other programs' windows. Install it (`paru -S kdotool` on Arch/CachyOS, or `cargo install kdotool`), restart the deck and add the SCREENS page from the panel. Without KDE or kdotool the page says so. On Linux a window dragged onto **New** creates a desktop at the end without switching to it; **+** creates a desktop and switches to it, as on Windows.
 
-Le finestre dei programmi avviati come amministratore non si possono spostare (limite di Windows). I giochi a schermo intero esclusivo non si spostano. La scelta del monitor sta in `data/screens.json`.
+Windows of programs started as administrator cannot be moved (a Windows limit). Exclusive full-screen games do not move. The monitor choice is stored in `data/screens.json`.
 
-### Giochi
+### Games
 
-I giochi si aggiungono dal pannello (sezione **Giochi**, vedi sopra) e stanno in `data/games.json`. Ognuno diventa un'app con `"game": true` e `"whenRunning": "focus"`: il pulsante mostra il pallino verde se il gioco è aperto e, in quel caso, lo porta in primo piano invece di riavviarlo. Anche in `config/apps.json` puoi segnare un'app come gioco con `"game": true`: `"path"` può essere una lista di percorsi (vale il primo che esiste), `"process"` una lista di processi (es. client e partita).
+Games are added from the panel (**Giochi** section, see above) and live in `data/games.json`. Each one becomes an app with `"game": true` and `"whenRunning": "focus"`: the button shows the green dot if the game is running and, in that case, brings it to the front instead of starting it again. In `config/apps.json` you can mark an app as a game too with `"game": true`: `"path"` can be a list of paths (the first one that exists wins), `"process"` a list of processes (e.g. client and match).
 
-### App aperte: pallino verde e chiusura
+### Running apps: green dot and closing
 
-Le app con `"toggle": true` in `config/apps.json` mostrano un pallino verde quando sono aperte; un altro tocco le chiude come la X della finestra (l'app può chiedere di salvare). È attivo per Blender, DaVinci, VS Code, Unreal, Apple Music, Spotify, Claude e Discord; volutamente no per PowerShell, Esplora file, Gestione attività e Claude Code, per non interrompere lavori in corso.
-Apple Music (web) si riconosce tramite l'estensione: "chiudere" chiude la sua scheda. Per un pulsante che non avvia l'app (es. uno che apre la pagina BLENDER) il pallino si ottiene con `"showRunning": "blender"`.
-Su Linux serve `wmctrl`.
+Apps with `"toggle": true` in `config/apps.json` show a green dot while running; another tap closes them like the window X (the app may ask to save). It is on for Blender, DaVinci, VS Code, Unreal, Apple Music, Spotify, Claude and Discord; deliberately off for PowerShell, File Explorer, Task Manager and Claude Code, so work in progress is never interrupted.
+Apple Music (web) is recognized through the extension: "closing" closes its tab. For a button that does not launch the app (e.g. one opening the BLENDER page) the dot comes from `"showRunning": "blender"`.
+On Linux it needs `wmctrl`.
 
-### Tipi di azione
+### Action types
 
-| Azione | Esempio |
+| Action | Example |
 |---|---|
-| Avvia app | `{ "type": "launch", "app": "vscode" }` |
-| Scorciatoia | `{ "type": "hotkey", "keys": ["CTRL", "SHIFT", "P"], "focus": "Code" }` |
-| Tasto singolo | `{ "type": "key", "key": "F12", "repeat": 1 }` |
-| Scrivi testo | `{ "type": "text", "value": "Ciao!\n" }` |
-| Musica (app attiva) | `{ "type": "media", "command": "play_pause" }` (anche `next`, `previous`, `stop`) |
-| Volume dell'app musicale | `{ "type": "media", "command": "app_volume_up" }` (anche `app_volume_down`, `app_mute`) |
-| Volume di sistema | `{ "type": "media", "command": "volume_up" }` (anche `volume_down`, `mute`) |
-| Apri URL sul PC | `{ "type": "open_url", "url": "https://github.com" }` |
-| Apri cartella o file | `{ "type": "open_path", "path": "~/Documents" }` |
-| Comando | `{ "type": "command", "id": "lock_pc" }` → `commands.json` |
-| Cambia pagina | `{ "type": "page", "page": "blender" }` |
+| Launch app | `{ "type": "launch", "app": "vscode" }` |
+| Shortcut | `{ "type": "hotkey", "keys": ["CTRL", "SHIFT", "P"], "focus": "Code" }` |
+| Single key | `{ "type": "key", "key": "F12", "repeat": 1 }` |
+| Type text | `{ "type": "text", "value": "Hello!\n" }` |
+| Music (active app) | `{ "type": "media", "command": "play_pause" }` (also `next`, `previous`, `stop`) |
+| Music app volume | `{ "type": "media", "command": "app_volume_up" }` (also `app_volume_down`, `app_mute`) |
+| System volume | `{ "type": "media", "command": "volume_up" }` (also `volume_down`, `mute`) |
+| Open URL on the PC | `{ "type": "open_url", "url": "https://github.com" }` |
+| Open folder or file | `{ "type": "open_path", "path": "~/Documents" }` |
+| Command | `{ "type": "command", "id": "lock_pc" }` → `commands.json` |
+| Switch page | `{ "type": "page", "page": "blender" }` |
 | Macro | `{ "type": "macro", "steps": [ {…}, { "type": "wait", "ms": 300 }, {…} ] }` |
-| Discord | `{ "type": "discord", "command": "stream" }` (anche `mute`, `deaf`, `video`) |
+| Discord | `{ "type": "discord", "command": "stream" }` (also `mute`, `deaf`, `video`) |
 
-`focus` (opzionale) porta in primo piano il programma prima di premere i tasti. Il valore è il nome del processo: `blender`, `Resolve`, `Code`.
+`focus` (optional) brings the program to the front before pressing the keys. The value is the process name: `blender`, `Resolve`, `Code`.
 
-Opzioni del pulsante: `"sub"` (seconda riga), `"color"`, `"repeat": true` (ripete tenendo premuto), `"confirm": true` (va tenuto premuto), `"w"`/`"h"` (celle occupate). Ogni pagina può avere la sua griglia con `"columns"` e `"rows"`.
+Button options: `"sub"` (second line), `"color"`, `"repeat": true` (repeats while held), `"confirm": true` (must be held), `"w"`/`"h"` (cells taken). Each page can have its own grid with `"columns"` and `"rows"`.
 
-**Tasti:** `CTRL SHIFT ALT WIN`, `A`–`Z`, `0`–`9`, `F1`–`F24`, `ENTER ESC TAB SPACE BACKSPACE DELETE INSERT HOME END PAGEUP PAGEDOWN UP DOWN LEFT RIGHT`, `NUM0`–`NUM9`, `PRINTSCREEN MINUS EQUALS COMMA PERIOD SLASH BACKQUOTE`, `MEDIA_PLAY_PAUSE VOLUME_UP`…
+**Keys:** `CTRL SHIFT ALT WIN`, `A`–`Z`, `0`–`9`, `F1`–`F24`, `ENTER ESC TAB SPACE BACKSPACE DELETE INSERT HOME END PAGEUP PAGEDOWN UP DOWN LEFT RIGHT`, `NUM0`–`NUM9`, `PRINTSCREEN MINUS EQUALS COMMA PERIOD SLASH BACKQUOTE`, `MEDIA_PLAY_PAUSE VOLUME_UP`…
 
-**Widget:** `system`, `nowplaying`, `queue`, `github`, `todo`, `clock`, `claude`, `chat` (con `"provider": "ollama"`), `discord`, `screens`, `mail`, `audio`, `vdesk` (guida ai desktop virtuali), `viber`.
+**Widgets:** `system`, `nowplaying`, `queue`, `github`, `todo`, `clock`, `claude`, `chat` (with `"provider": "ollama"`), `discord`, `screens`, `mail`, `audio`, `vdesk` (virtual desktop guide), `viber`.
 
-**Icone:** `home music apps code github chat sparkle check cube film lock play pause stop next prev volup voldown mute shuffle repeat folder terminal cpu camera desktop robot refresh save keyboard undo redo fullscreen cut flag back add close send trash power bolt mic link headset gamepad cards tank sword layout live camoff window target mail attach`.
+**Icons:** `home music apps code github chat sparkle check cube film lock play pause stop next prev volup voldown mute shuffle repeat folder terminal cpu camera desktop robot refresh save keyboard undo redo fullscreen cut flag back add close send trash power bolt mic link headset gamepad cards tank sword layout live camoff window target mail attach settings`.
 
 ### GitHub
 
-Metti un token personale (fine-grained, sola lettura) in `GITHUB_TOKEN` nel `.env`. In alternativa installa GitHub CLI e fai `gh auth login`: il token viene preso da lì.
-Senza `repositories` in `services.json` vengono mostrati i 6 repository aggiornati più di recente.
-Tocca un repository per aprirlo sul PC; tocca i badge PR, ISSUE o CI per aprire quella sezione.
+Put a personal token (fine-grained, read-only) in `GITHUB_TOKEN` in `.env`. Alternatively install GitHub CLI and run `gh auth login`: the token is taken from there.
+Without `repositories` in `services.json` the 6 most recently updated repositories are shown.
+Tap a repository to open it on the PC; tap the PR, ISSUE or CI badges to open that section.
 
 ### Ollama
 
-Basta che Ollama sia acceso sul PC. Il tablet non parla mai direttamente con Ollama: passa sempre dal server.
+Ollama just needs to be running on the PC. The tablet never talks to Ollama directly: it always goes through the server.
 
 ## Linux
 
-Funziona tutto tranne le parti che dipendono da Windows (Memo), sostituite da strumenti standard. La pagina SCHERMI su Linux va con KDE Plasma 6 e kdotool (vedi sopra).
-Nella pagina APP: **TERMINALE** (Konsole, GNOME Terminal, Alacritty...), **MONITOR** di sistema, **SCREENSHOT** di un'area (Spectacle), **DESKTOP** (mostra il desktop di KDE), **CLAUDE** apre la web app di Claude installata da Brave (altrimenti claude.ai), **VIBER** l'app dal desktop. Su CachyOS / Arch:
+Everything works except the parts that depend on Windows (Sticky Notes), replaced by standard tools. The SCREENS page on Linux needs KDE Plasma 6 and kdotool (see above).
+On the APPS page: **TERMINAL** (Konsole, GNOME Terminal, Alacritty...), system **MONITOR**, area **SCREENSHOT** (Spectacle), **DESKTOP** (shows the KDE desktop), **CLAUDE** opens the Claude web app installed from Brave (otherwise claude.ai), **VIBER** the desktop app. On CachyOS / Arch:
 
 ```bash
 sudo pacman -S playerctl wtype
-paru -S kdotool          # pagina SCHERMI (finestre e desktop virtuali in KDE)
+paru -S kdotool
 sudo ufw allow 8787/tcp
 ```
 
-Su Debian/Ubuntu:
+(`kdotool` is for the SCREENS page: windows and virtual desktops in KDE.) On Debian/Ubuntu:
 
 ```bash
 sudo apt install playerctl xdotool wtype pulseaudio-utils
 ```
 
-- **playerctl**: musica, coda esclusa (qualsiasi player MPRIS: Spotify, Firefox, VLC…), compreso il volume della singola app.
-- **Estensione del browser**: identica a Windows, per Apple Music web e YouTube.
-- **wpctl / pactl / amixer**: volume di sistema.
-- **xdotool** (X11) o **wtype** (Wayland con KDE/Sway/Hyprland): scorciatoie, testo e "scrivi sul PC". Su GNOME Wayland le scorciatoie simulate non sono permesse dal sistema.
-- La temperatura CPU si legge da `/sys/class/hwmon`; le GPU AMD da sysfs.
+- **playerctl**: music, except the queue (any MPRIS player: Spotify, Firefox, VLC…), including the single app's volume.
+- **Browser extension**: same as on Windows, for Apple Music web and YouTube.
+- **wpctl / pactl / amixer**: system volume.
+- **xdotool** (X11) or **wtype** (Wayland with KDE/Sway/Hyprland): shortcuts, text and "type on the PC". On GNOME Wayland simulated shortcuts are not allowed by the system.
+- CPU temperature is read from `/sys/class/hwmon`; AMD GPUs from sysfs.
 - Firewall: `sudo ufw allow 8787/tcp`.
 
-### Icona sul desktop (Linux)
+### Desktop icon (Linux)
 
-Come su Windows, la dock può girare **in background**, senza terminale:
+As on Windows, the deck can run **in the background**, without a terminal:
 
 ```bash
-scripts/linux/vibe-deck.sh install            # icona sul desktop + menu delle app
-scripts/linux/vibe-deck.sh install autostart  # avvio automatico all'accesso (facoltativo)
+scripts/linux/vibe-deck.sh install
+scripts/linux/vibe-deck.sh install autostart
 ```
 
-(o rispondi sì alle domande di `./start.sh --setup`).
+The first command adds the desktop icon and the app menu entry, the second (optional) starts the deck at login. You can also answer yes to the questions of `./start.sh --setup`.
 
-- **Doppio clic** sull'icona: avvia la dock se è spenta e apre il pannello di controllo.
-- **Tasto destro**: *Avvia senza aprire il pannello*, *Riavvia*, *Ferma*, *Apri il log* (`data/dock.log`).
-- Funziona anche con una dock avviata da terminale: *Ferma* chiude anche quella.
-- Da terminale: `scripts/linux/vibe-deck.sh status|start|stop|restart|log`; `uninstall` toglie icona e voci.
+- **Double-click** the icon: starts the deck if it is off and opens the control panel.
+- **Right-click**: start without opening the panel, restart, stop, open the log (`data/dock.log`).
+- It also works with a deck started from a terminal: stop closes that one too.
+- From a terminal: `scripts/linux/vibe-deck.sh status|start|stop|restart|panel|log`; `uninstall` removes the icon, menu entry and autostart. `DOCK_DATA_DIR` and `DOCK_PORT` change the data folder and port (for testing).
 
-Se sposti la cartella del progetto, rilancia `install`: l'icona punta al percorso attuale.
+If you move the project folder, run `install` again: the icon points to the current path.
 
-## Sicurezza
+## Security
 
-### Dati cifrati
+### Encrypted data
 
-Password, token e client secret non stanno in chiaro sul disco:
+Passwords, tokens and client secrets are not stored in clear text on disk:
 
-- `data/mail.json` (solo gli account da mostrare) e `data/discord.json` sono cifrati (AES-256-GCM);
-- nel `.env` i segreti (`GITHUB_TOKEN`, `ANTHROPIC_API_KEY` e ogni variabile che finisce in `TOKEN`, `SECRET`, `PASSWORD`, `_KEY`) vengono cifrati al primo avvio: diventano `enc:v1:...`. Per cambiarne uno scrivi il valore nuovo in chiaro: al riavvio viene cifrato di nuovo. `DOCK_TOKEN` resta leggibile perché è il codice che il tablet ti chiede.
+- `data/mail.json` (only the accounts to show) and `data/discord.json` are encrypted (AES-256-GCM);
+- in `.env` the secrets (`GITHUB_TOKEN`, `ANTHROPIC_API_KEY` and every variable ending in `TOKEN`, `SECRET`, `PASSWORD`, `_KEY`) are encrypted on the first start: they become `enc:v1:...`. To change one write the new value in clear text: at the next restart it is encrypted again. `DOCK_TOKEN` stays readable because it is the code the tablet asks you for.
 
-La chiave sta nel **portachiavi del sistema**: su Linux il Secret Service (KWallet su KDE, GNOME Keyring), letto con `secret-tool` (pacchetto `libsecret`); su Windows la DPAPI del tuo account. Se il portachiavi non c'è, la chiave finisce in `data/secret-key` (permessi 600) e il log lo segnala. `data/secret-key.json` dice dove sta.
+The key lives in the **system keychain**: on Linux the Secret Service (KWallet on KDE, GNOME Keyring), read with `secret-tool` (`libsecret` package); on Windows your account's DPAPI. If there is no keychain, the key goes to `data/secret-key` (permissions 600) and the log says so. `data/secret-key.json` says where it is.
 
-La cifratura protegge i file copiati, sincronizzati o finiti per sbaglio in un backup o su GitHub; non protegge da un programma che gira con il tuo account mentre la sessione è aperta. Se perdi la chiave (portachiavi azzerato), i dati cifrati non si recuperano: ricollega gli account dal pannello.
+Encryption protects files that get copied, synced or accidentally end up in a backup or on GitHub; it does not protect against a program running with your account while the session is open. If you lose the key (keychain reset), the encrypted data cannot be recovered: reconnect the accounts from the panel.
 
-- Il server accetta solo connessioni dalla rete locale.
-- Ogni API richiede il codice di accesso (cookie o header `X-Dock-Token`).
-- Il tablet invia solo "ho premuto il pulsante X della pagina Y": l'azione la legge il server da `dock.json`. Dal tablet non si possono lanciare comandi arbitrari.
-- **Attenzione:** "scrivi sul PC" e le sessioni di Claude Code danno al tablet la possibilità di scrivere testo sul PC e di far lavorare Claude Code nelle tue cartelle. Per questo il codice di accesso è importante: non condividerlo.
-- L'estensione del browser è accettata solo da questo PC (`127.0.0.1`) e con un header che i siti web non possono inviare.
-- Token GitHub, chiave API di Claude e Ollama restano sul PC; per la posta la dock non ha credenziali (le tiene Thunderbird).
-- Sotto Windows la regola firewall vale solo per le reti **private**. Se la tua rete è "Pubblica", il tablet potrebbe non collegarsi: impostala come privata.
+- The server only accepts connections from the local network.
+- Every API requires the access code (cookie or `X-Dock-Token` header).
+- The tablet only sends "I pressed button X of page Y": the server reads the action from the configuration. Arbitrary commands cannot be run from the tablet.
+- **Warning:** "type on the PC" and Claude Code sessions let the tablet type text on the PC and make Claude Code work in your folders. That is why the access code matters: do not share it.
+- The browser extension is accepted only from this PC (`127.0.0.1`) and with a header websites cannot send.
+- GitHub token, Claude API key and Ollama stay on the PC; for mail the deck has no credentials (Thunderbird keeps them).
+- On Windows the firewall rule only applies to **private** networks. If your network is "Public", the tablet may not connect: set it to private.
 
-## Problemi comuni
+## Troubleshooting
 
-| Problema | Soluzione |
+| Problem | Solution |
 |---|---|
-| Il tablet non si collega | PC e tablet sulla stessa rete? Rete Windows impostata come *Privata*? Firewall: `start.bat --setup` |
-| Non vedo l'icona | Cerca sotto la freccetta vicino all'orologio. Se l'icona è grigia, apri il log dal suo menu |
-| "Porta già in uso" | La dock è già avviata (icona o un'altra finestra): chiudi l'altra |
-| Musica non rilevata | Apple Music web / YouTube: installa l'estensione e ricarica la scheda. App desktop: deve essere un'app musicale (vedi `services.json` → `media`) |
-| Coda vuota | La coda c'è solo con l'estensione (Apple Music, YouTube Music, playlist di YouTube) |
-| Scorciatoie ignorate in un programma | Windows blocca i tasti simulati verso programmi avviati come amministratore |
-| "App non trovata" | Correggi il percorso in `config/apps.json` |
-| Errore "Chiave di cifratura non trovata nel portachiavi" | KWallet / GNOME Keyring chiuso: sbloccalo e riavvia la dock |
-| Claude Code non risponde | Prova `claude -p "ciao"` in un terminale: deve funzionare senza login interattivo |
-| Temperatura CPU N/D su Windows | Avvia LibreHardwareMonitor con *Remote Web Server* e imposta `libreHardwareMonitorUrl` |
+| The tablet does not connect | PC and tablet on the same network? Windows network set to *Private*? Firewall: `start.bat --setup` |
+| I cannot see the icon | Look under the arrow next to the clock. If the icon is grey, open the log from its menu |
+| "Port already in use" | The deck is already running (icon or another window): close the other one |
+| Music not detected | Apple Music web / YouTube: install the extension and reload the tab. Desktop app: it must be a music app (see `services.json` → `media`) |
+| Empty queue | The queue is only available with the extension (Apple Music, YouTube Music, YouTube playlists) |
+| Shortcuts ignored in a program | Windows blocks simulated keys sent to programs started as administrator |
+| "App not found" | Fix the path in `config/apps.json` |
+| "Encryption key not found in the keychain" error | KWallet / GNOME Keyring locked: unlock it and restart the deck |
+| Claude Code does not answer | Try `claude -p "hello"` in a terminal: it must work without an interactive login |
+| CPU temperature N/A on Windows | Start LibreHardwareMonitor with *Remote Web Server* and set `libreHardwareMonitorUrl` (see [services.json](#servicesjson)) |
 
-## Sviluppo
+## Development
 
-La guida per personalizzare pagine, pulsanti, azioni e widget è nel [README principale](../README.md#3-guida-per-sviluppatori-personalizza-la-tua-vibe-deck).
+The guide to customize pages, buttons, actions and widgets is in the [main README](../README.md#3-developer-guide-make-vibe-deck-your-own).
 
-```bash
-npm install     # anche le dipendenze di sviluppo
-npm test        # test di server, musica, azioni, configurazione e compatibilità ES5 del client
-npm run server  # avvia solo il server, senza lo script di avvio
-# DOCK_CONFIG_DIR / DOCK_DATA_DIR: cartelle alternative di configurazione e dati (prove)
-```
+| Command | What it does |
+|---|---|
+| `npm install` | dependencies, development ones included |
+| `npm test` | tests for server, music, actions, configuration, client ES5 compatibility and the zero-comments rule |
+| `npm run server` | starts the server only, without the start script |
 
-```text
-server/
-  index.js            API Express
-  config.js           lettura JSON con commenti e ricarica a caldo
-  auth.js             solo rete locale + codice di accesso
-  secrets.js          cifratura dei dati sensibili (chiave nel portachiavi del sistema)
-  actions/            motore delle azioni e macro
-  plugins.js          caricatore dei plugin (cartella plugins/)
-  platform/           windows.js (+ windows-helper.ps1), linux.js, keys.js
-  services/           system, media, bridge, claude, claudecode, voice, github, ollama, todo, mail, pairing (QR)
-public/               client per il tablet (ES5, niente framework)
-extension/            estensione del browser per Apple Music web e YouTube
-config/defaults/      configurazione predefinita
-plugins/<nome>/       plugin: azioni, rotte, pagine e widget in più (npm run new:widget -- <nome>)
-scripts/bootstrap.js  avvio automatico (uguale su Windows e Linux)
-scripts/windows/      icona nell'area di notifica e avvio nascosto
-scripts/linux/        avvio in background, icona sul desktop e nel menu delle app
-```
+`DOCK_CONFIG_DIR` / `DOCK_DATA_DIR` point to alternative configuration and data folders (for testing).
 
-**Aggiungere una funzione senza toccare il progetto:** un plugin (`npm run new:widget -- <nome>`), vedi *Plugin* nel README principale.
+| Path | What it is |
+|---|---|
+| `server/index.js` | Express API |
+| `server/config.js` | JSON loading and hot reload |
+| `server/auth.js` | local network only + access code |
+| `server/secrets.js` | encryption of sensitive data (key in the system keychain) |
+| `server/actions/` | action engine and macros |
+| `server/plugins.js` | plugin loader (`plugins/` folder) |
+| `server/platform/` | `windows.js` (+ `windows-helper.ps1`), `linux.js`, `keys.js` |
+| `server/services/` | system, media, bridge, claude, claudecode, voice, github, ollama, todo, mail, pairing (QR) |
+| `public/` | tablet client (ES5, no framework) |
+| `extension/` | browser extension for Apple Music web and YouTube |
+| `config/defaults/` | default configuration |
+| `plugins/<name>/` | plugins: extra actions, routes, pages and widgets (`npm run new:widget -- <name>`) |
+| `scripts/bootstrap.js` | automatic startup (same on Windows and Linux) |
+| `scripts/windows/` | notification area icon and hidden startup |
+| `scripts/linux/` | background startup, desktop and app menu icon |
 
-**Aggiungere un tipo di azione al progetto:** aggiungi una funzione a `HANDLERS` in `server/actions/index.js`. Se serve il sistema operativo, aggiungi il metodo sia in `server/platform/windows.js` sia in `server/platform/linux.js`.
+**Adding a feature without touching the project:** a plugin (`npm run new:widget -- <name>`), see *Plugins* in the main README.
 
-Il client deve restare ES5 e senza flexbox/grid: `tests/client-es5.test.js` lo controlla.
+**Adding an action type to the project:** add a function to `HANDLERS` in `server/actions/index.js`. If it needs the operating system, add the method to both `server/platform/windows.js` and `server/platform/linux.js`.
 
-## Licenza
+The client must stay ES5 with no flexbox/grid: `tests/client-es5.test.js` checks it. The repository has **zero comments**: `tests/no-comments.test.js` checks it.
 
-MIT, vedi [LICENSE](../LICENSE).
+## License
+
+MIT, see [LICENSE](../LICENSE).
