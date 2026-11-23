@@ -1,7 +1,3 @@
-// Crea una pagina nuova pronta da modificare: config/pages/<id>.json
-//   npm run new:page -- stream            (titolo = STREAM)
-//   npm run new:page -- stream "LIVE"     (titolo scelto)
-// La pagina compare da sola sul tablet, in fondo alla barra.
 const fs = require('fs');
 const path = require('path');
 const paths = require('../server/paths');
@@ -22,14 +18,11 @@ function main(argv) {
   }
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(file, [
-    '// Pagina "' + title + '": creata con npm run new:page. Salva e il tablet si aggiorna da solo.',
-    '// Campi, pulsanti, icone e tipi di azione: README, "Guida per sviluppatori".',
     '{',
     '  "id": "' + id + '",',
     '  "title": ' + JSON.stringify(title) + ',',
     '  "icon": "apps",',
     '  "description": "",',
-    '  // colonne e righe scelte in base a quanti pulsanti ci sono',
     '  "autoGrid": true,',
     '  "tiles": [',
     '    { "id": "play", "label": "PLAY", "icon": "play", "action": { "type": "media", "command": "play_pause" } },',

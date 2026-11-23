@@ -1,10 +1,7 @@
-// Pannello di controllo (layout delle pagine) e modulo Discord.
-// Non scrive mai config/layout.json né data/discord.json veri.
 const test = require('node:test');
 const assert = require('node:assert');
 
 process.env.DOCK_TOKEN = 'TESTCODE';
-// dati in una cartella temporanea: niente credenziali Discord vere (nessun collegamento al client)
 process.env.DOCK_DATA_DIR = require('fs').mkdtempSync(require('path').join(require('os').tmpdir(), 'dock-test-'));
 process.env.LOG_LEVEL = 'error';
 const config = require('../server/config');
@@ -42,8 +39,6 @@ test('i default comprendono la pagina Discord, fuori dalla barra', function () {
   assert.strictEqual(p.tab, false);
   assert.ok(p.description);
 });
-
-// ------------------------------------------------------------ API del pannello
 
 let server, base;
 test.before(function () {
@@ -95,8 +90,6 @@ test('discord: le API del tablet chiedono il token', async function () {
   const ok = await call('GET', '/api/discord/state', null, { 'X-Dock-Token': 'TESTCODE' });
   assert.strictEqual(ok.status, 200);
 });
-
-// ------------------------------------------------------------ Discord
 
 test('discord: membri della stanza e immagini solo dal CDN di Discord', function () {
   const m = discord._member({ nick: 'Pippo', mute: true, volume: 80, user: { id: '80351110224678912', username: 'pippo', avatar: 'abc123' }, voice_state: { self_mute: true, deaf: false } });

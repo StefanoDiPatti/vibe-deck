@@ -1,5 +1,3 @@
-// Personalizzazioni a file singoli: config/pages/<id>.json, config/apps/<id>.json,
-// config/commands/<id>.json. Cartella di configurazione temporanea.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -19,7 +17,6 @@ function write(rel, text) {
   const f = path.join(CONF, rel);
   fs.mkdirSync(path.dirname(f), { recursive: true });
   fs.writeFileSync(f, text);
-  // data di modifica diversa anche se il test è velocissimo
   const t = new Date(Date.now() + Math.floor(Math.random() * 100000));
   fs.utimesSync(f, t, t);
 }
@@ -56,7 +53,6 @@ test('dock.json tuo: id e pagine scritte dentro insieme, id senza file segnalati
   const list = ids();
   assert.deepStrictEqual(list.slice(0, 3), ['stream', 'main', 'inline']);
   assert.deepStrictEqual(config.missingPages(), ['manca']);
-  // le pagine predefinite non elencate restano disponibili, fuori dalla barra
   const games = page('games');
   assert.ok(games);
   assert.strictEqual(games.tab, false);

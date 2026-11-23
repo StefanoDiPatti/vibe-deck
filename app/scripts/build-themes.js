@@ -1,16 +1,4 @@
 'use strict';
-// Genera i temi del tablet (public/css/themes/<tema>.css) da public/css/dock.css.
-//
-// Il browser del tablet (Android 4) non conosce le variabili CSS, quindi un tema
-// ripete ogni regola di dock.css che usa un colore, con il colore del tema:
-//  - scripts/themes/<tema>.js: tabelle "colore di dock.css -> colore del tema",
-//    divise per uso (bg = sfondi, fg = testo e icone, line = bordi e ombre),
-//    più il CSS scritto a mano con le forme del tema (angoli, bordi, rilievo...).
-//  - il file generato si carica dopo dock.css, con gli stessi selettori: vince lui.
-//
-// Uso:  node scripts/build-themes.js          rigenera i temi
-//       node scripts/build-themes.js --report elenca i colori di dock.css per uso
-// Dopo aver cambiato dock.css rigenera i temi (lo controlla tests/themes.test.js).
 const fs = require('fs');
 const path = require('path');
 
@@ -33,7 +21,6 @@ function norm(c) {
   if (/^#[0-9a-f]{3}$/.test(c)) c = '#' + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
   return c;
 }
-// rgba(…, a) -> chiave "rgba(r,g,b)" + alfa (le tabelle possono mappare il colore e tenere l'alfa)
 function split(c) {
   const m = /^rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)$/.exec(c);
   if (!m) return { key: c, alpha: null };
@@ -41,12 +28,11 @@ function split(c) {
 }
 function hexToRgb(h) { h = norm(h); return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
 
-// Parser minimo: regole, @media (ricorsivo); @keyframes e commenti saltati.
 function parse(css) {
   css = css.replace(/\/\*[\s\S]*?\*\//g, '');
   const out = [];
   let i = 0;
-  function block(start) { // ritorna l'indice della } che chiude la { in start
+  function block(start) {
     let depth = 0;
     for (let k = start; k < css.length; k++) {
       if (css[k] === '{') depth++;
@@ -129,9 +115,7 @@ function build(name) {
     lines.push((media ? '  ' : '') + r.selector.replace(/\s+/g, ' ') + ' { ' + out.join('; ') + '; }');
   });
   if (media) lines.push('}');
-  return '/* Tema "' + theme.title + '" del tablet. GENERATO da scripts/build-themes.js da dock.css +\n' +
-    ' * scripts/themes/' + name + '.js: non modificarlo a mano, rigeneralo. */\n\n' +
-    '/* ---- colori (da dock.css) */\n' + lines.join('\n') + '\n\n/* ---- forme del tema (scritte a mano) */\n' + theme.css.trim() + '\n';
+  return lines.join('\n') + '\n\n' + theme.css.trim() + '\n';
 }
 
 function buildAll() {

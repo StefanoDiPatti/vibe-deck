@@ -1,6 +1,4 @@
 'use strict';
-// Neo-brutalista: fondo crema, bordi neri spessi, ombra piena spostata, colori pieni.
-// Tema chiaro: tutto il testo diventa nero, le barre in alto e in basso nere con testo crema.
 const INK = '#111111', CREAM = '#f4efe3', Y = '#ffd23f', B = '#4d9dff', R = '#ff6b5b', G = '#2bd96b';
 module.exports = {
   title: 'Neo-brutalista',
@@ -30,13 +28,11 @@ module.exports = {
     '#3d8bfd': INK, '#6cb6ff': INK, '#3fb950': G, 'rgb(63,185,80)': G, '#e5534b': R, '#d29922': Y
   },
   css: `
-/* salvaschermo: cifre nere pesanti con ombra piena */
 @font-face { font-family: "VDClockBrutal"; src: url("../../fonts/clock-brutal.ttf") format("truetype"); }
 .saver-clock { font-family: "VDClockBrutal", "Arial Black", sans-serif; font-size: 100px; letter-spacing: 0; color: #6e6656; text-shadow: 6px 6px 0 #4a3d06; }
 .clk-time { font-family: "VDClockBrutal", "Arial Black", sans-serif; letter-spacing: 0; color: ${INK}; text-shadow: 4px 4px 0 ${Y}; }
 .clk-date { color: ${INK}; }
 body { font-family: "Arial Black", "Archivo Black", Roboto, Arial, sans-serif; }
-/* barre nere con testo crema */
 #topbar { background: ${INK}; color: ${CREAM}; border-bottom: 3px solid ${INK}; }
 #topbar svg.ic { fill: ${CREAM}; }
 #page-title, #mini { color: ${CREAM}; }
@@ -46,12 +42,10 @@ body { font-family: "Arial Black", "Archivo Black", Roboto, Arial, sans-serif; }
 .tab svg.ic { fill: ${CREAM}; }
 .tab.active { background: ${Y}; color: ${INK}; -webkit-box-shadow: none; box-shadow: none; }
 .tab.active svg.ic { fill: ${INK}; }
-/* play della musica: giallo con icona nera (in dock.css è chiaro con icona scura) */
 .np-btn.np-play { background: ${Y}; border: 3px solid ${INK}; -webkit-box-shadow: 3px 3px 0 ${INK}; box-shadow: 3px 3px 0 ${INK}; }
 .np-btn.np-play svg.ic { fill: ${INK}; }
 .tab.pressed { background: #333; }
 svg.ic { fill: ${INK}; }
-/* tasti come adesivi: bordo spesso e ombra piena, premuti "scendono" */
 .tile { border: 3px solid ${INK}; border-radius: 6px; -webkit-box-shadow: 5px 5px 0 ${INK}; box-shadow: 5px 5px 0 ${INK}; }
 .tile.btn:after { display: none; }
 .tile.btn.pressed { -webkit-transform: translate(4px, 4px); transform: translate(4px, 4px); -webkit-box-shadow: 1px 1px 0 ${INK}; box-shadow: 1px 1px 0 ${INK}; border-color: ${INK}; }
@@ -64,7 +58,6 @@ svg.ic { fill: ${INK}; }
 .t-hold { background: rgba(0, 0, 0, 0.15); }
 .sbtn { border: 2px solid ${INK}; border-radius: 4px; -webkit-box-shadow: 2px 2px 0 ${INK}; box-shadow: 2px 2px 0 ${INK}; }
 .sbtn.pressed { background: ${Y}; }
-/* avvisi e finestre */
 #toast { background: ${INK}; color: ${CREAM}; border-radius: 4px; -webkit-box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.35); box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.35); }
 #toast.ok { background: ${G}; color: ${INK}; border: 3px solid ${INK}; }
 #toast.err { background: ${R}; color: ${INK}; border: 3px solid ${INK}; }

@@ -1,6 +1,3 @@
-// Comandi per la pagina ANDROID: adb (Android SDK platform-tools) e logcat.
-// Su Windows si usa adb della cartella standard dell'SDK, se no quello nel PATH.
-// Per cambiarli copia una voce in config/commands/<id>.json.
 {
   "commands": {
     "adb_devices": {

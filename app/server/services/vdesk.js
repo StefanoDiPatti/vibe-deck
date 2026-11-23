@@ -1,24 +1,14 @@
 'use strict';
-// Desktop virtuali di Windows (pagina SCHERMI).
-// Windows non ha un'API pubblica per gestirli, quindi:
-//  - l'elenco, l'ordine e quello attivo si leggono dal registro (lo scrive Explorer):
-//    HKCU\...\Explorer\VirtualDesktops -> VirtualDesktopIDs (16 byte per desktop),
-//    CurrentVirtualDesktop, Desktops\{guid}\Name (nome scelto dall'utente)
-//    Su Windows 10 il desktop attivo sta in ...\Explorer\SessionInfo\<n>\VirtualDesktops.
-//  - passare, creare e chiudere si fa con le scorciatoie di Windows
-//    (Win+Ctrl+←/→, Win+Ctrl+D, Win+Ctrl+F4), come faresti dalla tastiera.
-// Su Linux (KDE Plasma 6 con kdotool) tutto passa da KWin: vedi platform/linux-kwin.js.
 const { execFile } = require('child_process');
 const platform = require('../platform');
 const log = require('../log');
 
 const KEY = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops';
 const SESSION_KEY = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo';
-const MAX = 3;   // scelta dell'utente: al massimo 3 desktop virtuali
+const MAX = 3;
 
 function isLinux() { return platform.name === 'linux' && typeof platform.virtualDesktops === 'function'; }
 function supported() { return process.platform === 'win32' || isLinux(); }
-// perché non si può (Linux senza KDE o senza kdotool), '' se si può
 function note() { return isLinux() && typeof platform.screensNote === 'function' ? platform.screensNote() : ''; }
 function same(a, b) { return String(a || '').toUpperCase() === String(b || '').toUpperCase(); }
 
@@ -32,7 +22,6 @@ function regQuery(key) {
   });
 }
 
-// 16 byte del registro -> GUID in maiuscolo (i primi tre campi sono little endian)
 function guidFromHex(hex) {
   const h = String(hex || '').toUpperCase();
   if (!/^[0-9A-F]{32}$/.test(h)) return '';
@@ -45,12 +34,10 @@ function binValue(text, name) {
   return m ? m[1] : null;
 }
 
-// Uscita di "reg query <KEY> /s" (+ quella di SessionInfo per Windows 10) -> desktop in ordine.
 function parse(text, sessionText) {
   const ids = [];
   const raw = binValue(text, 'VirtualDesktopIDs');
   if (raw) for (let i = 0; i + 32 <= raw.length; i += 32) ids.push(guidFromHex(raw.slice(i, i + 32)));
-  // nomi: blocchi "...\Desktops\{GUID}" seguiti da "Name REG_SZ ..."
   const names = {};
   const re = /\\Desktops\\\{([0-9A-Fa-f-]{36})\}\r?\n((?:[ \t]+\S.*\r?\n?)*)/g;
   let m;
@@ -63,7 +50,6 @@ function parse(text, sessionText) {
   return build(ids, cur ? guidFromHex(cur) : '', names);
 }
 
-// Dati già letti dall'helper PowerShell (comando "vdreg"): esadecimali + nomi.
 function fromHelper(r) {
   const ids = [];
   const raw = String((r && r.ids) || '');
@@ -74,7 +60,6 @@ function fromHelper(r) {
 }
 
 function build(ids, current, names) {
-  // mai creato un secondo desktop: Explorer non scrive l'elenco, ce n'è uno solo
   if (!ids.length) return [{ id: current || 'unico', n: 1, name: 'Desktop 1', current: true }];
   let found = false;
   const list = ids.map(function (id, i) {
@@ -82,7 +67,7 @@ function build(ids, current, names) {
     if (on) found = true;
     return { id: id, n: i + 1, name: names[id] || 'Desktop ' + (i + 1), current: on };
   });
-  if (!found) list[0].current = true;   // Win10 senza SessionInfo leggibile: meglio il primo che niente
+  if (!found) list[0].current = true;
   return list;
 }
 
@@ -93,7 +78,6 @@ async function read() {
     if (list.length && !list.some(function (d) { return d.current; })) list[0].current = true;
     return list;
   }
-  // prima l'helper PowerShell già aperto (pochi ms); reg.exe solo se non c'è
   if (typeof platform.virtualDesktopsReg === 'function') {
     try { return fromHelper(await platform.virtualDesktopsReg()); } catch (e) { log.debug('vdesk', 'helper: ' + e.message); }
   }
@@ -109,7 +93,6 @@ function currentIndex(list) {
 
 function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-// Explorer aggiorna il registro dopo l'animazione: aspetta che arrivi la condizione.
 async function waitFor(test, ms) {
   const end = Date.now() + (ms || 2000);
   let list = await read();
@@ -117,7 +100,6 @@ async function waitFor(test, ms) {
   return list;
 }
 
-// Per l'anteprima (come Win+Tab): ogni desktop con le sue finestre e i monitor in scala.
 async function preview(desktops) {
   const out = { supported: true, max: MAX, desktops: desktops, monitors: [] };
   try {
@@ -145,7 +127,6 @@ async function list() {
   return preview(await read());
 }
 
-// Linux: passa, crea e chiudi con KWin (niente scorciatoie da simulare)
 async function linuxAction(act, desktops, idx) {
   if (act === 'switch') {
     if (idx < 0) throw err('Desktop non trovato (è stato chiuso?)', 'NOT_FOUND');
@@ -175,7 +156,6 @@ async function go(list, index) {
   return waitFor(function (l) { return l[currentIndex(l)].id === want; });
 }
 
-// action: switch (id) | create | delete (id; senza id quello attivo)
 async function action(act, id) {
   if (!supported() || note()) throw err(note() || 'I desktop virtuali si gestiscono su Windows e su Linux con KDE Plasma', 'UNSUPPORTED');
   let desktops = await read();
@@ -195,7 +175,6 @@ async function action(act, id) {
     if (idx < 0) throw err('Desktop non trovato (è stato chiuso?)', 'NOT_FOUND');
     if (desktops.length < 2) throw err('C\'è un solo desktop: non si può chiudere');
     const gone = desktops[idx].id, before = desktops.length;
-    // Win+Ctrl+F4 chiude quello attivo: prima ci si va
     if (!desktops[idx].current) {
       desktops = await go(desktops, idx);
       if (desktops[currentIndex(desktops)].id !== gone) throw err('Non sono riuscito ad aprire quel desktop per chiuderlo');
@@ -209,8 +188,6 @@ async function action(act, id) {
   return preview(desktops);
 }
 
-// Sposta una finestra (del desktop attivo) su un altro desktop virtuale, o su uno nuovo
-// (desktop = 'new'), senza cambiare quello che stai guardando: come trascinarla in Win+Tab.
 async function moveWindow(windowId, desktop) {
   if (!supported() || note() || typeof platform.moveWindowToDesktop !== 'function') throw err(note() || 'Spostare finestre tra desktop si può su Windows e su Linux con KDE Plasma', 'UNSUPPORTED');
   const wins = typeof platform.deskWindows === 'function' ? await platform.deskWindows() : [];
@@ -228,7 +205,6 @@ async function moveWindow(windowId, desktop) {
   }
   const before = desktops.length;
   const to = String(await platform.moveWindowToDesktop(w.id, isNew ? '' : target.id));
-  // Explorer scrive il desktop nuovo nel registro poco dopo
   desktops = isNew ? await waitFor(function (l) { return l.length > before; }) : await read();
   const dest = desktops.filter(function (d) { return same(d.id, to); })[0];
   log.info('vdesk', '"' + w.title + '" spostata su ' + (dest ? dest.name : to));

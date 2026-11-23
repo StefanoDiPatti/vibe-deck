@@ -1,4 +1,3 @@
-// Testi italiani del tablet senza traduzione inglese: stringhe del codice, index.html, pagine predefinite.
 const fs = require('fs'), path = require('path'), vm = require('vm');
 module.exports = function audit(APP) {
 const acorn = require('acorn');
@@ -9,7 +8,6 @@ vm.createContext(ctx);
 ['i18n.js', 'lang-en.js'].forEach(function (f) { vm.runInContext(fs.readFileSync(path.join(APP, 'public', 'js', f), 'utf8') + '\nwindow.I18n = I18n;', ctx); });
 const I = ctx.window.I18n;
 
-// parole italiane frequenti (minuscole) o lettere accentate
 const IT = /[àèéìòù]|\b(il|lo|la|gli|le|di|da|del|della|dei|delle|al|alla|sul|sulla|nel|nella|per|non|che|una|uno|sei|tocca|tieni|apri|chiudi|nessun[ao]?|niente|carico|scegli|scrivi|premi|aggiungi|torna|passa|mostra|uscita|ingresso|microfono|predefinit[oa]|finestr[ae]|stanza|canali|aperte?|collega\w*|sincronizz\w*|dettatura|modello|sessione|guida|zona|divisione|attiv[ao]|schermo|nuov[ao]|giorni|settimana|consumi|completat\w+|riproduzione|coda|brano|indietro|avanti|cartella|flusso|modifica|inizio|fine|tutt[eio]|metà|terzi|quarti|griglia|ricarica|errori|sistema|suoni|volume|esci|entra|ieri|ora|fa|libero|vuot[ao]|caric\w+|riprova|salva\w*|annulla|sposta\w*|chiud\w+|invia\w*|scarica|cerca|nascost\w+|mostrat\w+|disponibil\w+|selezion\w+|monitor del|su|in corso|vicino|ancora|sempre|prima|dopo|subito|solo|anche|oppure|questo|questa|quello|quella|tuo|tua|tuoi)\b/i;
 const SKIP = /^[a-z0-9_.:\/#-]+$|^[A-Z][A-Za-z]+$|^\/api|^[.#][a-z]|^(data|aria)-|^https?:|^[a-z-]+( [a-z-]+)*$/;
 const out = {};
@@ -24,7 +22,6 @@ function check(s, where) {
   (function walk(n) {
     if (!n || typeof n !== 'object') return;
     if (n.type === 'Literal' && typeof n.value === 'string' && !SKIP.test(n.value.trim())) {
-      // HTML nelle stringhe: solo i pezzi di testo tra i tag
       n.value.split(/<[^>]*>/).forEach(function (part) { check(part, f); });
     }
     for (const k in n) { const v = n[k]; if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v.type === 'string') walk(v); }

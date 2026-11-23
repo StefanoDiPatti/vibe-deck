@@ -1,14 +1,7 @@
 'use strict';
-// Finestre, monitor e desktop virtuali su Linux con KDE Plasma 6 (Wayland e X11), per la
-// pagina SCHERMI. Su Wayland nessun programma esterno vede le finestre degli altri: lo fa
-// solo KWin. Si passa da kdotool (>= 0.3.0, comando "kwinscript"), che carica in KWin un
-// piccolo script, lo esegue e stampa quello che lo script restituisce con output_result.
-//   Arch / CachyOS:  paru -S kdotool      (oppure: cargo install kdotool)
-// API di KWin 6 usata: workspace.windowList/stackingOrder/desktops/currentDesktop/screens/
-// clientArea/createDesktop/removeDesktop, window.internalId/desktops/frameGeometry/...
 const common = require('./common');
 
-const SNAP_TTL = 800;   // finestre, desktop e monitor letti una volta per giro di aggiornamento
+const SNAP_TTL = 800;
 let snapCache = { at: 0, data: null, pending: null };
 let runner = function (args, timeout) { return common.run('kdotool', args, { timeout: timeout || 6000 }); };
 
@@ -17,14 +10,13 @@ function err(msg, code) { return Object.assign(new Error(msg), { code: code || '
 function isKde() {
   return /kde|plasma/i.test((process.env.XDG_CURRENT_DESKTOP || '') + ' ' + (process.env.DESKTOP_SESSION || '') + ' ' + (process.env.KDE_FULL_SESSION || ''));
 }
-let forced = null;   // test: finto kdotool
+let forced = null;
 function available() { return forced !== null ? forced : isKde() && !!common.which('kdotool'); }
 function why() {
   if (!isKde()) return 'Finestre e desktop virtuali su Linux per ora solo con KDE Plasma 6';
   return 'Per finestre e desktop virtuali installa kdotool 0.3 o più recente (Arch/CachyOS: paru -S kdotool)';
 }
 
-// Esegue uno script in KWin e ritorna le righe stampate con output_result.
 async function kwin(code, timeout) {
   if (!available()) throw err(why(), 'UNSUPPORTED');
   const r = await runner(['kwinscript', '--inline', code], timeout);
@@ -37,9 +29,6 @@ async function kwin(code, timeout) {
   return String(r.stdout || '').split(/\r?\n/).filter(function (l) { return l.trim() !== ''; });
 }
 
-// ------------------------------------------------------------ lettura
-// Tutto in un colpo: desktop (in ordine), quello attivo, monitor con area utile, finestre
-// dalla più in alto (solo quelle "normali" che stanno nella barra delle applicazioni).
 const SNAPSHOT = [
   'var cur = workspace.currentDesktop;',
   'var res = { current: cur ? String(cur.id) : "", desktops: [], screens: [], windows: [] };',
@@ -67,7 +56,7 @@ function parseSnapshot(lines) {
   for (let i = lines.length - 1; i >= 0; i--) {
     const l = lines[i].trim();
     if (l.charAt(0) !== '{') continue;
-    try { return JSON.parse(l); } catch (e) { /* riga non JSON */ }
+    try { return JSON.parse(l); } catch (e) { }
   }
   throw err('KWin non ha risposto con i dati delle finestre', 'ACTION_FAILED');
 }
@@ -84,7 +73,6 @@ function snapshot(force) {
 }
 function invalidate() { snapCache = { at: 0, data: null, pending: null }; }
 
-// Formati uguali a quelli di Windows (server/platform/windows.js)
 function monitorsFrom(s) {
   return s.screens.map(function (o, i) {
     return { id: o.name, primary: i === 0, x: o.x, y: o.y, w: o.w, h: o.h, work: { x: o.wx, y: o.wy, w: o.ww, h: o.wh }, name: o.label || o.name };
@@ -93,20 +81,17 @@ function monitorsFrom(s) {
 function stateOf(w) { return w.min ? 'min' : w.max ? 'max' : 'normal'; }
 function onDesk(w, desk) { return w.all || w.desks.indexOf(desk) >= 0; }
 
-// Finestre del desktop attivo (la lista "FINESTRE APERTE")
 function windowsFrom(s) {
   return s.windows.filter(function (w) { return onDesk(w, s.current); }).map(function (w) {
     return { id: w.id, pid: w.pid, process: w.cls, state: stateOf(w), monitor: w.out, x: w.x, y: w.y, w: w.w, h: w.h, active: !!w.active, title: w.title };
   });
 }
-// Finestre di tutti i desktop, ognuna col suo (quelle su tutti i desktop: il primo)
 function deskWindowsFrom(s) {
   return s.windows.map(function (w) {
     return { id: w.id, desktop: w.all ? (s.desktops[0] ? s.desktops[0].id : '') : (w.desks[0] || ''), state: stateOf(w), monitor: w.out, x: w.x, y: w.y, w: w.w, h: w.h, process: w.cls, title: w.title, pid: w.pid };
   });
 }
 
-// ------------------------------------------------------------ azioni
 const J = JSON.stringify;
 const FIND = 'function W(id) { return workspace.windowList().find(function (w) { return String(w.internalId) == id; }); }\n' +
   'function D(id) { return workspace.desktops.find(function (d) { return String(d.id) == id; }); }\n';
@@ -122,7 +107,6 @@ function needWindow(id) {
 }
 
 async function moveWindowToDesktop(id, desk) {
-  // desk '' = desktop nuovo in fondo, senza passarci (come su Windows)
   const pick = desk
     ? 'var d = D(' + J(String(desk)) + '); if (!d) { output_error("desktop non trovato"); } else {'
     : 'workspace.createDesktop(workspace.desktops.length, ""); var d = workspace.desktops[workspace.desktops.length - 1]; {';
@@ -152,7 +136,6 @@ async function windowAction(id, action) {
   return { done: true };
 }
 
-// Desktop virtuali: { desktops: [{ id, name }], current }
 async function virtualDesktops() {
   const s = await snapshot(true);
   return { desktops: s.desktops, current: s.current };
@@ -160,11 +143,9 @@ async function virtualDesktops() {
 async function switchDesktop(desk) {
   await act('var d = D(' + J(String(desk)) + '); if (!d) { output_error("desktop non trovato"); } else { workspace.currentDesktop = d; output_result("ok"); }');
 }
-// Come Win+Ctrl+D: un desktop nuovo in fondo, e ci si va.
 async function createDesktop() {
   await act('workspace.createDesktop(workspace.desktops.length, ""); workspace.currentDesktop = workspace.desktops[workspace.desktops.length - 1]; output_result("ok");');
 }
-// Le finestre del desktop chiuso passano a un altro (lo fa KWin).
 async function removeDesktop(desk) {
   await act('var d = D(' + J(String(desk)) + '); if (!d) { output_error("desktop non trovato"); } else if (workspace.desktops.length < 2) { output_error("c\'e\' un solo desktop"); } else { workspace.removeDesktop(d); output_result("ok"); }');
 }
@@ -177,7 +158,6 @@ module.exports = {
   deskWindows: function () { return snapshot().then(deskWindowsFrom); },
   moveWindowToDesktop: moveWindowToDesktop, placeWindow: placeWindow, windowAction: windowAction,
   virtualDesktops: virtualDesktops, switchDesktop: switchDesktop, createDesktop: createDesktop, removeDesktop: removeDesktop,
-  // per i test
   _setRunner: function (fn) { runner = fn; forced = fn ? true : null; invalidate(); },
   _parseSnapshot: parseSnapshot, _monitorsFrom: monitorsFrom, _windowsFrom: windowsFrom, _deskWindowsFrom: deskWindowsFrom
 };

@@ -1,16 +1,3 @@
-// Memo di Windows (Sticky Notes) come lista TODO.
-//
-// Le memo stanno in un database SQLite dell'app (plum.sqlite). Ogni riga di una
-// memo è "\id=<uuid> testo" con la formattazione in stile RTF (\b grassetto,
-// \strike barrato, ... e "0" per chiudere). Per la dock:
-//   - ogni riga è un'attività; barrata = fatta;
-//   - la prima riga tutta in grassetto/corsivo/sottolineato è il titolo della memo.
-//
-// Lettura: diretta e sicura (sola lettura), anche con l'app aperta.
-// Scrittura: l'app non si accorge delle modifiche esterne, quindi la dock chiude
-// le Memo, modifica la riga, mette la memo nella coda di sincronizzazione
-// dell'app (così arriva anche al cloud) e riapre le Memo.
-// Le memo intere non vengono mai create né cancellate dalla dock.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -18,20 +5,18 @@ const common = require('../platform/common');
 
 const PACKAGE = 'Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe';
 const PROCESS = 'Microsoft.Notes.exe';
-const RESTART_DELAY = 1200; // ms: più tocchi ravvicinati = un solo riavvio
+const RESTART_DELAY = 1200;
 
 let sqlite = null;
 function driver() {
   if (sqlite === null) {
     try {
-      // node:sqlite è integrato da Node 22.5: niente dipendenze native da compilare.
       sqlite = require('node:sqlite');
     } catch (e) { sqlite = false; }
   }
   return sqlite;
 }
 
-// Solo per i test: database finto e app Memo mai toccata.
 let testDb = null;
 
 function dbPath() {
@@ -48,11 +33,8 @@ function open(readOnly) {
   return new (driver().DatabaseSync)(dbPath(), { readOnly: !!readOnly });
 }
 
-// ------------------------------------------------------------ formato testo
-
 const FORMAT = { b: 'bold', i: 'italic', ul: 'underline', strike: 'strike' };
 
-// Testo di una riga -> caratteri visibili con i loro stili.
 function parseRich(s) {
   const chars = [];
   const on = { bold: false, italic: false, underline: false, strike: false };
@@ -85,7 +67,6 @@ function splitLines(text) {
   };
 }
 
-// Una riga -> { text, done, heading }
 function describeLine(body) {
   const chars = parseRich(body);
   const full = chars.map(function (x) { return x.c; }).join('');
@@ -96,7 +77,6 @@ function describeLine(body) {
   const struck = visible.length > 0 && visible.every(function (x) { return x.st.strike; });
   const checked = !!(marker && /\[[xX]\]/.test(marker[1]));
   const heading = !marker && visible.length > 0 && visible.every(function (x) { return x.st.bold || x.st.underline || x.st.italic; }) && !struck;
-  // "**StreamDeck**: ..." -> etichetta in grassetto all'inizio della riga
   const rest = chars.slice(start);
   let k = 0;
   while (k < rest.length && (rest[k].st.bold || rest[k].st.underline)) k++;
@@ -105,7 +85,6 @@ function describeLine(body) {
   return { text: text, label: label, done: struck || checked, heading: heading, marker: marker ? marker[1] : '' };
 }
 
-// Memo -> { title, items[] }
 function describeNote(row) {
   const parsed = splitLines(row.Text);
   const lines = parsed.lines.filter(function (l) { return l.id; }).map(function (l) {
@@ -123,8 +102,6 @@ function describeNote(row) {
   };
 }
 
-// ------------------------------------------------------------ lettura
-
 let cache = null;
 function readNotes() {
   if (cache && Date.now() - cache.at < 1500) return cache.notes;
@@ -135,7 +112,6 @@ function readNotes() {
       'where DeletedAt is null and coalesce(IsFutureNote, 0) = 0 and Text is not null'
     ).all();
     const notes = rows.map(describeNote).filter(function (n) { return n.items.length || n.title; });
-    // più recenti prima
     notes.sort(function (a, b) { return b.updated - a.updated; });
     notes.forEach(function (n, i) { if (!n.title) n.title = 'Memo ' + (i + 1); });
     cache = { at: Date.now(), notes: notes };
@@ -157,7 +133,6 @@ function notes() {
   return readNotes().map(function (n) { return { id: n.id, title: n.title }; });
 }
 
-// Memo in cui aggiungere: richiesta esplicita > titolo da config > più recente.
 function targetNote(noteId, preferred) {
   const all = readNotes();
   if (!all.length) throw Object.assign(new Error('Nessuna memo trovata: creane una nell\'app Memo'), { code: 'NOT_FOUND' });
@@ -173,8 +148,6 @@ function targetNote(noteId, preferred) {
   return all[0];
 }
 
-// ------------------------------------------------------------ app Memo
-
 async function isRunning() {
   const r = await common.run('tasklist', ['/FI', 'IMAGENAME eq ' + PROCESS, '/NH', '/FO', 'CSV'], { timeout: 4000 });
   return r.stdout.toLowerCase().indexOf(PROCESS.toLowerCase()) >= 0;
@@ -188,26 +161,23 @@ async function stopApp() {
     if (!(await isRunning())) break;
     await wait(150);
   }
-  await wait(250); // il database viene rilasciato subito dopo
+  await wait(250);
 }
 
 function startApp() {
-  return common.spawnDetached('explorer.exe', ['shell:AppsFolder\\' + PACKAGE + '!App']).catch(function () { /* la riapri a mano */ });
+  return common.spawnDetached('explorer.exe', ['shell:AppsFolder\\' + PACKAGE + '!App']).catch(function () { });
 }
-
-// ------------------------------------------------------------ scrittura
 
 let chain = Promise.resolve();
 let restartTimer = null;
 
 function ticksNow() {
-  // .NET ticks: centinaia di nanosecondi dal 1/1/0001
   return (BigInt(Date.now()) + 62135596800000n) * 10000n;
 }
 
 function enqueueSync(db, noteId) {
   const row = db.prepare('select OutboundQueueJson as q from SyncState limit 1').get();
-  if (!row) return; // sincronizzazione non attiva: resta solo locale
+  if (!row) return;
   let queue = [];
   try { queue = JSON.parse(row.q || '[]'); } catch (e) { queue = []; }
   if (!Array.isArray(queue)) queue = [];
@@ -218,7 +188,6 @@ function enqueueSync(db, noteId) {
   }
 }
 
-// Applica fn(lines, note) al testo di una memo, con l'app chiusa.
 function mutate(noteId, fn) {
   const job = chain.then(async function () {
     const pending = !!restartTimer;
@@ -232,7 +201,6 @@ function mutate(noteId, fn) {
         if (!row) throw Object.assign(new Error('Memo non trovata (forse cancellata sul PC)'), { code: 'NOT_FOUND' });
         const parsed = splitLines(row.Text || '');
         const result = fn(parsed.lines);
-        // le righe non toccate restano identiche
         const text = parsed.lines.map(function (l) {
           if (l.body === l.orig) return l.raw;
           return l.id ? '\\id=' + l.id + ' ' + l.body : l.body;
@@ -264,7 +232,6 @@ function findLine(lines, lineId) {
 }
 
 function cleanText(text) {
-  // niente a capo né backslash (sono la sintassi del formato)
   return String(text || '').replace(/[\r\n\t]+/g, ' ').replace(/\\/g, '/').replace(/\s+/g, ' ').trim().slice(0, 200);
 }
 
@@ -280,7 +247,6 @@ module.exports = {
     if (!clean) return Promise.reject(Object.assign(new Error('Testo vuoto'), { code: 'BAD_REQUEST' }));
     const note = targetNote(noteId, preferred);
     return mutate(note.id, function (lines) {
-      // stesso stile elenco delle righe esistenti ("- " di solito)
       let marker = '- ';
       for (let i = lines.length - 1; i >= 0; i--) {
         if (!lines[i].id) continue;
@@ -288,7 +254,6 @@ module.exports = {
         if (d.marker && !/\[/.test(d.marker)) { marker = d.marker + ' '; break; }
         if (d.text && !d.heading) { marker = ''; break; }
       }
-      // un'eventuale ultima riga vuota viene riutilizzata
       let line = lines[lines.length - 1];
       if (!line || !line.id || describeLine(line.body).text) {
         line = { id: crypto.randomUUID(), body: '' };
@@ -335,7 +300,6 @@ module.exports = {
     return removed;
   },
 
-  // per i test
   _useTestDb: function (p) { testDb = p; cache = null; },
   _parse: { parseRich: parseRich, describeLine: describeLine, describeNote: describeNote, splitLines: splitLines }
 };

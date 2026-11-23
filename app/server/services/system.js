@@ -1,5 +1,3 @@
-// Monitor di sistema. Campiona ogni 2s solo mentre un tablet è collegato
-// (nessuna richiesta da 15s = campionamento in pausa, CPU ~0).
 const os = require('os');
 const { spawn } = require('child_process');
 const platform = require('../platform');
@@ -19,7 +17,6 @@ let state = null;
 let busy = false;
 let netInfo = { at: 0, data: null };
 
-// Nome della rete (Wi-Fi/Ethernet): cambia di rado, si legge ogni 15 s
 async function currentNetInfo() {
   if (Date.now() - netInfo.at < 15000) return netInfo.data;
   netInfo.at = Date.now();
@@ -49,11 +46,8 @@ function cpuUsage() {
   return usage;
 }
 
-// GPU NVIDIA: un solo nvidia-smi resta aperto in modalità continua (-lms) mentre il
-// tablet è collegato e stampa una riga ogni INTERVAL. Lanciarlo ogni 2 s costava
-// ~45 ms di CPU a lancio (la voce più cara della dock); così il costo è quasi zero.
 const NV_QUERY = '--query-gpu=name,utilization.gpu,temperature.gpu,memory.used,memory.total';
-let nvStream = null;   // { proc, last, at, name }
+let nvStream = null;
 
 function parseNvidia(line) {
   const p = String(line).split(',').map(function (x) { return x.trim(); });
@@ -78,7 +72,7 @@ function startNvidiaStream() {
       const g = parseNvidia(l);
       if (!g) return;
       if (s.name === null) s.name = g.name;
-      if (g.name === s.name) { s.last = g; s.at = Date.now(); }   // con più GPU, sempre la prima
+      if (g.name === s.name) { s.last = g; s.at = Date.now(); }
     });
   });
   proc.on('error', function () { if (nvStream === s) nvStream = null; });
@@ -87,7 +81,7 @@ function startNvidiaStream() {
 
 function stopNvidiaStream() {
   if (!nvStream) return;
-  try { nvStream.proc.kill(); } catch (e) { /* già chiuso */ }
+  try { nvStream.proc.kill(); } catch (e) { }
   nvStream = null;
 }
 
@@ -97,7 +91,6 @@ async function nvidiaGpu() {
     startNvidiaStream();
     if (nvStream && nvStream.last && Date.now() - nvStream.at < INTERVAL * 3) return nvStream.last;
   }
-  // prima volta (o lettore appena partito): una lettura singola, così il dato c'è subito
   const r = await common.run('nvidia-smi', [NV_QUERY, '--format=csv,noheader,nounits'], { timeout: 3000 });
   if (!r.ok) {
     if (nvidia.available !== false) log.info('system', 'nvidia-smi non disponibile' + (r.notFound ? '' : ': ' + (r.stderr || r.error)));
@@ -109,7 +102,6 @@ async function nvidiaGpu() {
   return parseNvidia(r.stdout.split('\n')[0]);
 }
 
-// Temperatura CPU da LibreHardwareMonitor (Windows, opzionale) se configurato.
 async function lhmCpuTemp(url) {
   try {
     const r = await common.fetchJson(url, { timeout: 1500 });
@@ -170,7 +162,6 @@ async function sample() {
       net: {
         downMbps: down === null ? null : Math.round(down * 10) / 10,
         upMbps: up === null ? null : Math.round(up * 10) / 10,
-        // in kbit/s, per mostrare anche il traffico basso (Ethernet a riposo ~20 kbit/s)
         downKbps: down === null ? null : Math.round(down * 1000),
         upKbps: up === null ? null : Math.round(up * 1000),
         type: info ? info.type : null,

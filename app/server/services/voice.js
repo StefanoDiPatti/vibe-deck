@@ -1,10 +1,3 @@
-// Trascrizione vocale sul PC (opzionale).
-// Il tablet registra un audio con il registratore di Android e lo invia qui;
-// il server lo passa a un programma di trascrizione configurato in
-// services.json -> voice, per esempio whisper.cpp:
-//   "voice": { "command": "C:\\whisper\\whisper-cli.exe",
-//              "args": ["-m", "C:\\whisper\\ggml-small.bin", "-l", "it", "-nt", "-f", "{file}"] }
-// Il programma deve stampare il testo trascritto.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -47,12 +40,12 @@ async function transcribe(buffer, mime) {
     const r = await common.run(s.command, s.args.map(function (a) { return String(a).split('{file}').join(file); }), { timeout: s.timeoutMs });
     if (!r.ok) throw new Error('Trascrizione non riuscita: ' + (r.stderr.trim().split('\n').pop() || r.error));
     const text = r.stdout
-      .replace(/^\s*\[[0-9:.\s\->]+\]\s*/gm, '') // eventuali timestamp
+      .replace(/^\s*\[[0-9:.\s\->]+\]\s*/gm, '')
       .replace(/\s+/g, ' ')
       .trim();
     return { text: text };
   } finally {
-    try { fs.unlinkSync(file); } catch (e) { /* già rimosso */ }
+    try { fs.unlinkSync(file); } catch (e) { }
   }
 }
 

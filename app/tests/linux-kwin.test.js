@@ -1,6 +1,4 @@
 'use strict';
-// Pagina SCHERMI su Linux (KDE Plasma 6): kdotool finto, si controllano gli script mandati
-// a KWin e i dati restituiti negli stessi formati di Windows.
 const test = require('node:test');
 const assert = require('node:assert');
 const kwin = require('../server/platform/linux-kwin');
@@ -30,7 +28,6 @@ test('KWin: lettura di finestre, monitor e desktop negli stessi formati di Windo
   const calls = fake(t, function () { return { stdout: 'altra riga\n' + JSON.stringify(SNAP) + '\n' }; });
   const mons = await kwin.monitors();
   assert.deepStrictEqual(mons[0], { id: 'DP-1', primary: true, x: 0, y: 0, w: 2560, h: 1440, work: { x: 0, y: 0, w: 2560, h: 1396 }, name: 'Dell U2720Q' });
-  // solo le finestre del desktop attivo (e quelle su tutti i desktop)
   const wins = await kwin.windowList();
   assert.deepStrictEqual(wins.map(function (w) { return w.title + ':' + w.state; }), ['Firefox:max', 'Ovunque:normal']);
   const all = await kwin.deskWindows();
@@ -65,7 +62,6 @@ test('KWin: errori di KWin e kdotool vecchio diventano messaggi chiari', async f
 test('Desktop virtuali in modalità Linux: elenco, passa, crea, chiudi e trascina una finestra', async function (t) {
   const platform = require('../server/platform');
   const vdesk = require('../server/services/vdesk');
-  // anche i monitor finti: altrimenti partirebbe l'helper vero di Windows e il test resterebbe appeso
   const keys = ['name', 'monitors', 'virtualDesktops', 'deskWindows', 'switchDesktop', 'createDesktop', 'removeDesktop', 'moveWindowToDesktop', 'screensNote'];
   const saved = {};
   keys.forEach(function (k) { saved[k] = platform[k]; });
@@ -95,7 +91,6 @@ test('Desktop virtuali in modalità Linux: elenco, passa, crea, chiudi e trascin
   const n = await vdesk.moveWindow('{w1}', 'new');
   assert.strictEqual(n.moved, true);
   assert.deepStrictEqual(log, ['switch d2', 'create', 'remove d3', 'move {w1} d2', 'move {w1} nuovo']);
-  // senza KDE/kdotool: elenco vuoto col motivo, niente azioni
   platform.screensNote = function () { return 'installa kdotool'; };
   assert.deepStrictEqual(await vdesk.list(), { supported: false, message: 'installa kdotool', desktops: [], monitors: [] });
   await assert.rejects(vdesk.moveWindow('{w1}', 'd1'), /installa kdotool/);

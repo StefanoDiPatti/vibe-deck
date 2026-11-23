@@ -1,11 +1,8 @@
-// Pagina OLLAMA (id "ollama"): una pagina per file, vedi la guida per sviluppatori nel README.
-// Per cambiarla copiala in config/pages/ollama.json e modifica la copia: quella vince su questa.
 {
   "id": "ollama",
   "title": "OLLAMA",
   "icon": "chat",
   "description": "Chat con i modelli locali di Ollama",
-  // configurazione standard: tra le disponibili, la aggiungi alla barra dal pannello
   "tab": false,
   "tiles": [ { "widget": "chat", "provider": "ollama", "w": 5, "h": 3 } ]
 }

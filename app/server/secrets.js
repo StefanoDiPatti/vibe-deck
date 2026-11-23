@@ -1,14 +1,3 @@
-// Cifratura dei dati sensibili salvati su disco (password, token, client secret).
-//
-// AES-256-GCM con una chiave casuale da 32 byte, custodita dal sistema:
-//  - Linux: portachiavi del desktop (Secret Service: KWallet, GNOME Keyring) via secret-tool
-//  - Windows: DPAPI dell'utente (la chiave cifrata sta in data/secret-key.dpapi
-//             e solo il tuo account Windows su questo PC può aprirla)
-//  - altrimenti (o con DOCK_KEYSTORE=file): file data/secret-key con permessi 600.
-//    Protegge meno: chi legge la cartella data/ legge anche la chiave.
-//
-// data/secret-key.json ricorda dove sta la chiave, così se il portachiavi non
-// risponde la dock non ne crea una nuova (renderebbe illeggibili i dati cifrati).
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -16,14 +5,13 @@ const { spawnSync } = require('child_process');
 const paths = require('./paths');
 
 const PREFIX = 'enc:v1:';
-const SERVICE = 'command-dock';   // nome del vecchio progetto: resta così, è dove sta la chiave nel portachiavi
+const SERVICE = 'command-dock';
 
 let cachedKey = null;
 let keyInfo = { store: null, warning: '' };
 
 function dataDir() { return process.env.DOCK_DATA_DIR || paths.DATA_DIR; }
 function markerFile() { return path.join(dataDir(), 'secret-key.json'); }
-// Un'installazione = una chiave (più copie della dock sullo stesso PC non si mescolano).
 function keyId() { return crypto.createHash('sha1').update(path.resolve(dataDir())).digest('hex').slice(0, 12); }
 
 function ensureDir() { if (!fs.existsSync(dataDir())) fs.mkdirSync(dataDir(), { recursive: true }); }
@@ -31,15 +19,13 @@ function writePrivate(file, content) {
   ensureDir();
   fs.writeFileSync(file + '.tmp', content, { mode: 0o600 });
   fs.renameSync(file + '.tmp', file);
-  try { fs.chmodSync(file, 0o600); } catch (e) { /* Windows */ }
+  try { fs.chmodSync(file, 0o600); } catch (e) { }
 }
-
-// ------------------------------------------------------------ dove sta la chiave
 
 function preferredStore() {
   const forced = (process.env.DOCK_KEYSTORE || '').toLowerCase();
   if (forced) return forced;
-  if (process.env.NODE_TEST_CONTEXT) return 'file';   // i test non toccano il portachiavi vero
+  if (process.env.NODE_TEST_CONTEXT) return 'file';
   if (process.platform === 'win32') return 'dpapi';
   if (process.platform === 'linux') return 'keyring';
   return 'file';
@@ -99,7 +85,6 @@ function readMarker() {
   try { return JSON.parse(fs.readFileSync(markerFile(), 'utf8')); } catch (e) { return null; }
 }
 
-// La chiave (32 byte). La crea al primo uso.
 function key() {
   if (cachedKey) return cachedKey;
   const marker = readMarker();
@@ -114,11 +99,9 @@ function key() {
     cachedKey = k;
     return k;
   }
-  // I test non creano mai chiavi nella cartella dati vera.
   if (process.env.NODE_TEST_CONTEXT && !process.env.DOCK_DATA_DIR) {
     throw Object.assign(new Error('Nei test serve DOCK_DATA_DIR per la chiave di cifratura'), { code: 'NO_KEY' });
   }
-  // primo avvio: nuova chiave nel posto migliore disponibile
   const k = crypto.randomBytes(32);
   let store = preferredStore();
   if (!stores[store] || !stores[store].available() || !stores[store].save(k)) {
@@ -131,8 +114,6 @@ function key() {
   cachedKey = k;
   return k;
 }
-
-// ------------------------------------------------------------ cifra / decifra
 
 function isEncrypted(s) { return typeof s === 'string' && s.indexOf(PREFIX) === 0; }
 
@@ -155,10 +136,6 @@ function decrypt(s) {
   }
 }
 
-// ------------------------------------------------------------ file JSON cifrati
-
-// Legge un JSON che può essere cifrato ({ "encrypted": "enc:v1:..." }) o ancora in chiaro.
-// Ritorna { data, plain } (plain = era in chiaro: va riscritto cifrato). File assente -> data null.
 function readJson(file) {
   if (!fs.existsSync(file)) return { data: null, plain: false };
   const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -173,8 +150,6 @@ function writeJson(file, data) {
   }, null, 2) + '\n');
 }
 
-// Lettura tollerante per i servizi: se il file in chiaro c'è lo cifra subito;
-// se non si può decifrare lo mette da parte (.illeggibile) e riparte vuoto.
 function loadJson(file, log) {
   try {
     const r = readJson(file);
@@ -184,7 +159,7 @@ function loadJson(file, log) {
     return r.data;
   } catch (e) {
     if (log) log.error('secrets', path.basename(file) + ': ' + e.message);
-    if (e.code === 'BAD_KEY') { try { fs.renameSync(file, file + '.illeggibile'); } catch (x) { /* ignora */ } }
+    if (e.code === 'BAD_KEY') { try { fs.renameSync(file, file + '.illeggibile'); } catch (x) { } }
     return null;
   }
 }

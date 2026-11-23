@@ -1,11 +1,7 @@
-// Collegamento di un telefono o tablet: indirizzi della dock in rete locale,
-// link con il codice di accesso e il suo QR code (SVG per il pannello,
-// caratteri a blocchi per il terminale).
 const os = require('os');
 const QRCode = require('qrcode');
 const auth = require('../auth');
 
-// Schede virtuali (Docker, VPN, macchine virtuali): il tablet non le raggiunge.
 const VIRTUAL = /vEthernet|VirtualBox|VMware|WSL|docker|br-|virbr|veth|Loopback|tailscale|zerotier/i;
 
 function lanAddresses() {
@@ -23,7 +19,6 @@ function lanAddresses() {
 
 function token() { return (process.env.DOCK_TOKEN || '').trim(); }
 
-// Un elemento per scheda di rete: { name, url, link } (link = url con il codice)
 function links(port) {
   const t = token();
   return lanAddresses().map(function (ip) {
@@ -39,8 +34,6 @@ function svg(text) {
     .then(function (s) { svgCache[text] = s; return s; });
 }
 
-// QR per il terminale: due righe del codice per ogni riga di testo.
-// I moduli chiari sono blocchi pieni, così si legge anche su un terminale scuro.
 function terminal(text, indent) {
   const qr = QRCode.create(text, { errorCorrectionLevel: 'L' });
   const size = qr.modules.size;

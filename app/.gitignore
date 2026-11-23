@@ -1,6 +1,5 @@
 node_modules/
 .env
-# configurazione personale (i default stanno in config/defaults/)
 config/*.json
 config/pages/
 config/apps/

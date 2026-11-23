@@ -1,4 +1,3 @@
-// Schermi (zone delle disposizioni, nomi dei monitor), giochi e autorizzazione Discord.
 const test = require('node:test');
 const assert = require('node:assert');
 
@@ -54,7 +53,6 @@ test('nessun gioco nei default (si aggiungono dal pannello); pagine GAMES e SCHE
   assert.strictEqual(raw.pages.filter(function (p) { return p.id === 'games'; })[0].source, 'games');
   const ids = config.normalizeDock(raw, {}, 'windows').pages.map(function (p) { return p.id; });
   assert.ok(ids.indexOf('games') >= 0 && ids.indexOf('screens') >= 0);
-  // SCHERMI c'è anche su Linux (KDE Plasma con kdotool), con la guida delle scorciatoie di Linux
   const lin = config.normalizeDock(raw, {}, 'linux').pages.filter(function (p) { return p.id === 'screens'; })[0];
   assert.ok(lin, 'SCHERMI anche su Linux');
   assert.strictEqual(lin.tiles[0].system, 'linux');
@@ -75,6 +73,6 @@ test('API schermi e Discord richiedono il token', async function () {
     assert.ok(z.status >= 400, 'posizionamento non valido rifiutato');
   } finally {
     server.close();
-    require('../server/platform').shutdown();   // l'elenco finestre avvia l'helper di Windows
+    require('../server/platform').shutdown();
   }
 });

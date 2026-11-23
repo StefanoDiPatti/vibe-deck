@@ -1,6 +1,3 @@
-// Pagina ANDROID (id "android"): adb e logcat per provare le app sul telefono collegato (USB o Wi-Fi).
-// Serve adb (Android SDK platform-tools); scrcpy per vedere lo schermo del telefono sul PC.
-// I comandi sono in config/defaults/commands/android.json. Tra le pagine disponibili: aggiungila dal pannello.
 {
   "id": "android",
   "title": "ANDROID",

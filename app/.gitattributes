@@ -1,4 +1,3 @@
-# Fine riga corrette per ogni sistema, qualunque sia il PC che fa il commit
 * text=auto
 *.sh text eol=lf
 *.bat text eol=crlf

@@ -1,12 +1,3 @@
-# Vibe Deck - helper Windows persistente.
-# Avviato una volta dal server Node: legge richieste JSON (una per riga) da stdin
-# e risponde su stdout con righe "@@DOCK {json}". Tenerlo aperto evita i ~0.5s
-# di avvio di PowerShell a ogni tocco sul tablet.
-#
-# Comandi: ping, keys, text, open, focus, nowplaying, art, net, monitors, winlist, place, winact
-# Richiede Windows PowerShell 5.1 (powershell.exe), che espone le API WinRT
-# usate per "Now Playing".
-
 $ErrorActionPreference = 'Stop'
 $utf8 = New-Object System.Text.UTF8Encoding $false
 $stdin = New-Object System.IO.StreamReader([Console]::OpenStandardInput(), $utf8)
@@ -62,7 +53,6 @@ public static class DockInput {
     return SendInput((uint)list.Length, list, Marshal.SizeOf(typeof(INPUT)));
   }
 
-  // Preme i tasti in ordine e li rilascia in ordine inverso (es. CTRL+SHIFT+S).
   public static uint Combo(ushort[] vks) {
     INPUT[] list = new INPUT[vks.Length * 2];
     for (int k = 0; k < vks.Length; k++) list[k] = Key(vks[k], false);
@@ -70,7 +60,6 @@ public static class DockInput {
     return Send(list);
   }
 
-  // Digita testo Unicode (accenti compresi). "\n" diventa INVIO.
   public static uint Text(string s) {
     System.Collections.Generic.List<INPUT> list = new System.Collections.Generic.List<INPUT>();
     foreach (char ch in s) {
@@ -84,7 +73,6 @@ public static class DockInput {
     return Send(list.ToArray());
   }
 
-  // Porta in primo piano la finestra principale di un processo (es. "blender").
   public static bool Focus(string processName) {
     IntPtr h = IntPtr.Zero;
     foreach (Process p in Process.GetProcessesByName(processName)) {
@@ -97,8 +85,6 @@ public static class DockInput {
     if (h == IntPtr.Zero) return false;
     if (GetForegroundWindow() == h) return true;
     if (IsIconic(h)) ShowWindow(h, 9);
-    // Un tocco di SHIFT fa risultare questo processo come "ultimo input",
-    // condizione che Windows richiede per concedere SetForegroundWindow.
     Combo(new ushort[] { 0x10 });
     uint fg = GetWindowThreadProcessId(GetForegroundWindow(), IntPtr.Zero);
     uint me = GetCurrentThreadId();
@@ -110,7 +96,6 @@ public static class DockInput {
   }
 }
 
-// Finestre delle app aperte (per mostrare sul tablet quali app sono attive)
 public static class DockWindows {
   delegate bool EnumProc(IntPtr h, IntPtr l);
   [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc f, IntPtr l);
@@ -128,9 +113,9 @@ public static class DockWindows {
     var list = new System.Collections.Generic.List<Win>();
     var names = new System.Collections.Generic.Dictionary<uint, string>();
     EnumWindows(delegate (IntPtr h, IntPtr l) {
-      if (!IsWindowVisible(h) || GetWindow(h, 4) != IntPtr.Zero) return true; // invisibile o finestra secondaria
+      if (!IsWindowVisible(h) || GetWindow(h, 4) != IntPtr.Zero) return true;
       int cloaked;
-      if (DwmGetWindowAttribute(h, 14, out cloaked, 4) == 0 && cloaked != 0) return true; // app UWP nascosta
+      if (DwmGetWindowAttribute(h, 14, out cloaked, 4) == 0 && cloaked != 0) return true;
       int len = GetWindowTextLength(h);
       if (len == 0) return true;
       var sb = new System.Text.StringBuilder(len + 1);
@@ -147,14 +132,12 @@ public static class DockWindows {
     return list;
   }
 
-  // "processo<TAB>titolo" per ogni finestra visibile
   public static string[] List() {
     var outp = new System.Collections.Generic.List<string>();
     foreach (var w in All()) outp.Add(w.proc + "\t" + w.title);
     return outp.ToArray();
   }
 
-  // Chiude in modo "gentile" (come la X della finestra): l'app puo' chiedere di salvare.
   public static int Close(string process, string titlePattern) {
     int n = 0;
     var re = string.IsNullOrEmpty(titlePattern) ? null : new System.Text.RegularExpressions.Regex(titlePattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
@@ -168,8 +151,6 @@ public static class DockWindows {
 }
 "@
 
-# --- Schermi: monitor, finestre con posizione, spostamento nelle zone.
-#     Coordinate in pixel fisici (thread "per-monitor DPI aware"). ---
 $script:screens = $false
 try {
   Add-Type -TypeDefinition @"
@@ -220,7 +201,6 @@ public static class DockScreens {
 
   static string Clean(string s) { return (s ?? "").Replace("\t", " ").Replace("\n", " ").Replace("\r", ""); }
 
-  // "device<TAB>primario<TAB>x y w h<TAB>work x y w h<TAB>id hardware" per ogni monitor
   public static string[] Monitors() {
     Aware();
     var list = new System.Collections.Generic.List<string>();
@@ -247,11 +227,10 @@ public static class DockScreens {
 
   static bool Listed(IntPtr h) { return Listed(h, false); }
 
-  // shellCloak: accetta anche le finestre nascoste dalla shell (= su un altro desktop virtuale)
   static bool Listed(IntPtr h, bool shellCloak) {
-    if (!IsWindowVisible(h) || GetWindow(h, 4) != IntPtr.Zero) return false;   // nascosta o secondaria
+    if (!IsWindowVisible(h) || GetWindow(h, 4) != IntPtr.Zero) return false;
     int ex = GetWindowLong(h, -20);
-    if ((ex & 0x80) != 0) return false;                                          // finestra strumento
+    if ((ex & 0x80) != 0) return false;
     int cloaked;
     if (DwmGetWindowAttribute(h, 14, out cloaked, 4) == 0 && cloaked != 0 && !(shellCloak && cloaked == 2)) return false;
     if (GetWindowTextLength(h) == 0) return false;
@@ -260,8 +239,6 @@ public static class DockScreens {
     return c != "Progman" && c != "WorkerW" && c != "Shell_TrayWnd" && c != "Shell_SecondaryTrayWnd";
   }
 
-  // "hwnd<TAB>pid<TAB>processo<TAB>stato<TAB>monitor<TAB>x y w h<TAB>primo piano<TAB>titolo"
-  // stato: n normale, m minimizzata, M massimizzata. Ordine: dalla più in alto.
   public static string[] Windows() {
     Aware();
     var list = new System.Collections.Generic.List<string>();
@@ -288,7 +265,6 @@ public static class DockScreens {
     return list.ToArray();
   }
 
-  // API pubblica di Windows 10/11: a quale desktop virtuale appartiene una finestra
   [ComImport, Guid("a5cd92ff-29be-454c-8d04-d82879fb3f1b"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
   interface IVirtualDesktopManager {
     [PreserveSig] int IsWindowOnCurrentVirtualDesktop(IntPtr h, out int on);
@@ -297,8 +273,6 @@ public static class DockScreens {
   }
   static IVirtualDesktopManager vdm;
 
-  // Finestre di TUTTI i desktop virtuali, dalla più in alto:
-  // "hwnd<TAB>desktop (GUID)<TAB>stato<TAB>monitor<TAB>x y w h<TAB>processo<TAB>titolo"
   public static string[] DeskWindows() {
     Aware();
     if (vdm == null) vdm = (IVirtualDesktopManager)Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("aa509086-5ca9-4c25-8f95-589d3c07b48a")));
@@ -307,7 +281,7 @@ public static class DockScreens {
     EnumWindows(delegate (IntPtr h, IntPtr l) {
       if (!Listed(h, true)) return true;
       Guid d;
-      if (vdm.GetWindowDesktopId(h, out d) != 0 || d == Guid.Empty) return true;   // app UWP sospese e simili
+      if (vdm.GetWindowDesktopId(h, out d) != 0 || d == Guid.Empty) return true;
       uint pid; GetWindowThreadProcessId(h, out pid);
       string name;
       if (!names.TryGetValue(pid, out name)) {
@@ -333,18 +307,12 @@ public static class DockScreens {
     return h;
   }
 
-  // Porta la finestra nel rettangolo (area visibile, senza i bordi invisibili di Windows 10/11).
-  // max = poi la massimizza (su quel monitor). Ritorna false se Windows nega lo spostamento
-  // (finestra di un programma avviato come amministratore).
-  // activate = false (trascinamento dal tablet): ripristina senza attivarla (SW_SHOWNOACTIVATE);
-  // il primo piano lo rimette a posto il comando 'place' se la massimizzazione l'ha cambiato.
   public static bool Place(long hwnd, int x, int y, int w, int hh, bool max, bool activate) {
     Aware();
     IntPtr h = Check(hwnd);
     if (IsIconic(h) || IsZoomed(h)) ShowWindow(h, activate ? 9 : 4);
     bool ok = true;
     for (int pass = 0; pass < 2; pass++) {
-      // due passaggi: tra monitor con scala diversa la finestra si ridimensiona da sola al primo
       RECT wr, fr;
       int l = 0, t = 0, r = 0, b = 0;
       if (GetWindowRect(h, out wr) && DwmGetWindowAttribute(h, 9, out fr, 16) == 0) {
@@ -374,8 +342,6 @@ public static class DockScreens {
   $script:screens = $true
 } catch { [Console]::Error.WriteLine('schermi non disponibili: ' + $_.Exception.Message) }
 
-# --- Volume per singola app (Core Audio). Blocco separato: se non compila
-#     il resto dell'helper continua a funzionare. ---
 $script:appAudio = $false
 try {
   Add-Type -TypeDefinition @"
@@ -434,7 +400,6 @@ public static class DockAudio {
     return list;
   }
 
-  // Processi che hanno una sessione audio (per capire che nome usare nella config).
   public static string[] ListProcesses() {
     IAudioSessionEnumerator list = Sessions();
     int count; list.GetCount(out count);
@@ -449,9 +414,6 @@ public static class DockAudio {
     return names.ToArray();
   }
 
-  // Regola il volume delle sessioni audio dei processi indicati.
-  // delta: variazione (es. +0.05); mute: -1 invariato, 0/1 imposta, 2 inverte.
-  // Ritorna il volume risultante (0..1) o -1 se il processo non sta suonando.
   public static float Adjust(string[] names, float delta, int mute) {
     IAudioSessionEnumerator list = Sessions();
     int count; list.GetCount(out count);
@@ -486,11 +448,9 @@ public static class DockAudio {
   $script:appAudio = $true
 } catch { }
 
-# --- Mixer (dispositivi audio e volume per app): vedi windows-mixer.ps1 ---
 $script:mixer = $false
 . (Join-Path $PSScriptRoot 'windows-mixer.ps1')
 
-# --- WinRT (Now Playing). Se non disponibile il resto continua a funzionare. ---
 $script:winrt = $false
 $script:mgr = $null
 $script:thumb = $null
@@ -526,8 +486,6 @@ function Find-Session([string]$app) {
   return $null
 }
 
-# Tutte le sessioni multimediali: il filtro "solo app musicali" lo fa Node.
-# (Windows considera "corrente" anche sessioni come Riot Client.)
 function Get-Sessions {
   if (-not $script:winrt) { return @{ supported = $false; sessions = @() } }
   $mgr = Get-Manager
@@ -566,7 +524,6 @@ function Get-Sessions {
   return @{ supported = $true; sessions = $list }
 }
 
-# Comanda una sessione precisa (non "quella corrente" di Windows).
 function Invoke-Control($req) {
   $s = Find-Session ([string]$req.app)
   if ($null -eq $s) { throw 'sessione non trovata' }
@@ -588,8 +545,6 @@ function Get-Art($req) {
   if ($null -eq $thumb) { return @{ ok = $false } }
   $stream = Await ($thumb.OpenReadAsync()) ([Windows.Storage.Streams.IRandomAccessStreamWithContentType])
   try {
-    # PowerShell non sa convertire lo stream WinRT: la conversione a .NET
-    # Stream si fa via reflection, che esegue il cast vero sul COM object.
     $m = [System.IO.WindowsRuntimeStreamExtensions].GetMethod('AsStreamForRead', [type[]]@([Windows.Storage.Streams.IInputStream]))
     $net = $m.Invoke($null, @($stream))
     $ms = New-Object System.IO.MemoryStream
@@ -616,7 +571,6 @@ function Get-Net {
   return @{ rx = $rx; tx = $tx }
 }
 
-# Rete attiva (quella con il gateway): Wi-Fi con nome e segnale, oppure Ethernet.
 function Get-NetInfo {
   $best = $null
   foreach ($n in [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()) {
@@ -642,7 +596,6 @@ function Get-NetInfo {
   return @{ type = 'ethernet'; name = 'Ethernet' }
 }
 
-# Nomi dei monitor (es. "MSI MP242") dall'EDID: "istanza<TAB>nome". Lento (~1 s): una volta sola.
 $script:monitorNames = $null
 function Get-MonitorNames {
   if ($null -ne $script:monitorNames) { return $script:monitorNames }
@@ -657,9 +610,6 @@ function Get-MonitorNames {
   return $out
 }
 
-# --- App desktop di Claude via UI Automation (accessibilità di Windows).
-#     Non serve il primo piano: scrive nel campo e preme i pulsanti come un
-#     lettore di schermo. I nomi cambiano con la lingua dell'app: liste IT/EN.
 $script:uia = $false
 $script:SEND = @('Invia', 'Send', 'Envoyer', 'Senden', 'Enviar')
 $script:STOP = @('Interrompi', 'Stop', 'Arrêter', 'Stoppen', 'Detener')
@@ -688,7 +638,6 @@ function First-Button($win, $names) {
   }
   return $null
 }
-# Cosa mostra l'app: titolo della sessione aperta, campo di scrittura, Invia/Interrompi.
 function Get-ClaudeView {
   $win = Get-ClaudeWin
   if ($null -eq $win) { return @{ app = $false } }
@@ -718,7 +667,6 @@ function Assert-ClaudeTitle($win, [string]$title) {
   }
   throw 'sull''app di Claude e'' aperta un''altra sessione'
 }
-# Scrive il testo nel campo e preme Invia. title = sessione attesa ('' = nuova sessione).
 function Send-ClaudeText($req) {
   $win = Get-ClaudeWin
   if ($null -eq $win) { throw 'app di Claude chiusa' }
@@ -727,7 +675,6 @@ function Send-ClaudeText($req) {
   if ($ed.Count -eq 0) { throw 'campo di scrittura non trovato' }
   $vp = $ed[0].GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
   if (([string]$vp.Current.Value).Trim()) { throw 'sul PC c''e'' gia'' del testo scritto in questa sessione' }
-  # Invia compare solo con del testo; Interrompi vuol dire che Claude sta lavorando
   if ($null -ne (First-Button $win $script:STOP)) { throw 'occupata' }
   $vp.SetValue([string]$req.text)
   $send = $null
@@ -745,8 +692,6 @@ function Stop-ClaudeTurn($req) {
   $b.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
   return @{ stopped = $true }
 }
-# Preme "Nuova sessione in <progetto>[, aggiunta a <sezione>]" nella barra laterale:
-# lo stesso pulsante che si usa sul PC, solo per progetti già nell'app.
 function New-ClaudeSessionIn($req) {
   $win = Get-ClaudeWin
   if ($null -eq $win) { throw 'app di Claude chiusa' }
@@ -761,7 +706,6 @@ function New-ClaudeSessionIn($req) {
   throw 'pulsante per la nuova sessione non trovato nella barra laterale'
 }
 
-# Chiude la richiesta "area di lavoro attendibile" senza accettarla.
 function Close-ClaudeTrust {
   $win = Get-ClaudeWin
   if ($null -eq $win) { return @{ closed = $false } }
@@ -770,12 +714,6 @@ function Close-ClaudeTrust {
   return @{ closed = $false }
 }
 
-# --- Sposta una finestra su un altro desktop virtuale (pagina SCHERMI, trascinamento).
-# L'API pubblica (IVirtualDesktopManager.MoveWindowToDesktop) vale solo per le finestre
-# del proprio processo: per quelle degli altri programmi serve l'interfaccia interna di
-# Explorer, la stessa di Win+Tab. Non e' documentata e i GUID cambiano tra le versioni:
-# questi sono quelli di Windows 11 24H2 e successivi (come github.com/MScholtes/VirtualDesktop).
-# Si carica solo al primo uso; se non va, la dock lo dice invece di fare danni.
 $script:vdx = $false
 function Use-Vdx {
   if ($script:vdx) { return }
@@ -819,7 +757,6 @@ public static class DockVD {
     Guid i2 = typeof(IApplicationViewCollection).GUID;
     views = (IApplicationViewCollection)shell.QueryService(ref i2, ref i2);
   }
-  // desk = GUID del desktop, oppure "" per crearne uno nuovo (senza passarci). Ritorna il GUID.
   public static string Move(long hwnd, string desk) {
     try { Init(); } catch (Exception e) { mgr = null; throw new Exception("desktop virtuali non raggiungibili su questa versione di Windows (" + e.Message + ")"); }
     IApplicationView view;
@@ -904,7 +841,6 @@ while ($true) {
         $data = @{ list = @([DockScreens]::DeskWindows()) }
       }
       'vdreg' {
-        # desktop virtuali dal registro (come "reg query", ma senza lanciare reg.exe a ogni giro)
         $k = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops'
         $hex = { param($b) if ($b) { ($b | ForEach-Object { $_.ToString('X2') }) -join '' } else { '' } }
         $p = Get-ItemProperty -Path $k -ErrorAction SilentlyContinue
@@ -924,7 +860,6 @@ while ($true) {
       }
       'place' {
         if (-not $script:screens) { throw 'schermi non disponibili' }
-        # Senza focus (trascinamento dal tablet) la finestra in primo piano resta quella di prima
         $fg = [DockScreens]::Foreground()
         $data = @{ moved = [DockScreens]::Place([long]$req.hwnd, [int]$req.x, [int]$req.y, [int]$req.w, [int]$req.h, [bool]$req.max, [bool]$req.focus) }
         if ($req.focus) { [void][DockInput]::FocusWindow([DockScreens]::Handle([long]$req.hwnd)) }

@@ -1,5 +1,3 @@
-# Test di Vibe Deck su ogni pull request e su main: Windows (il sistema principale) e Linux.
-# Per chi contribuisce la prima volta GitHub chiede al proprietario di approvare l'esecuzione.
 name: test
 
 on:

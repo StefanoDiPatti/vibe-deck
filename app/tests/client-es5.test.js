@@ -1,5 +1,3 @@
-// Il tablet ha un browser Android 4: il JavaScript del client deve essere ES5
-// e non usare API moderne. Questo test lo verifica a ogni modifica.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -25,7 +23,6 @@ const FORBIDDEN_JS = [
   [/\{\s*passive\s*:/, 'opzioni passive negli event listener']
 ];
 
-// i file del tablet: public/js e gli script dei plugin (plugins/<nome>/public, anche quelli spenti con "_")
 const PLUGINS_DIR = path.join(__dirname, '..', 'plugins');
 function pluginFiles(re) {
   const out = [];

@@ -1,12 +1,3 @@
-// Discord sul tablet: server, canali vocali, chi c'è in stanza, chi parla, mute.
-//
-// Usa l'RPC locale dell'app Discord. Discord lo apre solo alle applicazioni
-// registrate, quindi serve una "applicazione" personale (gratis, 2 minuti):
-// la configurazione si fa dal pannello di controllo sul PC.
-// Credenziali e token stanno in data/discord.json (fuori da git), cifrati (server/secrets.js).
-//
-// Senza configurazione restano mute e silenzia con le scorciatoie di Discord
-// (Ctrl+Shift+M / Ctrl+Shift+D con la finestra di Discord in primo piano).
 const fs = require('fs');
 const path = require('path');
 const paths = require('../paths');
@@ -16,9 +7,6 @@ const { DiscordIpc } = require('./discord-ipc');
 
 const FILE = path.join(paths.DATA_DIR, 'discord.json');
 const SCOPES = ['rpc', 'identify', 'rpc.voice.read', 'rpc.voice.write'];
-// Webcam e condivisione dello schermo (comandi TOGGLE_VIDEO / TOGGLE_SCREENSHARE,
-// non documentati ma presenti nel client). Se Discord rifiuta questi permessi
-// l'autorizzazione riprova con quelli base.
 const MEDIA_SCOPES = ['rpc.video.write', 'rpc.screenshare.write'];
 const REDIRECT = 'http://localhost';
 const RETRY_MS = 5000;
@@ -29,21 +17,17 @@ let ipc = null;
 let connecting = null;
 let lastAttempt = 0;
 const S = {
-  status: 'setup',   // setup | offline | unauthorized | connecting | ready
+  status: 'setup',
   message: '',
   user: null,
   voice: { mute: false, deaf: false },
-  // webcam e Go Live accesi dalla dock: via RPC Discord non manda self_video/self_stream,
-  // quindi li ricordiamo noi (si azzerano cambiando stanza)
   media: { video: false, stream: false },
-  channel: null,     // { id, name, guild_id, members: { id -> membro } }
+  channel: null,
   speaking: {},
-  guilds: null,      // cache { at, list }
+  guilds: null,
   guildNames: {},
-  authError: ''      // ultimo errore dell'autorizzazione, resta visibile nel pannello
+  authError: ''
 };
-
-// ------------------------------------------------------------ credenziali
 
 function loadCreds() {
   if (creds) return creds;
@@ -77,10 +61,7 @@ async function tokenRequest(params) {
   return data.access_token;
 }
 
-// ------------------------------------------------------------ utenti e immagini
-
 function img(url) {
-  // Le immagini passano dal PC: i browser di Android 4 spesso non aprono più cdn.discordapp.com
   const m = /^https:\/\/cdn\.discordapp\.com(\/(?:avatars|icons|embed\/avatars)\/[0-9A-Za-z_\/.-]+)/.exec(String(url || ''));
   return m ? '/api/discord/img?p=' + encodeURIComponent(m[1]) : null;
 }
@@ -102,16 +83,12 @@ function member(vs) {
     deaf: !!(st.deaf || st.self_deaf),
     video: !!st.self_video,
     stream: !!st.self_stream,
-    // Discord li manda? (se sì valgono loro, altrimenti quello che ricorda la dock)
     mediaKnown: 'self_video' in st || 'self_stream' in st,
     localMute: !!vs.mute,
-    // Discord manda il volume con decimali (es. 99.99999237): al tablet arriva intero
     volume: typeof vs.volume === 'number' ? Math.round(vs.volume) : 100,
     bot: !!u.bot
   };
 }
-
-// ------------------------------------------------------------ collegamento
 
 function setStatus(status, message) {
   S.status = status;
@@ -149,7 +126,6 @@ async function afterReady() {
   await followChannel(sel);
 }
 
-// Segue il canale vocale in cui sei: membri e chi parla in tempo reale.
 async function followChannel(ch) {
   const old = S.channel;
   if (old && (!ch || ch.id !== old.id)) {
@@ -191,8 +167,6 @@ function onEvent(evt, data) {
   }
 }
 
-// Collega (o ricollega) se serve. Non apre mai la richiesta di autorizzazione:
-// quella parte solo dal pannello di controllo, quando premi "Collega".
 function ensure(force) {
   if (!configured()) { setStatus('setup'); return Promise.resolve(); }
   if (S.status === 'ready' && ipc && !ipc.closed) return Promise.resolve();
@@ -230,7 +204,6 @@ async function open() {
   await ipc.connect(loadCreds().clientId);
 }
 
-// Spiega gli errori OAuth2 più comuni con le parole del pannello.
 function explainAuth(e) {
   const m = String((e && e.message) || '');
   if (/redirect_uri/i.test(m)) {
@@ -242,10 +215,6 @@ function explainAuth(e) {
   return m;
 }
 
-// AUTHORIZE con i permessi completi; se Discord rifiuta quelli per webcam e
-// schermo riprova con quelli base. Il redirect NON si passa: nel flusso RPC
-// Discord usa quello registrato nell'app (passarlo dà "cannot be used in the RPC flow",
-// non averlo registrato dà "missing redirect_uri").
 async function requestCode() {
   const clientId = loadCreds().clientId;
   let scopes = SCOPES.concat(MEDIA_SCOPES);
@@ -263,7 +232,6 @@ async function requestCode() {
   throw new Error('Autorizzazione non riuscita');
 }
 
-// Scambio del codice: con il redirect registrato; se Discord lo contesta, senza.
 async function exchangeCode(code) {
   try {
     return await tokenRequest({ grant_type: 'authorization_code', code: code, redirect_uri: REDIRECT });
@@ -274,7 +242,6 @@ async function exchangeCode(code) {
   }
 }
 
-// Richiesta di autorizzazione: Discord mostra una finestra sul PC, clicchi "Autorizza".
 async function authorize() {
   if (!configured()) throw Object.assign(new Error('Inserisci prima Client ID e Client Secret'), { code: 'BAD_REQUEST' });
   if (ipc && !ipc.closed) ipc.close();
@@ -316,7 +283,7 @@ function logout() {
   if (ipc && !ipc.closed) ipc.close();
   ipc = null;
   creds = {};
-  try { fs.unlinkSync(FILE); } catch (e) { /* già assente */ }
+  try { fs.unlinkSync(FILE); } catch (e) { }
   S.user = null;
   S.guilds = null;
   S.authError = '';
@@ -324,18 +291,14 @@ function logout() {
   setStatus('setup');
 }
 
-// ------------------------------------------------------------ dati per il tablet
-
 function state() {
   const now = Date.now();
   let channel = null;
   if (S.channel) {
     const list = Object.keys(S.channel.members).map(function (id) {
       const m = S.channel.members[id];
-      // SPEAKING_STOP a volte non arriva: dopo 4 s senza conferme non parla più
       const isMe = !!(S.user && S.user.id === id);
       const extra = { speaking: !!(S.speaking[id] && now - S.speaking[id] < 4000) || false, me: isMe };
-      // tu: cam e live come le ricorda la dock, se Discord non li manda
       if (isMe && !m.mediaKnown) { extra.video = S.media.video; extra.stream = S.media.stream; }
       return Object.assign({}, m, extra);
     });
@@ -375,14 +338,12 @@ async function guilds(refresh) {
   return list;
 }
 
-// Canali vocali di un server, con chi c'è dentro.
 async function channels(guildId) {
   await ready();
   if (!/^\d+$/.test(String(guildId || ''))) throw Object.assign(new Error('Server non valido'), { code: 'BAD_REQUEST' });
   const d = await ipc.request('GET_CHANNELS', { guild_id: String(guildId) });
   const voiceChannels = ((d && d.channels) || []).filter(function (c) { return c.type === 2 || c.type === 13; });
   const out = [];
-  // a gruppi di 4 per non sommergere Discord di richieste
   for (let i = 0; i < voiceChannels.length; i += 4) {
     const chunk = await Promise.all(voiceChannels.slice(i, i + 4).map(function (c) {
       return ipc.request('GET_CHANNEL', { channel_id: c.id }).then(function (full) {
@@ -407,7 +368,6 @@ async function toggle(what) {
 async function join(channelId) {
   await ready();
   if (channelId !== null && !/^\d+$/.test(String(channelId || ''))) throw Object.assign(new Error('Canale non valido'), { code: 'BAD_REQUEST' });
-  // per uscire basta channel_id null (senza "force", che serve solo per entrare in un'altra stanza)
   const args = channelId === null ? { channel_id: null } : { channel_id: String(channelId), force: true };
   const ch = await ipc.request('SELECT_VOICE_CHANNEL', args);
   await followChannel(channelId === null ? null : ch);
@@ -419,8 +379,6 @@ function mediaAllowed() {
   return MEDIA_SCOPES.every(function (x) { return sc.indexOf(x) >= 0; });
 }
 
-// Webcam ("video") o condivisione dello schermo ("stream", Go Live).
-// pid = processo da trasmettere (il gioco aperto); senza, Discord sceglie lui.
 async function toggleMedia(what, pid) {
   await ready();
   if (what !== 'video' && what !== 'stream') throw Object.assign(new Error('Comando non valido'), { code: 'BAD_REQUEST' });
@@ -435,7 +393,6 @@ async function toggleMedia(what, pid) {
     try {
       await ipc.request(cmd, args);
     } catch (e) {
-      // se Discord non accetta il processo indicato, lascia scegliere a lui
       if (!args.pid || /scope|authenticated/i.test(e.message)) throw e;
       log.debug('discord', 'Go Live con pid ' + args.pid + ': ' + e.message);
       await ipc.request(cmd, {});
@@ -450,7 +407,6 @@ async function toggleMedia(what, pid) {
   return state();
 }
 
-// Muta o regola il volume di una persona, solo per te.
 async function userVoice(userId, patch) {
   await ready();
   if (!/^\d+$/.test(String(userId || ''))) throw Object.assign(new Error('Utente non valido'), { code: 'BAD_REQUEST' });
@@ -465,7 +421,6 @@ async function userVoice(userId, patch) {
   return state();
 }
 
-// Immagini (avatar, icone dei server) dal CDN di Discord, con una piccola cache.
 const imgCache = new Map();
 async function image(p) {
   if (!/^\/(?:avatars|icons|embed\/avatars)\/[0-9A-Za-z_\/.-]+\.(png|jpg|webp|gif)$/.test(String(p || '')) || p.indexOf('..') >= 0) {

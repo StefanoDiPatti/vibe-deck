@@ -1,8 +1,4 @@
-﻿# Vibe Deck - mixer audio (classe C# DockMixer), caricato da windows-helper.ps1.
-# --- Mixer: dispositivi audio (uscita/ingresso, predefinito, volume) e volume
-#     di ogni app. IPolicyConfig e' l'interfaccia non documentata usata dal
-#     pannello Audio di Windows e da programmi come SoundSwitch/EarTrumpet. ---
-$script:mixer = $false
+﻿$script:mixer = $false
 try {
   Add-Type -TypeDefinition @"
 using System;
@@ -106,7 +102,6 @@ public static class DockMixer {
     string id; d.GetId(out id); return id ?? "";
   }
 
-  // "flusso<TAB>id<TAB>nome<TAB>predefinito<TAB>volume<TAB>muto" (flusso: out | in)
   public static string[] Devices() {
     var outp = new List<string>();
     for (int flow = 0; flow < 2; flow++) {
@@ -134,7 +129,6 @@ public static class DockMixer {
     }
   }
 
-  // level: 0..1 o -1 = invariato; mute: -1 invariato, 0/1, 2 inverte
   public static void SetDevice(string id, float level, int mute) {
     IMMDevice d;
     if (En().GetDevice(id, out d) != 0 || d == null) throw new Exception("dispositivo non trovato");
@@ -154,8 +148,6 @@ public static class DockMixer {
     } catch { return ""; }
   }
 
-  // Sessioni audio delle app su tutti i dispositivi di uscita attivi:
-  // "pid<TAB>processo<TAB>nome<TAB>volume<TAB>muto<TAB>attiva<TAB>dispositivo"
   public static string[] Sessions() {
     var outp = new List<string>();
     var seen = new Dictionary<uint, bool>();
@@ -171,7 +163,7 @@ public static class DockMixer {
       for (int k = 0; k < c; k++) {
         IAudioSessionControl2 s; if (se.GetSession(k, out s) != 0 || s == null) continue;
         int state; s.GetState(out state);
-        if (state == 2) continue; // scaduta
+        if (state == 2) continue;
         uint pid; s.GetProcessId(out pid);
         bool system = s.IsSystemSoundsSession() == 0;
         if (system) pid = 0;
@@ -188,7 +180,6 @@ public static class DockMixer {
     return outp.ToArray();
   }
 
-  // Volume di un'app (tutte le sue sessioni, su ogni dispositivo). pid 0 = suoni di sistema.
   public static int SetApp(uint pid, float level, int mute) {
     int done = 0; Guid ctx = Guid.Empty;
     IMMDeviceCollection list;

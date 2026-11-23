@@ -1,7 +1,3 @@
-// Lettura delle sessioni di Claude Code salvate sul PC
-// (~/.claude/projects/<cartella>/<id>.jsonl). Solo lettura: per continuare una
-// sessione si usa `claude -p --resume <id>` (vedi claude.js).
-// I file possono pesare decine di MB: si leggono solo inizio e fine.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -9,7 +5,7 @@ const path = require('path');
 const HEAD = 256 * 1024;
 const TAIL = 512 * 1024;
 const TRANSCRIPT_TAIL = 3 * 1024 * 1024;
-const cache = {}; // file -> { mtime, info }
+const cache = {};
 
 function root() {
   return process.env.CLAUDE_CONFIG_DIR
@@ -26,14 +22,13 @@ function readSlice(file, start, length) {
   } finally { fs.closeSync(fd); }
 }
 
-// Righe JSON complete di un pezzo di file (la prima/ultima possono essere tagliate).
 function parseLines(text, dropFirst) {
   const lines = text.split('\n');
   if (dropFirst) lines.shift();
   const out = [];
   lines.forEach(function (l) {
     if (!l.trim()) return;
-    try { out.push(JSON.parse(l)); } catch (e) { /* riga tagliata */ }
+    try { out.push(JSON.parse(l)); } catch (e) { }
   });
   return out;
 }
@@ -49,7 +44,6 @@ function cleanUserText(t) {
     .trim();
 }
 
-// Testo leggibile di un messaggio; null se non c'è nulla da mostrare.
 function messageText(entry) {
   const m = entry.message || {};
   const c = m.content;
@@ -130,7 +124,7 @@ function list(limit) {
   }).filter(Boolean).sort(function (a, b) { return b.m - a.m; }).slice(0, limit || 40);
   const out = [];
   files.forEach(function (x) {
-    try { out.push(sessionInfo(x.f)); } catch (e) { /* file illeggibile */ }
+    try { out.push(sessionInfo(x.f)); } catch (e) { }
   });
   return out;
 }
@@ -147,13 +141,10 @@ function get(id) {
   return f ? sessionInfo(f) : null;
 }
 
-// Ultimi messaggi leggibili della sessione (niente thinking, niente risultati degli strumenti).
 function transcript(id, max) {
   const f = findFile(id);
   if (!f) return null;
   const st = fs.statSync(f);
-  // Nelle sessioni lunghe la coda è quasi tutta lavoro degli strumenti:
-  // se ci sono pochi messaggi si legge un pezzo più grande.
   let res = readTranscript(f, st, TRANSCRIPT_TAIL, max);
   if (res.length < 6 && st.size > TRANSCRIPT_TAIL) res = readTranscript(f, st, TRANSCRIPT_TAIL * 5, max);
   return { info: sessionInfo(f), messages: res };
@@ -167,14 +158,12 @@ function readTranscript(f, st, bytes, max) {
     if ((e.type !== 'user' && e.type !== 'assistant') || e.isSidechain || e.isMeta) return;
     const text = messageText(e);
     if (!text) return;
-    // Le risposte arrivano a pezzi con lo stesso message.id: si uniscono.
     const mid = e.type === 'assistant' && e.message && e.message.id;
     if (mid && byMsgId[mid]) { byMsgId[mid].text += '\n' + text; return; }
     const item = { role: e.type, text: text, at: e.timestamp };
     if (mid) byMsgId[mid] = item;
     out.push(item);
   });
-  // tante righe di soli strumenti consecutive diventano una sola
   const compact = [];
   out.forEach(function (m) {
     const prev = compact[compact.length - 1];
@@ -191,8 +180,6 @@ function readTranscript(f, st, bytes, max) {
   return compact.slice(-(max || 60));
 }
 
-// "busy" se Claude sta lavorando sulla sessione (ultimo messaggio non concluso e file
-// scritto da poco), altrimenti "idle". Legge solo la coda del file.
 const stateCache = {};
 function state(id) {
   const f = findFile(id);
@@ -207,7 +194,6 @@ function state(id) {
   for (let i = lines.length - 1; i >= 0; i--) {
     const e = lines[i];
     if (e.isSidechain || (e.type !== 'user' && e.type !== 'assistant')) continue;
-    // turno concluso: risposta finale di Claude; aperto: messaggio dell'utente o strumenti in corso
     open = !(e.type === 'assistant' && e.message && e.message.stop_reason === 'end_turn');
     break;
   }

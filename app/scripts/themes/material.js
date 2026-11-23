@@ -1,6 +1,4 @@
 'use strict';
-// Material 3, tono scuro con colore seme blu: superfici a toni, angoli molto arrotondati,
-// pulsantini a pillola, indicatore a pillola sotto l'icona della pagina attiva.
 const ACC = '#1f5a96', ACC_DARK = '#174a7e';
 module.exports = {
   title: 'Material',
@@ -27,7 +25,6 @@ module.exports = {
     '#3d8bfd': '#a8c7fa', '#6cb6ff': '#a8c7fa', '#3fb950': '#7fd99a', 'rgb(63,185,80)': '#7fd99a', '#e5534b': '#ffb4ab'
   },
   css: `
-/* salvaschermo: cifre morbide e arrotondate */
 @font-face { font-family: "VDClockMaterial"; src: url("../../fonts/clock-material.ttf") format("truetype"); }
 .saver-clock { font-family: "VDClockMaterial", Roboto, sans-serif; font-size: 112px; letter-spacing: 0; color: #4a4f63; }
 .clk-time { font-family: "VDClockMaterial", Roboto, sans-serif; letter-spacing: 0; color: #a8c7fa; }

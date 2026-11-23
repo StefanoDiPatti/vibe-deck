@@ -1,18 +1,4 @@
 #!/usr/bin/env bash
-# Vibe Deck su Linux: avvio in background (senza terminale), come l'icona di Windows.
-#
-#   vibe-deck.sh                 avvia la dock se è spenta e apre il pannello di controllo
-#   vibe-deck.sh start           avvia la dock in background (senza aprire il pannello)
-#   vibe-deck.sh stop            ferma la dock
-#   vibe-deck.sh restart         riavvia la dock
-#   vibe-deck.sh panel           come senza argomenti
-#   vibe-deck.sh log             apre il log (data/dock.log)
-#   vibe-deck.sh status          dice se è accesa
-#   vibe-deck.sh install [desktop] [menu] [autostart]
-#                                   crea l'icona (default: desktop + menu delle app)
-#   vibe-deck.sh uninstall       toglie icona, voce di menu e avvio automatico
-#
-# Variabili per le prove: DOCK_DATA_DIR (cartella dati), DOCK_PORT (porta).
 set -u
 
 ROOT="$(cd "$(dirname "$(readlink -f "$0")")/../.." && pwd)"
@@ -22,7 +8,7 @@ PIDFILE="$DATA/dock.pid"
 SELF="$ROOT/scripts/linux/vibe-deck.sh"
 ICON="$ROOT/scripts/linux/vibe-deck.svg"
 APP_ID="vibe-deck"
-OLD_ID="command-dock"   # nome vecchio del progetto: le sue icone vengono tolte
+OLD_ID="command-dock"
 
 port() {
   if [ -n "${DOCK_PORT:-}" ]; then echo "$DOCK_PORT"; return; fi
@@ -34,7 +20,6 @@ PORT="$(port)"
 PANEL="http://127.0.0.1:$PORT/control"
 
 say() {
-  # notifica sul desktop se c'è, altrimenti testo
   if command -v notify-send >/dev/null 2>&1 && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
     notify-send -a "Vibe Deck" -i "$ICON" "Vibe Deck" "$1" 2>/dev/null || echo "$1"
   else
@@ -46,7 +31,6 @@ running() { curl -s -m 2 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/
 
 node_bin() {
   if command -v node >/dev/null 2>&1; then command -v node; return; fi
-  # dal menu delle app il PATH può essere più corto di quello del terminale
   for n in /usr/bin/node /usr/local/bin/node "$HOME"/.nvm/versions/node/*/bin/node; do [ -x "$n" ] && { echo "$n"; return; }; done
   return 1
 }
@@ -57,12 +41,10 @@ start() {
   if ! node="$(node_bin)"; then say "Node.js non trovato: installalo (sudo pacman -S nodejs npm) e riprova."; return 1; fi
   mkdir -p "$DATA"
   printf '\n==== %s  avvio dal desktop (porta %s) ====\n' "$(date '+%F %T')" "$PORT" >> "$LOG"
-  # setsid: la dock non dipende da chi l'ha lanciata (icona, menu, avvio automatico)
   ( cd "$ROOT" && PORT="$PORT" setsid "$node" scripts/bootstrap.js --service >> "$LOG" 2>&1 < /dev/null & echo $! > "$PIDFILE" )
   local i
   for i in $(seq 1 60); do
     if running; then return 0; fi
-    # il supervisore si è fermato da solo (es. porta occupata, errore all'avvio)
     if ! kill -0 "$(cat "$PIDFILE" 2>/dev/null)" 2>/dev/null; then break; fi
     sleep 0.5
   done
@@ -73,10 +55,8 @@ start() {
 
 stop() {
   local stopped=1 pid
-  # supervisore avviato da qui (riavvia il server se va in crash): va fermato per primo
   pid="$(cat "$PIDFILE" 2>/dev/null)"
   if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then kill -TERM "$pid" 2>/dev/null; stopped=0; fi
-  # server avviato in altro modo (./start.sh o npm run server in un terminale)
   pid="$(sed -n 's/.*"pid": *\([0-9][0-9]*\).*/\1/p' "$DATA/runtime.json" 2>/dev/null | head -1)"
   if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -q 'server/index.js'; then
     kill -INT "$pid" 2>/dev/null; stopped=0
@@ -92,7 +72,6 @@ stop() {
 open_url() { xdg-open "$1" >/dev/null 2>&1 & }
 
 desktop_file() {
-  # $1 = file da creare, $2 = righe in più
   mkdir -p "$(dirname "$1")"
   cat > "$1" <<EOF
 [Desktop Entry]
@@ -125,7 +104,6 @@ Name=Apri il log
 Exec="$SELF" log
 EOF
   chmod +x "$1"
-  # KDE/GNOME: un lanciatore sul desktop va segnato come fidato
   command -v gio >/dev/null 2>&1 && gio set "$1" metadata::trusted true 2>/dev/null
   echo "  creato: $1"
 }
@@ -138,7 +116,6 @@ install() {
   rm -f "$(desktop_dir)/$OLD_ID.desktop" "$HOME/.local/share/applications/$OLD_ID.desktop" "$HOME/.config/autostart/$OLD_ID.desktop"
   case " $what " in *" desktop "*) desktop_file "$(desktop_dir)/$APP_ID.desktop" "" ;; esac
   case " $what " in *" menu "*) desktop_file "$HOME/.local/share/applications/$APP_ID.desktop" "" ;; esac
-  # all'accesso: avvia e basta, senza aprire il pannello
   case " $what " in *" autostart "*)
     desktop_file "$HOME/.config/autostart/$APP_ID.desktop" "X-GNOME-Autostart-enabled=true
 X-KDE-autostart-after=panel"

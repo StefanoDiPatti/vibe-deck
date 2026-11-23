@@ -1,13 +1,4 @@
-﻿# Vibe Deck - avvio in background con icona nell'area di notifica (vicino
-# all'orologio, sotto la freccetta). Il server gira nascosto; dal menu
-# dell'icona si apre la dock, si vede l'indirizzo per il tablet, si riavvia o si chiude.
-#
-# Non e' un "servizio" di Windows vero e proprio apposta: i servizi girano in
-# una sessione separata e non potrebbero premere tasti o leggere la musica
-# dell'utente. Questa icona parte con il tuo account, come le altre app.
-
-# -Panel: apre anche il pannello di controllo (collegamento sul desktop).
-param([switch]$Panel)
+﻿param([switch]$Panel)
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms
@@ -31,7 +22,6 @@ function Get-PortQuick {
 }
 function Open-Panel { Start-Process ('http://127.0.0.1:' + (Get-PortQuick) + '/control') }
 
-# Una sola icona alla volta: se la dock e' gia' avviata, apre il pannello di controllo
 $mutex = New-Object System.Threading.Mutex($false, 'Local\VibeDeckTray')
 if (-not $mutex.WaitOne(0)) {
   Open-Panel
@@ -67,7 +57,6 @@ function Get-Port {
   return '8787'
 }
 
-# Icona disegnata al volo: 4 tasti, blu = attiva, grigia = ferma
 function New-DockIcon([System.Drawing.Color]$color) {
   $bmp = New-Object System.Drawing.Bitmap 32, 32
   $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -94,7 +83,6 @@ function Start-Dock {
   Add-Content -Path $Log -Value ("`r`n===== avvio " + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + " =====") -Encoding UTF8
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $psi.FileName = $env:ComSpec
-  # /s: cmd toglie solo le virgolette esterne, il resto resta com'e'
   $psi.Arguments = '/d /s /c " "' + $node + '" "' + $bootstrap + '" --service >> "' + $Log + '" 2>&1 "'
   $psi.WorkingDirectory = $Root
   $psi.UseShellExecute = $false
@@ -131,7 +119,6 @@ function Get-TabletInfo {
   return ($lines -join "`r`n")
 }
 
-# ---------------------------------------------------------------- menu
 $tray = New-Object System.Windows.Forms.NotifyIcon
 $tray.Icon = $iconOff
 $tray.Text = 'Vibe Deck'
@@ -178,7 +165,6 @@ $tray.ContextMenuStrip = $menu
 $tray.Add_DoubleClick({ Open-Panel })
 $tray.Visible = $true
 
-# ---------------------------------------------------------------- controllo periodico
 $timer = New-Object System.Windows.Forms.Timer
 $timer.Interval = 2000
 $timer.Add_Tick({

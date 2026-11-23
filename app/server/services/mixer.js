@@ -1,6 +1,3 @@
-// Pagina AUDIO: dispositivi di uscita/ingresso (predefinito, volume, mute)
-// e volume di ogni app che usa l'audio. Il lavoro vero lo fa la piattaforma
-// (Core Audio su Windows, pactl su Linux); qui solo validazione e cache.
 const platform = require('../platform');
 
 let cache = { at: 0, data: null, pending: null };
@@ -13,7 +10,6 @@ function state(force) {
   if (!force && cache.data && Date.now() - cache.at < 800) return Promise.resolve(cache.data);
   if (cache.pending) return cache.pending;
   cache.pending = platform.mixer().then(function (m) {
-    // prima le app che stanno suonando, poi per nome
     m.apps.sort(function (a, b) { return (b.active - a.active) || String(a.name).localeCompare(String(b.name)); });
     cache = { at: Date.now(), data: m, pending: null };
     return m;
@@ -21,7 +17,6 @@ function state(force) {
   return cache.pending;
 }
 
-// body: { volume: 0..100 } oppure { delta: ±n }, e/o { mute: true|false|"toggle" }
 async function target(list, id, body) {
   const cur = list.filter(function (x) { return x.id === String(id); })[0];
   if (!cur) throw fail('Non trovato (aggiorna la pagina)', 'NOT_FOUND');

@@ -1,10 +1,7 @@
-// Pagina AUDIO (id "audio"): una pagina per file, vedi la guida per sviluppatori nel README.
-// Per cambiarla copiala in config/pages/audio.json e modifica la copia: quella vince su questa.
 {
   "id": "audio",
   "title": "AUDIO",
   "icon": "volup",
   "description": "Uscite e microfoni (predefinito, volume, mute) e volume di ogni app",
-  // configurazione standard: nella barra
   "tiles": [ { "widget": "audio", "w": 5, "h": 3 } ]
 }

@@ -1,8 +1,4 @@
-﻿# Giochi della pagina GAMES (pannello di controllo). Uscita: una riga JSON.
-#   -Action pick  : selettore di file di Windows (eseguibili, collegamenti); { path } o { path: "" } se annullato
-#   -Action info  : nome del gioco e destinazione dei collegamenti; { label, target, process }
-#   -Action icon  : icona del file (fino a 256 px) salvata come PNG in -Out; { ok }
-param(
+﻿param(
   [string]$Action = '',
   [string]$File = '',
   [string]$Out = ''
@@ -12,7 +8,6 @@ $ErrorActionPreference = 'Stop'
 
 function Write-Json($o) { [Console]::Out.WriteLine(($o | ConvertTo-Json -Compress)) }
 
-# Destinazione di un collegamento .lnk (vuota se non è un collegamento)
 function Get-LinkTarget([string]$p) {
   if ($p -notmatch '\.lnk$') { return '' }
   $sh = New-Object -ComObject WScript.Shell
@@ -22,7 +17,6 @@ function Get-LinkTarget([string]$p) {
 try {
   if ($Action -eq 'pick') {
     Add-Type -AssemblyName System.Windows.Forms
-    # finestra invisibile in primo piano: il selettore compare sopra il browser
     $owner = New-Object System.Windows.Forms.Form
     $owner.TopMost = $true; $owner.ShowInTaskbar = $false; $owner.Opacity = 0
     $owner.StartPosition = 'CenterScreen'
@@ -70,7 +64,6 @@ public static class GameIcon {
   static extern void SHCreateItemFromParsingName(string path, IntPtr pbc, [MarshalAs(UnmanagedType.LPStruct)] Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItemImageFactory item);
   [DllImport("gdi32.dll")] static extern int GetObject(IntPtr h, int size, out BITMAP bm);
   [DllImport("gdi32.dll")] static extern bool DeleteObject(IntPtr h);
-  // Icona del file (SIIGBF_ICONONLY = 4) alla misura chiesta, con la trasparenza
   public static Bitmap Get(string path, int size) {
     IShellItemImageFactory f;
     SHCreateItemFromParsingName(path, IntPtr.Zero, typeof(IShellItemImageFactory).GUID, out f);
@@ -81,8 +74,8 @@ public static class GameIcon {
       BITMAP bm; GetObject(hbm, Marshal.SizeOf(typeof(BITMAP)), out bm);
       if (bm.bmBitsPixel != 32 || bm.bmBits == IntPtr.Zero) return Image.FromHbitmap(hbm);
       var tmp = new Bitmap(bm.bmWidth, bm.bmHeight, bm.bmWidthBytes, PixelFormat.Format32bppArgb, bm.bmBits);
-      var outBmp = new Bitmap(tmp);   // copia: i dati originali vengono liberati
-      outBmp.RotateFlip(RotateFlipType.RotateNoneFlipY);   // le DIB sono capovolte
+      var outBmp = new Bitmap(tmp);
+      outBmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
       tmp.Dispose();
       return outBmp;
     } finally { DeleteObject(hbm); }

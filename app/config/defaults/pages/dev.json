@@ -1,16 +1,12 @@
-// Pagina DEV (id "dev"): una pagina per file, vedi la guida per sviluppatori nel README.
-// Per cambiarla copiala in config/pages/dev.json e modifica la copia: quella vince su questa.
 {
   "id": "dev",
   "title": "DEV",
   "icon": "code",
   "description": "VS Code, Claude Code, terminale, OpenClaw e scorciatoie",
-  // configurazione standard: tra le disponibili, la aggiungi alla barra dal pannello
   "tab": false,
   "autoGrid": true,
   "tiles": [
     { "id": "vscode", "label": "VS CODE", "icon": "code", "color": "#1e6fb8", "action": { "type": "launch", "app": "vscode" } },
-    // scorciatoie di VS Code: terminale integrato e palette dei comandi
     { "id": "vscode_terminal", "label": "TERM VSC", "icon": "terminal", "sub": "Ctrl+`", "color": "#174f86", "action": { "type": "hotkey", "keys": ["CTRL", "BACKQUOTE"], "focus": "Code" } },
     { "id": "vscode_palette", "label": "PALETTE", "icon": "keyboard", "sub": "Ctrl+Shift+P", "color": "#174f86", "action": { "type": "hotkey", "keys": ["CTRL", "SHIFT", "P"], "focus": "Code" } },
     { "id": "claude_code", "label": "CLAUDE CODE", "icon": "sparkle", "color": "#b65a3a", "action": { "type": "launch", "app": "claude_code" } },

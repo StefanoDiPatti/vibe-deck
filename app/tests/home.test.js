@@ -1,5 +1,3 @@
-// HOME configurabile dal pannello: catalogo, posizioni nella griglia, controlli, layout.json e API.
-// Usa cartelle temporanee: non tocca config/layout.json vero.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -49,7 +47,6 @@ test('catalogo: un widget per pagina, solo widget che il tablet sa disegnare', f
 test('griglia: le posizioni scelte restano, le altre nella prima cella libera', function () {
   const p = home.pack([{ x: 3, y: 2, w: 3, h: 2 }, { w: 3, h: 2 }, { x: 0, y: 0, w: 2, h: 1 }], 6, 4);
   assert.deepStrictEqual(p.placed.map(function (x) { return x.x + ',' + x.y; }), ['3,2', '2,0', '0,0']);
-  // posizione occupata da un altro: va nel primo posto libero
   const q = home.pack([{ x: 0, y: 0, w: 2, h: 2 }, { x: 1, y: 1, w: 2, h: 2 }], 6, 4);
   assert.deepStrictEqual(q.placed.map(function (x) { return x.x + ',' + x.y; }), ['0,0', '2,0']);
   assert.deepStrictEqual(home.pack([{ w: 4, h: 4 }, { w: 3, h: 1 }], 6, 4).left, [1]);
@@ -65,7 +62,6 @@ test('controlli: spazio, voci sconosciute, misure minime, griglia troppo piccola
   assert.strictEqual(c.columns, 8);
   assert.strictEqual(c.rows, 2);
   assert.deepStrictEqual(c.tiles[0], { id: 'system', x: 6, y: 0, w: 2, h: 2 }, 'dentro la griglia e non sotto la misura minima');
-  // formato di prima (senza posizioni, "widget" al posto di "id"): disposti in ordine
   const old = home.clean({ columns: 6, rows: 4, tiles: [{ widget: 'nowplaying', w: 3, h: 2 }, { widget: 'todo', w: 3, h: 4 }] });
   assert.deepStrictEqual(desc(old.tiles), ['nowplaying@0,0 3x2', 'todo@3,0 3x4']);
 });
@@ -122,7 +118,6 @@ test('API del pannello: info con posizioni, salva, errore leggibile, ripristina'
 
 test('una HOME salvata non valida viene ignorata (vale la pagina main)', function () {
   assert.strictEqual(home.fromLayout({ homePage: { tiles: [{ id: 'sparito' }] } }), null);
-  // una voce tolta dal catalogo (es. la coda della musica) si salta, il resto resta
   const h = home.fromLayout({ homePage: { columns: 6, rows: 4, tiles: [{ widget: 'queue', w: 2, h: 2 }, { id: 'todo', x: 2, y: 0, w: 2, h: 2 }] } });
   assert.deepStrictEqual(h.tiles.map(function (t) { return t.id; }), ['todo']);
   const page = { id: 'main', tiles: [{ widget: 'todo' }] };

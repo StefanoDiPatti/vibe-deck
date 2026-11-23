@@ -1,4 +1,3 @@
-// Cifratura dei segreti su disco. Chiave in un file temporaneo: il portachiavi vero non viene toccato.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -59,7 +58,6 @@ test('.env: token e chiavi cifrati nel file, DOCK_TOKEN e il resto restano leggi
   assert.ok(/DOCK_TOKEN=ABCD2345/.test(text) && /# commento/.test(text) && /OLLAMA_URL=\n/.test(text));
   assert.strictEqual(process.env.GITHUB_TOKEN, 'ghp_segretissimo');
   assert.strictEqual(process.env.ANTHROPIC_API_KEY, 'sk-ant-xyz');
-  // secondo avvio: niente da cifrare, i valori restano uguali
   assert.deepStrictEqual(env.sealEnv(file), []);
   assert.ok(env.isSecretKey('GITHUB_TOKEN') && env.isSecretKey('CLIENT_SECRET') && !env.isSecretKey('DOCK_TOKEN') && !env.isSecretKey('PORT'));
 });

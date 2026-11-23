@@ -1,8 +1,3 @@
-// Pagina UNREAL (id "unreal"): scorciatoie di Unreal Editor 5, come le pagine BLENDER e DAVINCI.
-// Una pagina per file, vedi la guida per sviluppatori nel README.
-// Per cambiarla copiala in config/pages/unreal.json e modifica la copia: quella vince su questa.
-// I tasti vanno all'editor ("focus": "UnrealEditor"); quelli della vista (W/E/R, F, G, Alt+2/4)
-// valgono con il viewport selezionato.
 {
   "id": "unreal",
   "title": "UNREAL",

@@ -1,6 +1,3 @@
-// Vibe Deck - server principale.
-// Avvio consigliato: start.bat (Windows) / start.sh (Linux), che installano
-// le dipendenze al primo avvio. Avvio diretto: node server/index.js
 const os = require('os');
 const path = require('path');
 require('./env').loadEnv();
@@ -48,14 +45,12 @@ app.disable('x-powered-by');
 app.use(auth.lanOnly);
 app.use(express.json({ limit: '64kb' }));
 
-// --- risposte standard { ok, data } / { ok:false, error:{ code, message } } ---
 function ok(res, data) { res.json({ ok: true, data: data === undefined ? null : data }); }
 function sendError(res, e) {
   const map = { UNAUTHORIZED: 409, BAD_REQUEST: 400, BAD_CONFIG: 400, UNKNOWN_ACTION: 400, NOT_FOUND: 404, CONFIG_CHANGED: 409, BUSY: 409, TOO_LONG: 409, UNAVAILABLE: 503, UNSUPPORTED: 501 };
   const code = e.code && map[e.code] ? e.code : 'ACTION_FAILED';
   res.status(map[code] || 500).json({ ok: false, error: { code: code, message: e.message || 'Errore' } });
 }
-// Avvolge gli handler async: qualsiasi eccezione diventa una risposta leggibile.
 function route(fn) {
   return function (req, res) {
     Promise.resolve().then(function () { return fn(req, res); }).then(function (data) {
@@ -68,18 +63,12 @@ function route(fn) {
 }
 function badRequest(msg) { return Object.assign(new Error(msg), { code: 'BAD_REQUEST' }); }
 
-// --- pubblico (senza token) ---
 app.use(auth.tokenFromQuery);
 app.get('/api/health', function (req, res) {
   ok(res, { name: 'vibe-deck', version: pkg.version, platform: platform.name, paired: auth.isAuthorized(req) });
 });
 app.post('/api/pair', auth.pairHandler);
 
-// La pagina del tablet: a ogni file JS/CSS si aggiunge ?v=<data di modifica>.
-// I browser di Android 4 a volte ignorano "no-cache" e tengono i file vecchi:
-// cambiando l'indirizzo dopo ogni aggiornamento sono costretti a riscaricarli.
-// Versione del client = data di modifica più recente dei suoi file.
-// Il tablet la confronta a ogni aggiornamento di stato e si ricarica se cambia.
 let buildCache = { at: 0, value: '' };
 function clientBuild() {
   if (Date.now() - buildCache.at < 3000) return buildCache.value;
@@ -92,7 +81,7 @@ function clientBuild() {
       if (st.isDirectory()) {
         fs.readdirSync(full).forEach(function (f) { max = Math.max(max, fs.statSync(path.join(full, f)).mtimeMs); });
       } else max = Math.max(max, st.mtimeMs);
-    } catch (e) { /* ignora */ }
+    } catch (e) { }
   });
   plugins.scripts().concat(plugins.styles()).forEach(function (s) { max = Math.max(max, s.mtime); });
   buildCache = { at: Date.now(), value: Math.round(max).toString(36) };
@@ -105,15 +94,13 @@ function versionedIndex() {
     .replace('<head>', '<head>\n  <meta name="dock-build" content="' + clientBuild() + '">');
   return html.replace(/(src|href)="((?:js|css)\/[^"?]+)"/g, function (m, attr, file) {
     let v = '0';
-    try { v = Math.round(fs.statSync(path.join(paths.PUBLIC_DIR, file)).mtimeMs).toString(36); } catch (e) { /* file mancante */ }
+    try { v = Math.round(fs.statSync(path.join(paths.PUBLIC_DIR, file)).mtimeMs).toString(36); } catch (e) { }
     return attr + '="' + file + '?v=' + v + '"';
   }).replace('<script src="js/app.js', function (m) {
-    // script del tablet dei plugin: dopo widgets.js, prima di app.js (così i loro widget ci sono già)
     return plugins.scripts().map(function (s) {
       return '<script src="' + s.url + '?v=' + Math.round(s.mtime).toString(36) + '"></script>\n  ';
     }).join('') + m;
   }).replace('</head>', function (m) {
-    // stile dei plugin: dopo dock.css (il tema scelto viene caricato prima, nello script della pagina)
     return plugins.styles().map(function (s) {
       return '  <link rel="stylesheet" href="' + s.url + '?v=' + Math.round(s.mtime).toString(36) + '">\n';
     }).join('') + m;
@@ -128,12 +115,10 @@ app.get(['/', '/index.html'], function (req, res) {
 app.use(express.static(paths.PUBLIC_DIR, {
   index: false,
   setHeaders: function (res) {
-    // Sempre rivalidato (ETag); in più l'indirizzo cambia a ogni aggiornamento
     res.setHeader('Cache-Control', 'no-cache');
   }
 }));
 
-// script del tablet dei plugin: solo la loro cartella public/
 app.get('/plugins/:name/:file', function (req, res) {
   const name = req.params.name, file = req.params.file;
   if (!plugins.NAME_RE.test(name) || plugins.names().indexOf(name) < 0 || !/^[A-Za-z0-9_-][A-Za-z0-9_.-]*\.(js|css)$/.test(file)) return res.status(404).end();
@@ -141,9 +126,6 @@ app.get('/plugins/:name/:file', function (req, res) {
   res.sendFile(path.join(plugins.baseDir(), name, 'public', file), function (err) { if (err && !res.headersSent) res.status(404).end(); });
 });
 
-// --- estensione del browser (stesso PC, niente token) ---
-// Accettata solo da 127.0.0.1 e con l'header X-Dock-Bridge: un sito web
-// aperto nel browser non può impostarlo senza un preflight CORS, che qui non passa.
 function bridgeOnly(req, res, next) {
   const ip = String(req.socket.remoteAddress || '').replace(/^::ffff:/, '');
   if ((ip === '127.0.0.1' || ip === '::1') && req.get('x-dock-bridge') === '1') return next();
@@ -158,9 +140,6 @@ app.post('/api/bridge/closed', bridgeOnly, function (req, res) {
   ok(res, null);
 });
 
-// --- pannello di controllo (solo da questo PC) ---
-// Si apre con il doppio clic sull'icona Vibe Deck. Le API vogliono anche
-// l'header X-Dock-Control, così un sito aperto nel browser non può usarle.
 function isLoopback(req) {
   const ip = String(req.socket.remoteAddress || '').replace(/^::ffff:/, '');
   return ip === '127.0.0.1' || ip === '::1';
@@ -175,7 +154,6 @@ function controlOnly(req, res, next) {
 }
 app.get(['/control', '/control/'], localPage, function (req, res) {
   res.setHeader('Cache-Control', 'no-store');
-  // anche qui gli script dei plugin, per le loro icone (i widget nel pannello non servono)
   const list = plugins.scripts();
   const html = require('fs').readFileSync(path.join(paths.CONTROL_DIR, 'index.html'), 'utf8');
   if (!list.length) return res.type('html').send(html);
@@ -185,7 +163,6 @@ app.get(['/control', '/control/'], localPage, function (req, res) {
 });
 app.use('/control', localPage, express.static(paths.CONTROL_DIR, { index: false, setHeaders: function (res) { res.setHeader('Cache-Control', 'no-cache'); } }));
 
-// Riassunto di una pagina per il pannello: cosa contiene.
 const WIDGET_NAMES = { mail: 'email', system: 'stato PC', nowplaying: 'musica', queue: 'coda', github: 'GitHub', todo: 'TODO', clock: 'orologio', claude: 'Claude', chat: 'chat', discord: 'Discord', screens: 'schermi e finestre', audio: 'audio' };
 function pageSummary(p) {
   const widgets = [], buttons = [];
@@ -198,22 +175,18 @@ function pageSummary(p) {
   if (buttons.length) auto += (auto ? ' + ' : '') + buttons.length + ' pulsanti (' + buttons.slice(0, 4).join(', ') + (buttons.length > 4 ? '…' : '') + ')';
   return { id: p.id, title: p.title, icon: p.icon, tab: p.tab, description: p.description || auto, contents: auto };
 }
-// Pulsanti di una pagina modificabile dal pannello: tutti (anche nascosti) e quelli mostrati in ordine.
 function pageButtons(p) {
   const btn = function (t) { return { id: t.id, label: t.label || '', sub: t.sub || '', icon: t.icon || null, color: t.color || null, w: t.w || 1, h: t.h || 1 }; };
   const isBtn = function (t) { return !t.widget; };
-  // widget a destra dei pulsanti (pagina VIBER): solo per l'anteprima
   const fixed = p.allTiles.filter(function (t) { return t.widget; }).map(function (t) { return { label: t.label || t.widget.toUpperCase(), w: t.w || 1 }; });
   return { id: p.id, title: p.title, icon: p.icon, columns: p.columns, rows: p.rows, fixed: fixed, grid: !!p.buttonGrid, widgetWidth: p.widgetWidth || 0.5, all: p.allTiles.filter(isBtn).map(btn), shown: p.tiles.filter(isBtn).map(function (t) { return t.id; }) };
 }
-// HOME per l'editor del pannello: catalogo dei widget e HOME attuale (quella salvata o la pagina main dei file).
 function homeEditor(d) {
   const main = d.pages.filter(function (p) { return p.id === home.HOME_ID; })[0];
   const saved = home.fromLayout(config.get('layout'));
   let tiles;
   if (saved) tiles = saved.tiles;
   else {
-    // pagina main dei file: i suoi widget come voci del catalogo, con la posizione che hanno sul tablet
     const list = main ? main.tiles.filter(function (t) { return t.widget && home.catalogId(t); })
       .map(function (t) { return { id: home.catalogId(t), x: t.x, y: t.y, w: t.w, h: t.h }; }) : [];
     const p = home.pack(list, main ? main.columns : 6, main ? main.rows : 4);
@@ -226,11 +199,9 @@ function homeEditor(d) {
     columns: main ? main.columns : 6,
     rows: main ? main.rows : 4,
     tiles: tiles,
-    // pulsanti nella pagina main dei file: l'editor della HOME li toglierebbe
     buttons: main && !saved ? main.tiles.filter(function (t) { return !t.widget; }).length : 0
   };
 }
-// Controllo della configurazione per il pannello (un errore qui non deve rompere il pannello)
 function safeCheck() {
   try { return configCheck.run(); } catch (e) { return [{ level: 'error', where: 'controllo', message: e.message }]; }
 }
@@ -258,7 +229,6 @@ function controlInfo() {
     platform: platform.name
   };
 }
-// QR di uno dei link di collegamento (solo quelli della dock, niente testo libero)
 app.get('/api/control/qr', controlOnly, route(async function (req) {
   const link = String(req.query.link || '');
   const ok = pairing.links(PORT).some(function (l) { return l.link === link; });
@@ -273,7 +243,6 @@ app.post('/api/control/layout', controlOnly, route(function (req) {
   return controlInfo();
 }));
 app.post('/api/control/layout/reset', controlOnly, route(function () { config.resetLayout(); return controlInfo(); }));
-// HOME: widget, misure e griglia scelti dal pannello (reset = torna alla pagina main dei file)
 app.post('/api/control/home', controlOnly, route(function (req) {
   config.saveHome(req.body || {});
   log.info('control', 'HOME: ' + (req.body.tiles || []).map(function (t) { return (t.id || t.widget) + ' ' + t.w + 'x' + t.h; }).join(', '));
@@ -286,15 +255,11 @@ app.post('/api/control/discord', controlOnly, route(async function (req) {
   return controlInfo();
 }));
 app.post('/api/control/discord/authorize', controlOnly, route(async function () { await discord.authorize(); return controlInfo(); }));
-// account di Thunderbird: quali mostrare sul tablet
-// Controlla di nuovo: cerca Thunderbird e rilegge la posta di tutti gli account
 app.post('/api/control/mail/check', controlOnly, route(async function () { await mail.check(); return controlInfo(); }));
 app.post('/api/control/mail/open', controlOnly, route(function () { return mail.openWebmail(); }));
 app.post('/api/control/mail/show', controlOnly, route(function (req) { const b = req.body || {}; mail.setShown(String(b.id || ''), b.shown !== false); return controlInfo(); }));
 app.post('/api/control/discord/logout', controlOnly, route(function () { discord.logout(); return controlInfo(); }));
 
-// --- Giochi della pagina GAMES (dati personali in data/games.json, fuori da git) ---
-// selettore di file del sistema, poi nome proposto, processo e icona del file
 app.post('/api/control/games/pick', controlOnly, route(async function () {
   const picked = await games.pickFile();
   if (!picked.path) return { path: '' };
@@ -302,14 +267,12 @@ app.post('/api/control/games/pick', controlOnly, route(async function () {
   const icon = await games.fileIcon(picked.path).catch(function (e) { log.debug('games', 'icona del file: ' + e.message); return { token: '' }; });
   return Object.assign(info, { iconToken: icon.token });
 }));
-// icona del file di un gioco già salvato (per cambiarla dal pannello)
 app.post('/api/control/games/fileicon', controlOnly, route(function (req) { return games.fileIconOf((req.body || {}).id); }));
 app.post('/api/control/games/search', controlOnly, route(function (req) { return games.searchIcons((req.body || {}).name); }));
 app.post('/api/control/games', controlOnly, route(async function (req) { await games.add(req.body || {}); return controlInfo(); }));
 app.post('/api/control/games/remove', controlOnly, route(function (req) { games.remove((req.body || {}).id); return controlInfo(); }));
 app.post('/api/control/games/icon', controlOnly, route(async function (req) { const b = req.body || {}; await games.setIcon(b.id, b.icon); return controlInfo(); }));
 app.post('/api/control/games/order', controlOnly, route(function (req) { games.reorder((req.body || {}).ids); return controlInfo(); }));
-// immagini per il pannello (solo da questo PC: un <img> non manda l'intestazione del pannello)
 function sendImage(res, file) { res.setHeader('Cache-Control', 'no-cache'); res.sendFile(file); }
 app.get('/api/control/games/preview/:token', localPage, function (req, res) {
   try { sendImage(res, games.previewFile(req.params.token)); } catch (e) { res.status(404).end(); }
@@ -318,25 +281,20 @@ app.get('/api/control/games/icon/:id', localPage, function (req, res) {
   try { sendImage(res, games.icon(req.params.id)); } catch (e) { res.status(404).end(); }
 });
 
-// --- tutto il resto richiede il token ---
 app.use('/api', auth.requireToken);
 
-// icona di un gioco per i pulsanti della pagina GAMES
 app.get('/api/games/icon/:id', function (req, res) {
   try { res.setHeader('Cache-Control', 'private, max-age=86400'); res.sendFile(games.icon(req.params.id)); } catch (e) { res.status(404).end(); }
 });
 
-// --- Email (tablet): letta da Thunderbird sul PC, in sola lettura ---
 app.get('/api/mail', route(function () { return mail.state(); }));
 app.get('/api/mail/list', route(function (req) { return mail.list(String(req.query.account || ''), req.query.refresh === '1'); }));
 app.get('/api/mail/message', route(function (req) { return mail.message(String(req.query.account || ''), req.query.uid); }));
 app.post('/api/mail/open', route(function (req) { return mail.openWebmail(String((req.body || {}).account || '')); }));
 
-// --- Discord (tablet) ---
 app.get('/api/discord/state', route(async function () { await discord.ensure(); return discord.state(); }));
 app.get('/api/discord/guilds', route(function (req) { return discord.guilds(req.query.refresh === '1'); }));
 app.get('/api/discord/channels', route(function (req) { return discord.channels(String(req.query.guild || '')); }));
-// what: mute | deaf | video (webcam) | stream (Go Live del gioco aperto)
 app.post('/api/discord/toggle', route(function (req) {
   const what = String((req.body || {}).what || '');
   if (['mute', 'deaf', 'video', 'stream'].indexOf(what) < 0) throw badRequest('Comando non valido');
@@ -357,13 +315,11 @@ app.get('/api/discord/img', function (req, res) {
   }).catch(function () { res.status(404).end(); });
 });
 
-// --- Audio: dispositivi e volume delle app ---
 app.get('/api/audio', route(function () { return mixer.state(); }));
 app.post('/api/audio/default', route(function (req) { return mixer.setDefault(String((req.body || {}).id || '')); }));
 app.post('/api/audio/device', route(function (req) { const b = req.body || {}; return mixer.device(String(b.id || ''), b); }));
 app.post('/api/audio/app', route(function (req) { const b = req.body || {}; return mixer.app(String(b.id || ''), b); }));
 
-// --- Schermi: monitor, finestre e disposizioni ---
 app.get('/api/screens', route(function () { return screens.info(); }));
 app.get('/api/screens/windows', route(function () { return screens.windows(); }));
 app.post('/api/screens/target', route(function (req) {
@@ -372,14 +328,12 @@ app.post('/api/screens/target', route(function (req) {
 }));
 app.post('/api/screens/place', route(function (req) {
   const b = req.body || {};
-  // focus: false = finestra trascinata dal tablet (resta in primo piano quella di prima)
   return screens.place(String(b.window || ''), String(b.monitor || ''), String(b.layout || ''), b.zone, b.focus !== false);
 }));
 app.post('/api/screens/window', route(function (req) {
   const b = req.body || {};
   return screens.act(String(b.window || ''), String(b.action || ''));
 }));
-// --- Viber: pannelli, barra laterale, task ---
 app.get('/api/viber/state', route(function () { return viber.state(); }));
 app.get('/api/viber/tasks', route(function () { return viber.tasks(); }));
 app.post('/api/viber/panel', route(function (req) { return viber.focusPanel(String((req.body || {}).panel || '')); }));
@@ -388,9 +342,7 @@ app.post('/api/viber/layout', route(function (req) { return viber.setLayout(Stri
 app.get('/api/viber/projects', route(function () { return viber.projects(); }));
 app.post('/api/viber/project', route(function (req) { return viber.project(String((req.body || {}).target || '')); }));
 
-// desktop virtuali: elenco, passa a uno, crea, chiudi
 app.get('/api/screens/desktops', route(function () { return vdesk.list(); }));
-// Trascinamento di una finestra: su un desktop virtuale ({ desktop: GUID | 'new' }) o su un monitor ({ monitor })
 app.post('/api/screens/move', route(function (req) {
   const b = req.body || {};
   if (b.monitor) return screens.moveWindowToMonitor(String(b.window || ''), String(b.monitor));
@@ -402,7 +354,6 @@ app.post('/api/screens/desktops', route(function (req) {
   return vdesk.action(String(b.action || ''), b.desktop ? String(b.desktop) : '');
 }));
 
-// Risparmio energetico del tablet (services.json -> tablet), con limiti sensati.
 function tabletPower() {
   const t = (config.get('services') || {}).tablet || {};
   const num = function (v, min, max, def) { const n = Number(v); return isFinite(n) ? Math.max(min, Math.min(max, n)) : def; };
@@ -426,7 +377,6 @@ app.get('/api/config', route(function () {
   };
 }));
 
-// Stato veloce per il polling (ogni 2s): sistema + musica.
 app.get('/api/state', route(async function () {
   const [now, running] = await Promise.all([media.nowPlaying(), appsState.running()]);
   return { version: config.version(), build: clientBuild(), system: system.get(), media: now, apps: running, time: Date.now() };
@@ -465,7 +415,6 @@ app.post('/api/github/open', route(async function (req) {
   return { message: 'Aperto sul PC' };
 }));
 
-// source "memo" = Memo di Windows, "local" = lista della dock
 function todoState() { return { items: todo.list(), source: todo.source(), notes: todo.notes(), voiceServer: voice.available(), sync: todosync.status() }; }
 app.get('/api/todo', route(todoState));
 app.post('/api/todo/add', route(async function (req) {
@@ -488,8 +437,6 @@ app.post('/api/ollama/chat', route(function (req) {
 app.get('/api/claude/info', route(function () {
   return Object.assign(claude.info(), { voiceServer: voice.available() });
 }));
-// Sessioni dell'app desktop di Claude (come nella barra laterale del PC)
-// consumi dell'abbonamento (sessione 5 ore, settimana): letti sul PC, mai il token al tablet
 app.get('/api/claude/usage', route(function (req) { return claudeusage.usage(req.query.refresh === '1'); }));
 app.get('/api/claude/desktop', route(function () { return desktopcode.list(); }));
 app.get('/api/claude/desktop/session', route(function (req) { return desktopcode.get(String(req.query.id || '')); }));
@@ -506,14 +453,12 @@ app.post('/api/claude/send', route(function (req) {
 }));
 app.get('/api/claude/job', route(function (req) { return claude.getJob(String(req.query.id || '')); }));
 app.post('/api/claude/delete', route(function (req) { return claude.deleteChat(String((req.body || {}).id || '')); }));
-// vecchia API sincrona, tenuta per compatibilità
 app.post('/api/claude/chat', route(function (req) {
   const b = req.body || {};
   if (!b.text || !String(b.text).trim()) throw badRequest('Messaggio vuoto');
   return claude.chat(b.sessionId, String(b.text).slice(0, 8000));
 }));
 
-// Tablet come tastiera remota: scrive il testo nella finestra scelta sul PC.
 app.post('/api/remote/type', route(async function (req) {
   const b = req.body || {};
   const text = String(b.text || '');
@@ -525,19 +470,16 @@ app.post('/api/remote/type', route(async function (req) {
   return { message: b.enter ? 'Inviato sul PC' : 'Scritto sul PC' };
 }));
 
-// Audio registrato sul tablet -> testo (se services.json -> voice è configurato)
 app.post('/api/voice', express.raw({ type: function () { return true; }, limit: '25mb' }), route(function (req) {
   return voice.transcribe(req.body, req.get('content-type'));
 }));
 
-// rotte dei plugin: /api/plugins/<nome>/...
 plugins.mountRoutes(app, express);
 
 app.use('/api', function (req, res) {
   res.status(404).json({ ok: false, error: { code: 'NOT_FOUND', message: 'Endpoint inesistente' } });
 });
 
-// --- avvio ---
 const lanAddresses = pairing.lanAddresses;
 
 function banner() {
@@ -555,7 +497,6 @@ function banner() {
   if (token) {
     console.log('  Codice di accesso: ' + token);
     if (ips[0]) console.log('  Link diretto (salva il codice):  http://' + ips[0].address + ':' + PORT + '/?t=' + token);
-    // QR del link diretto: lo inquadri con il telefono e la dock si apre già collegata
     if (ips[0] && process.stdout.isTTY && process.env.DOCK_SERVICE !== '1' && process.env.DOCK_NO_QR !== '1') {
       try {
         console.log('\n  Inquadra con il telefono o il tablet:');
@@ -575,7 +516,6 @@ function banner() {
   console.log(process.env.DOCK_SERVICE === '1'
     ? '  In background: icona vicino all\'orologio per chiudere.\n'
     : '  Ctrl+C per fermare.\n');
-  // Letto dall'icona nell'area di notifica (Windows) per mostrare l'indirizzo
   try {
     const fs = require('fs');
     if (!fs.existsSync(paths.DATA_DIR)) fs.mkdirSync(paths.DATA_DIR, { recursive: true });
@@ -597,14 +537,10 @@ function start() {
     return new Promise(function (resolve, reject) {
       const server = app.listen(PORT, HOST, function () {
         banner(); todosync.start();
-        // posta: Thunderbird c'è? quali account? (si vede nel log)
-        // configurazione: pulsanti che non possono funzionare
         safeCheck().filter(function (x) { return x.level === 'error'; }).forEach(function (x) { log.warn('config', x.where + ': ' + x.message); });
         mail.startupCheck().catch(function (e) { log.debug('mail', 'controllo all\'avvio: ' + e.message); });
         resolve(server);
       });
-      // Connessioni tenute aperte più a lungo del polling a riposo del tablet (15 s):
-      // con i 5 s di Node ogni richiesta apriva una connessione TCP nuova (radio e CPU in più).
       server.keepAliveTimeout = 65000;
       server.headersTimeout = 66000;
       server.on('error', function (e) {

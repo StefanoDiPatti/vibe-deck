@@ -1,5 +1,3 @@
-// Riepilogo GitHub lato server (il token non arriva mai al tablet).
-// Token: GITHUB_TOKEN nel .env, altrimenti quello di `gh auth token` se gh è installato.
 const config = require('../config');
 const common = require('../platform/common');
 const log = require('../log');
@@ -71,7 +69,6 @@ async function listRepos(s, token) {
   return [];
 }
 
-// Un workflow di deploy: nome o file con deploy, release, publish, pages (anche "pages build and deployment" di GitHub Pages).
 const DEPLOY_RE = /deploy|release|publish|pages|\bcd\b/i;
 function isDeploy(run) { return DEPLOY_RE.test(String(run.name || '')) || DEPLOY_RE.test(String(run.path || '')); }
 
@@ -80,7 +77,6 @@ async function repoSummary(full, token) {
   const [info, pulls, runs, commits] = await Promise.all([
     gh(base, token),
     gh(base + '/pulls?state=open&per_page=100', token).catch(function () { return []; }),
-    // ultime esecuzioni di GitHub Actions: la prima è la CI, la prima di un workflow di deploy è il deploy
     gh(base + '/actions/runs?per_page=20', token).catch(function () { return null; }),
     gh(base + '/commits?per_page=1', token).catch(function () { return []; })
   ]);
@@ -157,7 +153,6 @@ async function build() {
 async function summary(force) {
   const s = settings();
   const token = await getToken();
-  // Senza token il limite è 60 richieste/ora: si aggiorna molto meno spesso.
   const ttl = (token ? s.refreshSeconds : Math.max(s.refreshSeconds, 900)) * 1000;
   if (!force && cache.data && Date.now() - cache.at < ttl) return cache.data;
   if (cache.pending) return cache.pending;
@@ -172,7 +167,6 @@ async function summary(force) {
   return cache.pending;
 }
 
-// URL apribili sul PC: solo quelli dei repository già nel riepilogo.
 function urlFor(full, what) {
   const data = cache.data;
   if (!data) return null;

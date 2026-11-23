@@ -1,10 +1,4 @@
 'use strict';
-// Consumi di Claude (abbonamento): sessione di 5 ore, settimana e limiti per modello.
-// Come fa Viber: usa l'accesso di Claude Code già fatto su questo PC
-// (~/.claude/.credentials.json, o CLAUDE_CONFIG_DIR) e chiede ad Anthropic
-// https://api.anthropic.com/api/oauth/usage. Il token resta sul PC: non viene
-// mai mandato al tablet, scritto nei log o salvato altrove.
-// Risposta tenuta in memoria per 60 s, per non chiedere troppo spesso.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -54,11 +48,9 @@ function win(w) {
   return { percent: Math.max(0, Math.min(100, Math.round(w.utilization))), resetsAt: w.resets_at || null };
 }
 
-// Risposta di Anthropic -> dati per il tablet.
 function normalize(d) {
   d = d || {};
   const models = [];
-  // limiti settimanali per modello: chiavi seven_day_<modello> (account vecchi) o array "limits"
   [['seven_day_opus', 'Opus'], ['seven_day_sonnet', 'Sonnet']].forEach(function (k) {
     const w = win(d[k[0]]);
     if (w) models.push(Object.assign({ name: k[1] }, w));
@@ -82,7 +74,6 @@ async function usage(force) {
     return cache;
   } catch (e) {
     log.debug('claude', 'consumi: ' + e.message);
-    // meglio i dati di poco fa che niente
     if (cache) return Object.assign({}, cache, { stale: true, error: e.message });
     return { ok: false, error: e.message, at: Date.now() };
   }

@@ -1,5 +1,3 @@
-// Email letta da Thunderbird: profilo finto in una cartella temporanea
-// (profiles.ini, prefs.js, INBOX.msf in formato Mork e INBOX in formato mbox).
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -32,7 +30,6 @@ const OFF2 = Buffer.byteLength(M1), OFF3 = OFF2 + Buffer.byteLength(M2);
 
 function hexSec(s) { return Math.floor(Date.parse(s) / 1000).toString(16).toUpperCase(); }
 
-// .msf come lo scrive Thunderbird: dizionari, tabella dei messaggi, gruppi di modifiche
 const MSF = [
   '// <!-- <mdb:mork:z v="1.4"/> -->',
   '< <(a=c)> // (f=iso-8859-1)',
@@ -47,9 +44,7 @@ const MSF = [
   '    (^82=Mario Rossi <mario@example.com>)(^99=0)(^9D=0)(^9A=' + Buffer.byteLength(M1).toString(16) + ')]',
   '  [6(^83=b@x)(^86=' + hexSec('2026-11-03T10:00:00Z') + ')(^88=80)(^81^A1)(^82^A2)(^9D=' + OFF2 + ')]',
   '  [7(^83=c@x)(^86=' + hexSec('2026-11-04T10:00:00Z') + ')(^88=80)(^81=cancellato \\) ok)(^82=x@example.com)(^9D=' + OFF3 + ')]}',
-  // gruppo confermato: il 7 viene cancellato (flag 0x8), il 5 diventa "importante" (0x4)
   '@$${1{@{1:^9B [7(^88=88)] [5(^88=85)]}@$$}1}@',
-  // gruppo annullato: va ignorato
   '@$${2{@{1:^9B [6(^88=81)]}@$$}~abort~2}@',
   ''
 ].join('\n');
@@ -82,7 +77,7 @@ test.before(function () {
   ].join('\n'));
   write(path.join(IMAP, 'INBOX'), M1 + M2 + M3);
   write(path.join(IMAP, 'INBOX.msf'), MSF);
-  write(path.join(POP, 'Inbox'), M1 + M2 + M3);   // senza .msf: lettura diretta del mbox
+  write(path.join(POP, 'Inbox'), M1 + M2 + M3);
   mail._reset();
 });
 
@@ -100,11 +95,11 @@ test('Mork: valori con $XX e \\), riferimenti, gruppi confermati e annullati', f
   const list = tb.messagesFromMork(tb.parseMork(MSF));
   const by = {};
   list.forEach(function (m) { by[m.key] = m; });
-  assert.deepStrictEqual(Object.keys(by).sort(), ['5', '6']);       // il 7 è cancellato
+  assert.deepStrictEqual(Object.keys(by).sort(), ['5', '6']);
   assert.strictEqual(by['5'].subject, 'Ciao è pronto');
   assert.strictEqual(by['5'].seen, true);
   assert.strictEqual(by['5'].flagged, true);
-  assert.strictEqual(by['6'].seen, false);                           // il gruppo annullato non conta
+  assert.strictEqual(by['6'].seen, false);
   assert.strictEqual(by['6'].subject, 'CI fallita');
   assert.deepStrictEqual(by['6'].from, { name: 'GitHub', address: 'noreply@github.com' });
   assert.strictEqual(by['6'].date.toISOString(), '2026-11-03T10:00:00.000Z');
@@ -144,7 +139,7 @@ test('senza .msf: elenco letto dal mbox, cancellati esclusi', async function () 
 test('pannello: account nascosti non arrivano al tablet, file vecchi ripuliti', async function () {
   fs.writeFileSync(path.join(process.env.DOCK_DATA_DIR, 'mail.json'), JSON.stringify({ accounts: [{ id: 'x', pass: 'segreta' }] }));
   mail._reset();
-  await mail.check();   // come il pulsante "Controlla di nuovo"
+  await mail.check();
   const info = mail.panelInfo();
   assert.strictEqual(info.source, 'thunderbird');
   assert.strictEqual(info.profile, true);

@@ -1,5 +1,3 @@
-// Questi test non premono tasti e non avviano programmi: verificano solo
-// che le azioni sbagliate vengano rifiutate prima di toccare il sistema.
 const test = require('node:test');
 const assert = require('node:assert');
 const actions = require('../server/actions');

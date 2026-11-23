@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Vibe Deck - avvio su Linux:  ./start.sh   (oppure: bash start.sh)
-# La prima volta installa le dipendenze e prepara la configurazione.
 cd "$(dirname "$0")" || exit 1
 
 if ! command -v node >/dev/null 2>&1; then

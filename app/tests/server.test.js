@@ -1,5 +1,3 @@
-// Avvia il server su una porta casuale e prova gli endpoint principali.
-// Non chiama /api/state (che leggerebbe la musica dal sistema).
 const test = require('node:test');
 const assert = require('node:assert');
 

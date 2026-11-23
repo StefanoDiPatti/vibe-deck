@@ -18,19 +18,15 @@ test('le app non musicali vengono escluse, quelle musicali accettate', function 
 test('cambio brano con timeline vecchia: la posizione riparte da zero', function () {
   const t0 = 1000000;
   const id = 'test-app-1';
-  // primo brano: timeline aggiornata
   let e = M.estimate({ id: id, title: 'A', artist: 'X', album: '', status: 'playing', position: 30, duration: 200, updatedAt: t0 }, t0);
   assert.strictEqual(Math.round(e.position), 30);
   assert.strictEqual(e.duration, 200);
-  // 10 minuti dopo parte il brano B ma l'app non aggiorna la timeline
   const t1 = t0 + 600000;
   e = M.estimate({ id: id, title: 'B', artist: 'X', album: '', status: 'playing', position: 30, duration: 200, updatedAt: t0 }, t1);
   assert.strictEqual(Math.round(e.position), 0, 'non deve partire dal minuto 10');
   assert.strictEqual(e.duration, 0, 'durata sconosciuta finché l\'app non la comunica');
-  // 5 secondi dopo
   e = M.estimate({ id: id, title: 'B', artist: 'X', album: '', status: 'playing', position: 30, duration: 200, updatedAt: t0 }, t1 + 5000);
   assert.strictEqual(Math.round(e.position), 5);
-  // l'app aggiorna la timeline del brano B
   e = M.estimate({ id: id, title: 'B', artist: 'X', album: '', status: 'playing', position: 6, duration: 180, updatedAt: t1 + 6000 }, t1 + 6000);
   assert.strictEqual(Math.round(e.position), 6);
   assert.strictEqual(e.duration, 180);

@@ -1,9 +1,4 @@
 @echo off
-rem Vibe Deck - avvio con doppio click (Windows).
-rem La prima volta installa le dipendenze e fa qualche domanda, poi la dock
-rem parte in background: la trovi come icona vicino all'orologio.
-rem   start.bat --console   la tiene in questa finestra (per vedere i messaggi)
-rem   start.bat --setup     ripete le domande del primo avvio
 setlocal
 title Vibe Deck
 cd /d "%~dp0"

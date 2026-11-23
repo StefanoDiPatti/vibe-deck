@@ -1,9 +1,4 @@
 'use strict';
-// Viber (l'IDE con terminale, git, browser e chat): pagina VIBER del tablet.
-// Viber apre un'API locale per i suoi strumenti MCP: porta e token stanno in
-// ~/.viber/browser-mcp.json (Windows e Linux), si parla solo con 127.0.0.1.
-// Senza "callerWorktree" i comandi valgono per la finestra di Viber in primo piano
-// (o la principale): quella che hai davanti.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -12,17 +7,10 @@ const platform = require('../platform');
 const keys = require('../platform/keys');
 const log = require('../log');
 
-// Pannelli di Viber (nomi dell'API viber_focus_panel).
 const PANELS = ['terminal', 'git', 'browser', 'chat', 'tasks', 'files', 'team', 'notes', 'pr', 'deploy', 'debug', 'simulator'];
-// Disposizioni dell'API: default = un riquadro con tutte le schede (rimette anche File e
-// Tasks), debug = browser + terminale, review = git + file + terminale, fullscreen = un pannello.
 const LAYOUTS = ['default', 'debug', 'review', 'fullscreen'];
-// Viste della finestra (scorciatoie di Viber: Ctrl+Alt+1/2/3). La barra degli agenti
-// non ha un comando nell'API (toggle-sidebar apre/chiude solo la colonnina dei worktree).
 const VIEWS = { tabs: '1', agents: '2', focus: '3' };
-// Stato di un progetto = il più urgente dei suoi agenti.
 const URGENCY = { question: 3, working: 2, completed: 1, idle: 0 };
-// nomi dei pannelli nel layout -> pulsanti del tablet
 const ALIAS = { 'git-diff': 'git', 'git-graph': 'git', todos: 'tasks' };
 function panelId(p) { const id = String(p).split(':')[0]; return ALIAS[id] || id; }
 
@@ -58,9 +46,8 @@ function call(endpoint, body, timeout) {
       res.on('data', function (c) { b += c; });
       res.on('end', function () {
         let j = null;
-        try { j = JSON.parse(b); } catch (e) { /* risposta non JSON */ }
+        try { j = JSON.parse(b); } catch (e) { }
         if (res.statusCode >= 400 || !j) return reject(err('Viber: ' + ((j && j.error) || ('errore ' + res.statusCode))));
-        // Viber risponde 200 anche quando il comando non riesce, con { error }
         if (j.error) return reject(err(friendly(String(j.error))));
         resolve(j);
       });
@@ -73,7 +60,6 @@ function call(endpoint, body, timeout) {
   });
 }
 
-// Pannello attivo e pannelli aperti, dal layout della finestra.
 function summarize(st) {
   const leaves = (st && st.layout && st.layout.leaves) || [];
   const open = {};
@@ -99,7 +85,6 @@ async function state() {
   }
 }
 
-// Porta Viber davanti (se è dietro altre finestre), senza fermarsi se non riesce.
 async function bringFront() {
   try { await platform.focus('Viber'); } catch (e) { log.debug('viber', 'primo piano: ' + e.message); }
 }
@@ -115,7 +100,6 @@ async function setLayout(preset) {
   if (LAYOUTS.indexOf(preset) < 0) throw err('Disposizione non valida', 'BAD_REQUEST');
   const body = { preset: preset };
   if (preset === 'fullscreen') {
-    // a schermo intero il pannello attivo (senza, Viber userebbe il terminale)
     const st = await state();
     if (st.online && PANELS.indexOf(st.active) >= 0) body.panel = st.active;
   }
@@ -124,7 +108,6 @@ async function setLayout(preset) {
   return state();
 }
 
-// Prima di premere tasti Viber deve essere davanti, altrimenti finirebbero altrove.
 async function front() {
   const st = await state();
   if (!st.online) throw err(st.message);
@@ -132,7 +115,6 @@ async function front() {
   return st;
 }
 
-// Cambia vista (schede, agenti, focus) con la scorciatoia di Viber.
 async function view(mode) {
   if (!Object.prototype.hasOwnProperty.call(VIEWS, mode)) throw err('Vista non valida', 'BAD_REQUEST');
   const st = await front();
@@ -140,8 +122,6 @@ async function view(mode) {
   return st;
 }
 
-// ------------------------------------------------------------ progetti
-// Cartella delle impostazioni di Viber (Electron userData di "@viber/desktop").
 function settingsPath() {
   if (process.env.VIBER_SETTINGS_FILE) return process.env.VIBER_SETTINGS_FILE;
   const base = process.platform === 'win32' ? (process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'))
@@ -150,7 +130,6 @@ function settingsPath() {
   return path.join(base, '@viber', 'desktop', 'app-settings.json');
 }
 
-// Scorciatoia di Viber (come in app-settings.json) -> tasti della dock. null se non si può.
 function comboOf(sc) {
   if (!sc || typeof sc.key !== 'string') return null;
   const k = keys.canonical(sc.key);
@@ -167,7 +146,6 @@ function label(sc) {
   if (!sc) return '?';
   return (sc.ctrl ? 'Ctrl+' : '') + (sc.alt ? 'Alt+' : '') + (sc.shift ? 'Shift+' : '') + (sc.meta ? 'Win+' : '') + sc.key;
 }
-// Scorciatoie "progetto successivo/precedente": quelle che hai scelto in Viber, o i default.
 function cycleShortcuts() {
   let s = {};
   try { s = (JSON.parse(fs.readFileSync(settingsPath(), 'utf8')).keyboardShortcuts) || {}; } catch (e) { s = {}; }
@@ -179,8 +157,6 @@ function cycleShortcuts() {
 }
 
 function norm(p) { return String(p || '').replace(/[\\/]+$/, '').toLowerCase(); }
-// Progetto di una cartella: la cartella stessa, una sottocartella o una worktree
-// accanto ("Progetto-feature-x"): vince il nome più lungo.
 function projectOf(dir, list) {
   const d = norm(dir);
   let best = null;
@@ -191,8 +167,6 @@ function projectOf(dir, list) {
   return best;
 }
 
-// Progetti aperti in Viber (nell'ordine delle schede), quello mostrato, e per ognuno
-// lo stato più urgente dei suoi agenti: ti aspetta, al lavoro, pronto, fermo.
 async function projects() {
   const res = await Promise.all([call('/agents/projects', {}), call('/agents/list', {}).catch(function () { return []; }), call('/viber/state')]);
   const list = (res[0] && res[0].projects) || [];
@@ -212,9 +186,6 @@ async function projects() {
   };
 }
 
-// Passa a un altro progetto con le scorciatoie di Viber (progetto successivo/precedente),
-// un passo alla volta, controllando dopo ogni passo che il progetto sia cambiato davvero.
-// target: 'next' | 'prev' | cartella del progetto.
 async function project(target) {
   const info = await projects();
   const list = info.projects;
@@ -254,7 +225,6 @@ async function project(target) {
   return projects();
 }
 
-// Azione di un pulsante { "type": "viber", "panel" | "layout" | "view" | "project": ... }
 async function action(a) {
   if (a.panel) return focusPanel(String(a.panel));
   if (a.layout) return setLayout(String(a.layout));
@@ -263,11 +233,9 @@ async function action(a) {
   throw err('Azione Viber senza "panel", "layout", "view" o "project"', 'BAD_CONFIG');
 }
 
-// Task del progetto aperto in Viber (non chiuse), con le sottotask sotto la loro task.
 async function tasks() {
   const st = summarize(await call('/viber/state'));
   if (!st.project) return { project: '', tasks: [] };
-  // il progetto è la cartella principale: una worktree sta dentro o accanto
   let project = st.project;
   try {
     const p = await call('/tasks/projects', {});
@@ -276,7 +244,7 @@ async function tasks() {
     const exact = list.filter(function (x) { return norm(x) === norm(st.project); })[0];
     const inside = list.filter(function (x) { return norm(st.project).indexOf(norm(x) + path.sep.toLowerCase()) === 0; })[0];
     project = exact || inside || project;
-  } catch (e) { /* si prova con la cartella della finestra */ }
+  } catch (e) { }
   const r = await call('/tasks/list', { projectPath: project, includeDone: false });
   const all = (r && r.tasks) || [];
   const byParent = {};
@@ -288,7 +256,6 @@ async function tasks() {
       steps: (byParent[t.id] || []).map(function (s) { return { id: s.id, text: s.text, status: s.status }; })
     };
   });
-  // prima quelle in corso, poi le aperte
   out.sort(function (a, b) { return (a.status === 'in_progress' ? 0 : 1) - (b.status === 'in_progress' ? 0 : 1); });
   return { project: path.basename(project), tasks: out };
 }

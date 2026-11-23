@@ -1,16 +1,3 @@
-// Sessioni di Claude Code dell'app desktop di Claude, come le vedi sul PC.
-//
-// - Elenco e sezioni (es. Lavoro, Progetti personali) letti dai file dell'app:
-//   claude-code-sessions/<account>/<org>/local_<id>.json (titolo, cartella,
-//   permessi, id del transcript) e claude_desktop_config.json (gruppi e ordine).
-//   Le sessioni fuori dai gruppi si raggruppano per progetto, come nell'app.
-// - Scrivere dal tablet: la dock apre la sessione nell'app con il link
-//   claude://code/continue?session=<id>, mette il testo nel campo e preme Invia
-//   con l'accessibilità di Windows (UI Automation). Il messaggio parte dall'app
-//   vera: lo vedi subito sul PC e valgono i permessi della sessione.
-//   Se Claude sta lavorando, il messaggio aspetta in coda che finisca.
-// - Senza l'app (o su Linux) si usa `claude -p --resume` con la modalità di
-//   permessi della sessione (prima le scritture venivano bloccate).
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -19,25 +6,23 @@ const claudecode = require('./claudecode');
 const log = require('../log');
 
 const LIST_TTL = 3000;
-const WAIT_IDLE_MS = 20 * 60000;   // quanto può aspettare in coda un messaggio
+const WAIT_IDLE_MS = 20 * 60000;
 let listCache = { at: 0, data: null };
-const queue = {};                    // localId -> { text, state, error, at }
-
-// ------------------------------------------------------------ file dell'app
+const queue = {};
 
 function appDirs() {
   const home = os.homedir();
   const out = [];
-  const add = function (d) { try { if (fs.existsSync(path.join(d, 'claude-code-sessions'))) out.push(d); } catch (e) { /* ignora */ } };
+  const add = function (d) { try { if (fs.existsSync(path.join(d, 'claude-code-sessions'))) out.push(d); } catch (e) { } };
   if (process.platform === 'win32') {
     const local = process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local');
     const roaming = process.env.APPDATA || path.join(home, 'AppData', 'Roaming');
-    try { fs.readdirSync(path.join(local, 'Claude-Data')).forEach(function (n) { add(path.join(local, 'Claude-Data', n)); }); } catch (e) { /* nessuna */ }
+    try { fs.readdirSync(path.join(local, 'Claude-Data')).forEach(function (n) { add(path.join(local, 'Claude-Data', n)); }); } catch (e) { }
     add(path.join(roaming, 'Claude'));
     try {
       fs.readdirSync(path.join(local, 'Packages')).filter(function (n) { return /^Claude_/i.test(n); })
         .forEach(function (n) { add(path.join(local, 'Packages', n, 'LocalCache', 'Roaming', 'Claude')); });
-    } catch (e) { /* nessuna */ }
+    } catch (e) { }
   } else if (process.platform === 'darwin') {
     add(path.join(home, 'Library', 'Application Support', 'Claude'));
   } else {
@@ -46,7 +31,6 @@ function appDirs() {
   return out;
 }
 
-// Cartella delle sessioni più recente: { app, scope ("account/org"), dir }
 function locate() {
   let best = null;
   appDirs().forEach(function (app) {
@@ -85,8 +69,6 @@ function sidebar(loc) {
 }
 
 function projectOf(cwd) { return path.basename(String(cwd || '').replace(/[\\/]+$/, '')) || cwd || '?'; }
-
-// ------------------------------------------------------------ elenco
 
 function sessions() {
   const loc = locate();
@@ -146,7 +128,6 @@ function find(id) {
   return found.list.filter(function (s) { return s.id === String(id); })[0] || null;
 }
 
-// Transcript + stato per il tablet
 function get(id) {
   const s = find(id);
   if (!s) throw Object.assign(new Error('Sessione non trovata (archiviata o cancellata?)'), { code: 'NOT_FOUND' });
@@ -165,15 +146,12 @@ function get(id) {
   };
 }
 
-// ------------------------------------------------------------ invio
-
 function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
 function openInApp(id) {
   return platform.open('claude://code/continue?session=' + encodeURIComponent(id));
 }
 
-// Apre la sessione e aspetta che l'app la mostri (titolo in alto + campo di scrittura).
 async function showSession(s) {
   await openInApp(s.id);
   for (let i = 0; i < 16; i++) {
@@ -189,7 +167,6 @@ async function showSession(s) {
   throw Object.assign(new Error('L\'app di Claude non ha aperto la sessione'), { code: 'UNAVAILABLE' });
 }
 
-// La risposta conferma che il messaggio è arrivato: compare nel transcript.
 async function confirmed(s, text, before) {
   const needle = text.trim().slice(0, 40);
   for (let i = 0; i < 20; i++) {
@@ -204,7 +181,6 @@ async function deliver(s, item) {
   const deadline = Date.now() + WAIT_IDLE_MS;
   for (;;) {
     if (item.cancelled) return;
-    // aspetta senza toccare l'app finché il transcript dice che Claude lavora
     if (s.cli && claudecode.state(s.cli) === 'busy') {
       if (Date.now() > deadline) throw new Error('Claude è ancora al lavoro da troppo tempo: messaggio non inviato');
       await wait(3000);
@@ -229,7 +205,6 @@ async function deliver(s, item) {
   }
 }
 
-// Ripiego senza l'app: riga di comando con la modalità di permessi della sessione.
 function deliverCli(s, item) {
   const claude = require('./claude');
   return claude.resumeCode(s.cli, item.text, s.cwd, s.permissionMode);
@@ -281,9 +256,6 @@ async function stop(id) {
   return { stopped: !!r.stopped };
 }
 
-// Nuova sessione in una sezione della barra laterale, con il primo messaggio.
-// Si preme il pulsante "Nuova sessione in …" dell'app (il link esterno chiederebbe
-// ogni volta di confermare la cartella sul PC, per sicurezza).
 const NEW_TITLES = ['Nuova sessione', 'New session'];
 async function create(sectionId, text) {
   text = String(text || '').trim();
@@ -303,7 +275,6 @@ async function create(sectionId, text) {
       await platform.claudeCloseTrust().catch(function () {});
       throw Object.assign(new Error('La cartella non è segnata come attendibile: apri una sessione lì dal PC'), { code: 'UNAVAILABLE' });
     }
-    // la pagina della nuova sessione non ha la barra con il titolo
     const titles = v.titles || [];
     if (v.composer && !v.draft && !v.busy && (!titles.length || titles.some(function (t) { return NEW_TITLES.indexOf(t) >= 0; }))) title = 'new';
   }

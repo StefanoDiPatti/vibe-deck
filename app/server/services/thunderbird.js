@@ -1,23 +1,7 @@
-// Lettura della posta di Thunderbird, in SOLA LETTURA, dai file del suo profilo.
-//
-// Perché Thunderbird: l'accesso agli account (Gmail con la conferma sul telefono,
-// Microsoft 365 di università e aziende, iCloud...) lo fa e lo rinnova lui, con i
-// metodi ufficiali di ogni servizio. La dock non vede mai password o token: legge
-// solo i file che Thunderbird tiene sul PC.
-//
-//  - profiles.ini / installs.ini  -> cartella del profilo in uso
-//  - prefs.js                     -> account, indirizzi, cartelle dei server
-//  - <cartella>/INBOX.msf         -> elenco dei messaggi (formato Mork): oggetto,
-//                                    mittente, data, letto/non letto, posizione
-//  - <cartella>/INBOX             -> testo dei messaggi (mbox, o cartella Maildir)
-//
-// Thunderbird non va mai modificato: qui si aprono i file solo in lettura.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const libmime = require('libmime');
-
-// ------------------------------------------------------------ dove sta Thunderbird
 
 function roots() {
   if (process.env.DOCK_THUNDERBIRD_DIR) return [process.env.DOCK_THUNDERBIRD_DIR];
@@ -28,13 +12,12 @@ function roots() {
   if (process.platform === 'darwin') return [path.join(home, 'Library', 'Thunderbird')];
   return [
     path.join(home, '.thunderbird'),
-    path.join(home, '.var', 'app', 'org.mozilla.Thunderbird', '.thunderbird'),   // Flatpak
-    path.join(home, 'snap', 'thunderbird', 'common', '.thunderbird'),             // Snap
+    path.join(home, '.var', 'app', 'org.mozilla.Thunderbird', '.thunderbird'),
+    path.join(home, 'snap', 'thunderbird', 'common', '.thunderbird'),
     path.join(home, '.config', 'thunderbird')
   ];
 }
 
-// File .ini semplice: { sezione: { chiave: valore } }
 function parseIni(text) {
   const out = {};
   let cur = null;
@@ -53,7 +36,6 @@ function readText(file) {
   try { return fs.readFileSync(file, 'utf8'); } catch (e) { return null; }
 }
 
-// Cartella del profilo in uso: quella "Default" dell'installazione, poi quella con Default=1.
 function findProfile() {
   const list = roots();
   for (let i = 0; i < list.length; i++) {
@@ -75,23 +57,21 @@ function findProfile() {
     for (let j = 0; j < candidates.length; j++) {
       if (fs.existsSync(path.join(candidates[j], 'prefs.js'))) return { root: root, dir: candidates[j] };
     }
-    return { root: root, dir: null };     // installato ma senza profilo usato
+    return { root: root, dir: null };
   }
   return null;
 }
 
-// prefs.js: righe user_pref("chiave", valore);
 function parsePrefs(text) {
   const out = {};
   const re = /^\s*user_pref\(\s*("(?:[^"\\]|\\.)*")\s*,\s*([\s\S]*?)\s*\);\s*$/gm;
   let m;
   while ((m = re.exec(String(text || '')))) {
-    try { out[JSON.parse(m[1])] = JSON.parse(m[2]); } catch (e) { /* valore strano: ignorato */ }
+    try { out[JSON.parse(m[1])] = JSON.parse(m[2]); } catch (e) { }
   }
   return out;
 }
 
-// Account di posta (IMAP e POP) del profilo, nell'ordine di Thunderbird.
 function accounts(profileDir) {
   const prefs = parsePrefs(readText(path.join(profileDir, 'prefs.js')));
   const keys = String(prefs['mail.accountmanager.accounts'] || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
@@ -101,7 +81,7 @@ function accounts(profileDir) {
     if (!server) return;
     const sp = function (k) { return prefs['mail.server.' + server + '.' + k]; };
     const type = sp('type');
-    if (type !== 'imap' && type !== 'pop3') return;   // niente "Cartelle locali", feed, newsgroup
+    if (type !== 'imap' && type !== 'pop3') return;
     const ident = String(prefs['mail.account.' + acc + '.identities'] || '').split(',')[0].trim();
     const email = (ident && prefs['mail.identity.' + ident + '.useremail']) || String(sp('userName') || '');
     let dir = '';
@@ -122,7 +102,6 @@ function accounts(profileDir) {
   return out;
 }
 
-// La cartella della posta in arrivo: "INBOX" per IMAP, "Inbox" per POP.
 function inboxPath(acc) {
   const names = acc.type === 'imap' ? ['INBOX', 'Inbox'] : ['Inbox', 'INBOX'];
   for (let i = 0; i < names.length; i++) {
@@ -132,31 +111,20 @@ function inboxPath(acc) {
   return path.join(acc.dir, names[0]);
 }
 
-// ------------------------------------------------------------ Mork (.msf)
-//
-// Formato testuale di Mozilla. Qui basta la parte che usa Thunderbird:
-//   < <(a=c)> (80=subject)(81=sender) >   dizionario delle colonne
-//   <(9A=valore)>                          dizionario dei valori
-//   {1:^80 {(k^BF:c)(s=9u)} [1A(^80=Ciao)(^81^9A)] -1B }  tabella con righe
-//   [-1A ...]   la riga riparte da zero      -1B  toglie la riga dalla tabella
-//   @$${1{@ ... @$$}1}@   gruppo di modifiche (con ~abort~ va scartato)
-
 function parseMork(input) {
   let text = String(input).replace(/@\$\$\{([0-9A-Fa-f]+)\{@([\s\S]*?)@\$\$\}(~abort~)?\1\}@/g, function (all, id, body, abort) {
     return abort ? '' : body;
   });
-  // gruppo ancora aperto (Thunderbird sta scrivendo): si ignora
   const open = text.indexOf('@$${');
   if (open >= 0) text = text.slice(0, open);
 
-  const cols = {};      // id hex -> nome colonna
-  const atoms = {};     // id hex -> valore
-  const rows = {};      // "id:scope" -> { colonna: valore }
-  const tables = [];    // { scope, kind, rows: { key: true } }
+  const cols = {};
+  const atoms = {};
+  const rows = {};
+  const tables = [];
   let i = 0;
   const n = text.length;
 
-  // (veloce: i file di Gmail arrivano a decine di MB)
   function skip() {
     for (;;) {
       while (i < n && text.charCodeAt(i) <= 32) i++;
@@ -165,8 +133,6 @@ function parseMork(input) {
     }
   }
   function isHex(c) { return (c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102); }
-  // valore di una cella fino alla ")" non protetta; $XX = byte, "\" protegge, "\"+a capo = continua.
-  // Il testo arriva in latin1 (1 carattere = 1 byte): i byte si ricompongono in UTF-8 alla fine.
   function literal() {
     const bytes = [];
     const push = function (c) {
@@ -176,14 +142,14 @@ function parseMork(input) {
     };
     while (i < n) {
       const c = text.charCodeAt(i);
-      if (c === 41) break;                       // )
-      if (c === 92) {                            // \
+      if (c === 41) break;
+      if (c === 92) {
         const nx = text.charCodeAt(i + 1);
         if (nx === 10) { i += 2; continue; }
         if (nx === 13) { i += text.charCodeAt(i + 2) === 10 ? 3 : 2; continue; }
         push(nx); i += 2; continue;
       }
-      if (c === 36 && isHex(text.charCodeAt(i + 1)) && isHex(text.charCodeAt(i + 2))) {   // $XX
+      if (c === 36 && isHex(text.charCodeAt(i + 1)) && isHex(text.charCodeAt(i + 2))) {
         bytes.push(parseInt(text.substr(i + 1, 2), 16)); i += 3; continue;
       }
       push(c); i++;
@@ -201,7 +167,6 @@ function parseMork(input) {
     }
     return text.slice(s, i);
   }
-  // "id" oppure "id:scope" (scope = ^col o nome)
   function oid() {
     let id = token();
     let scope = '';
@@ -213,16 +178,15 @@ function parseMork(input) {
   }
   function colName(id) { return cols[String(id).toUpperCase()] || String(id); }
 
-  // dizionario: <(id=valore)...> con meta <(a=c)> che lo rende delle colonne
   function dict() {
-    i++;   // <
+    i++;
     let isCols = false;
     for (;;) {
       skip();
       if (i >= n) return;
       const c = text[i];
       if (c === '>') { i++; return; }
-      if (c === '<') {   // meta del dizionario
+      if (c === '<') {
         i++;
         for (;;) {
           skip();
@@ -232,7 +196,7 @@ function parseMork(input) {
             const k = token();
             skip();
             if (text[i] === '=') { i++; const v = literal(); if (k === 'a') isCols = v === 'c'; }
-            i++;   // )
+            i++;
           } else i++;
         }
         continue;
@@ -250,9 +214,8 @@ function parseMork(input) {
     }
   }
 
-  // riga: [id(cella)(cella)...] — scopeDef = scope della tabella che la contiene
   function row(scopeDef, table) {
-    i++;   // [
+    i++;
     skip();
     let cut = false;
     if (text[i] === '-') { cut = true; i++; }
@@ -266,7 +229,7 @@ function parseMork(input) {
       if (i >= n) return key;
       const c = text[i];
       if (c === ']') { i++; return key; }
-      if (c === '[') { skipBlock('[', ']'); continue; }   // meta della riga
+      if (c === '[') { skipBlock('[', ']'); continue; }
       if (c === '(') {
         i++;
         let col;
@@ -286,7 +249,7 @@ function parseMork(input) {
     let depth = 0;
     while (i < n) {
       const c = text[i];
-      if (c === '(') { i++; literal(); i++; continue; }   // salta i valori (possono contenere [ ] { })
+      if (c === '(') { i++; literal(); i++; continue; }
       if (c === a) depth++;
       else if (c === b) { depth--; if (depth === 0) { i++; return; } }
       i++;
@@ -294,7 +257,7 @@ function parseMork(input) {
   }
 
   function table() {
-    i++;   // {
+    i++;
     skip();
     let clear = false;
     if (text[i] === '-') { clear = true; i++; }
@@ -307,7 +270,7 @@ function parseMork(input) {
       if (i >= n) return;
       const c = text[i];
       if (c === '}') { i++; return; }
-      if (c === '{') {   // meta della tabella: (k^BF:c) = tipo
+      if (c === '{') {
         const s = i;
         skipBlock('{', '}');
         const m = /\(k\^([0-9A-Fa-f]+)/.exec(text.slice(s, i));
@@ -315,7 +278,7 @@ function parseMork(input) {
         continue;
       }
       if (c === '[') { row(o.scope, t); continue; }
-      if (c === '-') {   // toglie una riga dalla tabella
+      if (c === '-') {
         i++;
         skip();
         if (text[i] === '[') { delete t.rows[row(o.scope, null)]; continue; }
@@ -341,7 +304,6 @@ function parseMork(input) {
   return { cols: cols, atoms: atoms, rows: rows, tables: tables };
 }
 
-// Righe dei messaggi di un .msf, come oggetti semplici.
 const F_READ = 0x1, F_MARKED = 0x4, F_EXPUNGED = 0x8, F_HASRE = 0x10, F_OFFLINE = 0x80;
 
 function hex(v) { const x = parseInt(v, 16); return isNaN(x) ? 0 : x; }
@@ -387,12 +349,8 @@ function messagesFromMork(db) {
   return out;
 }
 
-// ------------------------------------------------------------ mbox / Maildir
+const SEP = /(^|\n)From [^\n]*\n(?=[\x21-\x39\x3b-\x7e]+:)/g;
 
-const SEP = /(^|\n)From [^\n]*\n(?=[\x21-\x39\x3b-\x7e]+:)/g;   // "From ..." seguita da un'intestazione
-
-// Fallback senza .msf (o .msf illeggibile): scorre la fine del file mbox.
-// Lo stato letto/non letto viene da X-Mozilla-Status (può essere vecchio per IMAP).
 function messagesFromMbox(file, maxBytes) {
   let fd;
   try { fd = fs.openSync(file, 'r'); } catch (e) { return []; }
@@ -402,7 +360,7 @@ function messagesFromMbox(file, maxBytes) {
     const start = size - len;
     const buf = Buffer.alloc(len);
     fs.readSync(fd, buf, 0, len, start);
-    const text = buf.toString('latin1');   // 1 byte = 1 carattere: gli indici sono offset
+    const text = buf.toString('latin1');
     const starts = [];
     let m;
     SEP.lastIndex = 0;
@@ -445,7 +403,6 @@ function parseHeaders(text) {
   return out;
 }
 
-// Testo grezzo di un messaggio. mbox: token = posizione; Maildir: token = nome del file.
 function readSource(inbox, msg, maildir, maxBytes) {
   if (maildir) {
     const name = path.basename(String(msg.token || ''));
@@ -476,7 +433,7 @@ function readSource(inbox, msg, maildir, maxBytes) {
     const b = Buffer.alloc(want);
     fs.readSync(fd, b, 0, want, off);
     let text = b.toString('latin1');
-    if (text.indexOf('From ') !== 0) return null;   // posizione non valida (cartella compattata?)
+    if (text.indexOf('From ') !== 0) return null;
     text = text.slice(text.indexOf('\n') + 1);
     SEP.lastIndex = 0;
     const m = SEP.exec(text);
@@ -484,8 +441,6 @@ function readSource(inbox, msg, maildir, maxBytes) {
     return Buffer.from(text.replace(/^>(>*From )/gm, '$1'), 'latin1');
   } finally { fs.closeSync(fd); }
 }
-
-// ------------------------------------------------------------ programma
 
 function executable() {
   if (process.platform === 'win32') {

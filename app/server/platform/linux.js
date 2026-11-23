@@ -1,11 +1,3 @@
-// Backend Linux: usa strumenti standard del desktop.
-//  media / now playing : playerctl (MPRIS: Spotify, browser, VLC, Rhythmbox...)
-//  volume              : wpctl (PipeWire) > pactl (PulseAudio) > amixer (ALSA)
-//  tasti / testo       : xdotool (X11) oppure wtype (Wayland wlroots/KDE)
-//  focus finestra      : xdotool (solo X11)
-//  aprire URL/file     : xdg-open
-// Installazione consigliata (Debian/Ubuntu):
-//   sudo apt install playerctl xdotool wtype pulseaudio-utils
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -69,7 +61,7 @@ async function sendKeysImpl(combo) {
   throw new Error('Per i tasti installa xdotool (X11) o wtype (Wayland)');
 }
 
-const artCache = {}; // player -> URL copertina
+const artCache = {};
 
 module.exports = {
   name: 'linux',
@@ -129,7 +121,6 @@ module.exports = {
     const args = (app.args || []).map(common.expandPath);
     const cwd = app.cwd ? common.expandPath(app.cwd) : os.homedir();
     if (/\.desktop$/.test(file)) {
-      // File .desktop: lo lancia gtk-launch se presente
       if (has('gtk-launch')) return common.spawnDetached('gtk-launch', [path.basename(file, '.desktop')], cwd);
     }
     if (common.looksLikePath(file) && !fs.existsSync(file)) return Promise.reject(new Error('non trovato in ' + file));
@@ -137,7 +128,6 @@ module.exports = {
     return common.spawnDetached(file, args, cwd);
   },
 
-  // Un elemento per ogni player MPRIS (playerctl -l), in formato neutro.
   sessions: async function () {
     if (!has('playerctl')) return { supported: false, sessions: [] };
     const list = await common.run('playerctl', ['-l'], { timeout: 3000 });
@@ -181,7 +171,6 @@ module.exports = {
     return mustRun('playerctl', p.concat(map[action]), 'Comando media');
   },
 
-  // Copertina: file locale letto qui, URL web restituito al servizio media che lo scarica.
   art: async function (session) {
     const url = artCache[session.app];
     if (!url) return null;
@@ -195,7 +184,6 @@ module.exports = {
     return null;
   },
 
-  // Volume MPRIS del singolo player = volume dell'app, non di sistema.
   appVolume: async function (names, delta, mute, session) {
     if (!session || !has('playerctl')) throw new Error('Volume dell\'app non disponibile');
     if (delta) {
@@ -209,7 +197,6 @@ module.exports = {
 
   audioProcesses: function () { return Promise.resolve([]); },
 
-  // Mixer: dispositivi e volume per app (pactl)
   mixer: mixer.mixer,
   setDefaultDevice: mixer.setDefaultDevice,
   setDeviceVolume: mixer.setDeviceVolume,
@@ -232,7 +219,6 @@ module.exports = {
     } catch (e) { return null; }
   },
 
-  // Rete attiva: Wi-Fi (nome con iwgetid o nmcli) oppure cablata.
   netInfo: async function () {
     if (has('iwgetid')) {
       const r = await common.run('iwgetid', ['-r'], { timeout: 2000 });
@@ -250,7 +236,6 @@ module.exports = {
     return { type: 'ethernet', name: 'Rete' };
   },
 
-  // Finestre aperte (serve wmctrl): [{ process, title }]
   windows: async function () {
     if (!has('wmctrl') || !process.env.DISPLAY) return [];
     const r = await common.run('wmctrl', ['-lp'], { timeout: 3000 });
@@ -259,7 +244,7 @@ module.exports = {
       const m = /^(\S+)\s+\S+\s+(\d+)\s+\S+\s?(.*)$/.exec(l);
       if (!m) return null;
       let proc = '';
-      try { proc = fs.readFileSync('/proc/' + m[2] + '/comm', 'utf8').trim().toLowerCase(); } catch (e) { /* processo terminato */ }
+      try { proc = fs.readFileSync('/proc/' + m[2] + '/comm', 'utf8').trim().toLowerCase(); } catch (e) { }
       return { id: m[1], process: proc, title: m[3] };
     }).filter(Boolean);
   },
@@ -276,7 +261,6 @@ module.exports = {
     return n;
   },
 
-  // Temperatura CPU da /sys/class/hwmon (coretemp, k10temp, zenpower...).
   cpuTemp: async function () {
     const base = '/sys/class/hwmon';
     try {
@@ -289,11 +273,10 @@ module.exports = {
         const v = parseInt(fs.readFileSync(path.join(dir, 'temp1_input'), 'utf8'), 10);
         if (!isNaN(v)) return Math.round(v / 1000);
       }
-    } catch (e) { /* niente hwmon */ }
+    } catch (e) { }
     return null;
   },
 
-  // GPU AMD/Intel tramite sysfs, usata se nvidia-smi manca.
   gpuFallback: async function () {
     try {
       const cards = fs.readdirSync('/sys/class/drm').filter(function (n) { return /^card\d+$/.test(n); });
@@ -305,19 +288,18 @@ module.exports = {
         try {
           out.memUsedMb = Math.round(parseInt(fs.readFileSync(path.join(dev, 'mem_info_vram_used'), 'utf8'), 10) / 1048576);
           out.memTotalMb = Math.round(parseInt(fs.readFileSync(path.join(dev, 'mem_info_vram_total'), 'utf8'), 10) / 1048576);
-        } catch (e) { /* opzionale */ }
+        } catch (e) { }
         try {
           const hw = path.join(dev, 'hwmon');
           const h = fs.readdirSync(hw)[0];
           out.temp = Math.round(parseInt(fs.readFileSync(path.join(hw, h, 'temp1_input'), 'utf8'), 10) / 1000);
-        } catch (e) { /* opzionale */ }
+        } catch (e) { }
         return out;
       }
-    } catch (e) { /* niente drm */ }
+    } catch (e) { }
     return null;
   },
 
-  // ---- Pagina SCHERMI (KDE Plasma 6 con kdotool, vedi linux-kwin.js): stessi formati di Windows
   monitors: function () { return kwin.monitors(); },
   windowList: function () { return kwin.windowList(); },
   deskWindows: function () { return kwin.deskWindows(); },

@@ -1,11 +1,8 @@
-// Pagina CLAUDE (id "claude"): una pagina per file, vedi la guida per sviluppatori nel README.
-// Per cambiarla copiala in config/pages/claude.json e modifica la copia: quella vince su questa.
 {
   "id": "claude",
   "title": "CLAUDE",
   "icon": "sparkle",
   "description": "Chat, sessioni di Claude Code, dettatura, scrittura sul PC",
-  // configurazione standard: tra le disponibili, la aggiungi alla barra dal pannello
   "tab": false,
   "tiles": [ { "widget": "claude", "w": 5, "h": 3 } ]
 }

@@ -1,21 +1,3 @@
-// Applicazioni avviabili dai pulsanti { "type": "launch", "app": "<id>" }.
-// Ogni app può avere una variante "windows" e/o "linux".
-//  path : eseguibile, collegamento .lnk, percorso assoluto o comando nel PATH.
-//         Ammessi %VAR% (Windows), $VAR e ~ (Linux) e * per le versioni.
-//         Windows: "shell:AppsFolder\<AppID>" avvia le app dello Store
-//         (trovi l'AppID con PowerShell: Get-StartApps).
-//  args : lista di argomenti (opzionale)   cwd : cartella di lavoro (opzionale)
-//  toggle : true = il pulsante mostra se l'app è aperta e, se lo è, la chiude
-//           (come la X della finestra: l'app può chiedere di salvare)
-//  path : può essere anche una lista di percorsi possibili: vale il primo che esiste
-//  process: nome del processo, se diverso dal file (es. "discord"); anche una lista
-//  whenRunning: "focus" = se è già aperta il pulsante la porta in primo piano
-//  game : true = è un gioco: il Go Live di Discord trasmette questo, se è aperto
-//  title  : regex sul titolo della finestra, per distinguere app con lo stesso processo
-//  bridge : "apple" | "youtube" | "ytmusic" = web app riconosciuta dall'estensione del browser
-//  "linux" (o "windows") può essere anche una LISTA di alternative: vale la prima
-//         installata (es. Konsole, poi GNOME Terminal...). I file .desktop
-//         (web app di Brave/Chrome, app scaricate) si avviano con gtk-launch.
 {
   "apps": {
     "blender": {
@@ -42,8 +24,6 @@
       "windows": { "path": "C:\\Program Files\\Epic Games\\UE_*\\Engine\\Binaries\\Win64\\UnrealEditor.exe" },
       "linux": { "path": "~/UnrealEngine/Engine/Binaries/Linux/UnrealEditor" }
     },
-    // Radio Monte Carlo: lo stream ufficiale (server Mediaset di Segrate) in una finestra di Brave
-    // a parte (--app), così il pulsante la spegne chiudendo solo quella finestra.
     "radio_montecarlo": {
       "label": "Radio Monte Carlo",
       "toggle": true,
@@ -62,12 +42,10 @@
       "label": "Apple Music",
       "toggle": true,
       "bridge": "apple",
-      // Web app in Brave: stessi parametri del collegamento sul desktop
       "windows": {
         "path": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
         "args": ["--profile-directory=Default", "https://music.apple.com/us/new"]
       },
-      // Linux: la web app installata da Brave (collegamento sul desktop), altrimenti il sito
       "linux": [
         { "path": "~/.local/share/applications/brave-blgdilankhbcpipclgpdndahbehalgkh-Default.desktop" },
         { "path": "xdg-open", "args": ["https://music.apple.com"] }
@@ -84,7 +62,6 @@
       "toggle": true,
       "process": "claude",
       "windows": { "path": "shell:AppsFolder\\Claude_pzs8sxrjxfjjc!Claude" },
-      // Linux: la web app di Claude installata da Brave (collegamento sul desktop), altrimenti il sito
       "linux": [
         { "path": "~/.local/share/applications/brave-fmpnliohjhemenmnlpbfagaolkdacoja-Default.desktop", "toggle": false },
         { "path": "xdg-open", "args": ["https://claude.ai"], "toggle": false }
@@ -113,7 +90,6 @@
     "powershell": {
       "label": "PowerShell",
       "windows": { "path": "powershell.exe", "args": ["-NoExit"], "cwd": "%USERPROFILE%" },
-      // Linux: il terminale del desktop (il primo installato)
       "linux": { "label": "Terminale", "path": ["konsole", "gnome-terminal", "alacritty", "kitty", "xfce4-terminal", "xterm"], "cwd": "~" }
     },
     "files": {
@@ -126,7 +102,6 @@
       "windows": { "path": "taskmgr.exe" },
       "linux": { "label": "Monitor di sistema", "path": ["plasma-systemmonitor", "gnome-system-monitor", "ksysguard", "xfce4-taskmanager"] }
     },
-    // Screenshot di un'area (su Windows il pulsante usa Win+Shift+S)
     "screenshot": {
       "label": "Screenshot",
       "linux": [
@@ -142,6 +117,5 @@
       "windows": { "path": "%LOCALAPPDATA%\\Discord\\Update.exe", "args": ["--processStart", "Discord.exe"] },
       "linux": { "path": "discord" }
     }
-    // I giochi (pagina GAMES) si aggiungono dal pannello di controllo: stanno in data/games.json, non qui.
   }
 }

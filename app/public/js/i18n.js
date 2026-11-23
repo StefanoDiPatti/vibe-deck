@@ -1,26 +1,16 @@
-/* Lingua del tablet: italiano (quella del codice) o inglese. ES5.
- *
- * Il testo resta scritto in italiano nel codice e nelle pagine; con l'inglese scelto
- * i testi visibili vengono tradotti al volo con un dizionario (js/lang-en.js):
- *  - corrispondenza esatta, senza badare a maiuscole/minuscole ("SALVA" e "Salva" -> "SAVE"/"Save");
- *  - pezzi separati da " · " tradotti uno per uno ("TASK · vibe-deck" -> "TASKS · vibe-deck");
- *  - regole con segnaposto per i testi con numeri o nomi (I18n.rules).
- * Un plugin aggiunge le sue traduzioni con I18n.add({ 'Testo': 'Text' }).
- * Scelta salvata sul tablet (localStorage "dock:lang"). */
 var I18n = (function () {
   'use strict';
 
   var lang = 'it';
   try { lang = JSON.parse(window.localStorage.getItem('dock:lang') || '"it"') === 'en' ? 'en' : 'it'; } catch (e) { lang = 'it'; }
-  var dict = {};      // chiave in minuscolo -> traduzione
-  var rules = [];     // [RegExp, sostituzione]
+  var dict = {};
+  var rules = [];
 
   function add(map) {
     for (var k in map) if (map.hasOwnProperty(k)) dict[String(k).toLowerCase()] = map[k];
   }
   function addRules(list) { for (var i = 0; i < list.length; i++) rules.push(list[i]); }
 
-  // stesse maiuscole del testo originale: TUTTO MAIUSCOLO, Iniziale maiuscola o com'è
   function cased(src, out) {
     if (src === src.toUpperCase() && src !== src.toLowerCase()) return out.toUpperCase();
     var a = src.charAt(0);
@@ -35,15 +25,12 @@ var I18n = (function () {
     }
     return null;
   }
-  // testo -> testo tradotto (o lo stesso, se non c'è nel dizionario)
   function t(s) {
     if (lang !== 'en' || s === null || s === undefined) return s;
     var str = String(s), core = str.replace(/^\s+|\s+$/g, '');
     if (!core || core.length > 400) return str;
     var out = one(core);
-    // "· 11 h fa", "· collegamento…": il puntino davanti resta, si traduce il resto
     if (out === null && core.indexOf('· ') === 0) { var rest = t(core.slice(2)); if (rest !== core.slice(2)) out = '· ' + rest; }
-    // pezzi separati da " · " (anche con più spazi attorno): tradotti uno per uno, separatori intatti
     if (out === null && /\S\s+·\s+\S/.test(core)) {
       var parts = core.split(/(\s+·\s+)/), changed = false;
       for (var i = 0; i < parts.length; i += 2) { var p = one(parts[i]); if (p !== null) { parts[i] = p; changed = true; } }
@@ -53,7 +40,6 @@ var I18n = (function () {
     return str.replace(core, out);
   }
 
-  // traduce i testi di un pezzo di pagina (testo, placeholder, title)
   var ATTRS = ['placeholder', 'title'];
   function node(n) {
     if (n.nodeType === 3) {
@@ -62,7 +48,6 @@ var I18n = (function () {
       return;
     }
     if (n.nodeType !== 1 || n.tagName === 'SCRIPT' || n.tagName === 'STYLE' || n.tagName === 'TEXTAREA') return;
-    // testi dell'utente (brani, attività, messaggi, nomi): class="notr" = non tradurre
     if (typeof n.className === 'string' && (' ' + n.className + ' ').indexOf(' notr ') >= 0) return;
     for (var a = 0; a < ATTRS.length; a++) {
       var val = n.getAttribute && n.getAttribute(ATTRS[a]);
@@ -73,8 +58,6 @@ var I18n = (function () {
   }
   function translate(root) { if (lang === 'en' && root) node(root); }
 
-  // Con l'inglese: tutto quello che compare nella pagina viene tradotto appena c'è.
-  // MutationObserver dove esiste; sui browser vecchi (Android 4.0-4.3) un giro ogni 2 s.
   function watch() {
     if (lang !== 'en') return;
     translate(document.body);
@@ -93,7 +76,7 @@ var I18n = (function () {
   }
 
   function set(l) {
-    try { window.localStorage.setItem('dock:lang', JSON.stringify(l === 'en' ? 'en' : 'it')); } catch (e) { /* senza localStorage resta l'italiano */ }
+    try { window.localStorage.setItem('dock:lang', JSON.stringify(l === 'en' ? 'en' : 'it')); } catch (e) { }
     window.location.reload();
   }
 

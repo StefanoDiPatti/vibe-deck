@@ -1,9 +1,3 @@
-// Lista TODO.
-// Fonte "memo" (predefinita su Windows): le Memo di Windows (Sticky Notes), vedi sticky.js.
-// Fonte "local": lista della dock in data/todo.json (scrittura atomica: file temporaneo + rename).
-// La lista locale tiene anche i gruppi (i titoli delle memo), così su Linux i TODO
-// sincronizzati da Windows (todosync.js) restano divisi come nelle Memo.
-// Si sceglie in services.json -> todo.source; senza Memo si usa sempre la lista locale.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -18,11 +12,10 @@ let groups = null;
 const listeners = [];
 
 function settings() { return (config.get('services') || {}).todo || {}; }
-let forced = null; // per i test
+let forced = null;
 function useMemo() { if (forced) return forced === 'memo'; return settings().source !== 'local' && sticky.available(); }
 
-// Avvisa chi ascolta (la sincronizzazione) che la lista è cambiata da qui.
-function changed() { listeners.forEach(function (fn) { try { fn(); } catch (e) { /* ignora */ } }); }
+function changed() { listeners.forEach(function (fn) { try { fn(); } catch (e) { } }); }
 
 function clean(i) {
   return {
@@ -83,7 +76,6 @@ const local = {
   toggle: function (id) { const it = find(id); it.done = !it.done; save(); return it; },
   remove: function (id) { find(id); items = load().filter(function (i) { return i.id !== String(id); }); save(); return true; },
   clearDone: function () { const before = load().length; items = load().filter(function (i) { return !i.done; }); save(); return before - items.length; },
-  // Sostituisce tutto (prima sincronizzazione su un PC: si adotta la lista condivisa)
   replace: function (snap) {
     items = (snap.items || []).filter(function (i) { return i && i.text; }).map(clean);
     groups = (snap.groups || []).map(function (g) { return { id: String(g.id), title: String(g.title || '') }; });
@@ -93,7 +85,6 @@ const local = {
   setText: function (id, text) { const it = find(id); it.text = String(text).slice(0, 300); save(); }
 };
 
-// Stato attuale in formato neutro, uguale per Memo e lista locale (per la sincronizzazione).
 function snapshot() {
   const memo = useMemo();
   const list = memo ? sticky.list() : local.list();
@@ -103,7 +94,6 @@ function snapshot() {
   };
 }
 
-// Applica una modifica arrivata dall'altro PC: { type: add|toggle|remove|text, item }
 async function applyRemote(op) {
   const it = op.item;
   if (useMemo()) {
@@ -119,7 +109,7 @@ async function applyRemote(op) {
       return;
     }
     if (op.type === 'remove') { await sticky.remove(it.id); return; }
-    return; // il testo di una riga delle Memo si cambia solo nell'app Memo
+    return;
   }
   if (op.type === 'add') {
     const item = local.add(it.text, 'normal', it.note, it.id);
@@ -143,14 +133,12 @@ module.exports = {
   source: function () { return useMemo() ? 'memo' : 'local'; },
   notes: function () { return useMemo() ? sticky.notes() : local.notes(); },
   list: function () { return useMemo() ? sticky.list() : local.list(); },
-  // Le operazioni sulle Memo sono asincrone (chiudono e riaprono l'app): ritornano sempre una Promise.
   add: wrap(async function (text, priority, noteId) { return useMemo() ? sticky.add(text, noteId, settings().memo) : local.add(text, priority, noteId); }),
   toggle: wrap(async function (id) { return useMemo() ? sticky.toggle(id) : local.toggle(id); }),
   remove: wrap(async function (id) { return useMemo() ? sticky.remove(id) : local.remove(id); }),
   clearDone: wrap(async function () { return useMemo() ? sticky.clearDone() : local.clearDone(); }),
   snapshot: snapshot,
   applyRemote: applyRemote,
-  // prima sincronizzazione su un PC con la lista locale
   replaceLocal: function (snap) { if (!useMemo()) local.replace(snap); },
   setLocalGroups: function (list) { if (!useMemo()) local.setGroups(list); },
   onChange: function (fn) { listeners.push(fn); },

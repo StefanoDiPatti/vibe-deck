@@ -1,5 +1,3 @@
-// Memo di Windows: formato del testo e modifiche su un database finto
-// (l'app Memo vera non viene mai toccata dai test).
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -66,7 +64,7 @@ test('aggiunta, spunta, rimozione su database finto', { skip: !sqlite && 'node:s
     await sticky.toggle(items[2].id);
     assert.strictEqual(sticky.list()[2].done, false);
 
-    assert.strictEqual(await sticky.clearDone(), 1); // "Apple Music" era barrata
+    assert.strictEqual(await sticky.clearDone(), 1);
     items = sticky.list();
     assert.strictEqual(items.length, 2);
     await sticky.remove(items[1].id);
@@ -76,13 +74,11 @@ test('aggiunta, spunta, rimozione su database finto', { skip: !sqlite && 'node:s
     const row = check.prepare('select Text from Note where Id = ?').get(NOTE);
     const q = JSON.parse(check.prepare('select OutboundQueueJson as q from SyncState').get().q);
     check.close();
-    // il titolo e la formattazione delle altre righe restano intatti
     assert.ok(row.Text.indexOf(TEXT.split('\n')[0] + '\n') === 0);
     assert.ok(row.Text.indexOf('\\b\\ul StreamDeck\\b0\\ul0') > 0);
-    // la memo è in coda per la sincronizzazione, una volta sola
     assert.deepStrictEqual(q, [{ type: 'update', localNoteId: NOTE }]);
   } finally {
     sticky._useTestDb(null);
-    try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) { /* file ancora aperto su Windows */ }
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) { }
   }
 });
