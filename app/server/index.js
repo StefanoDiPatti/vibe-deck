@@ -18,7 +18,6 @@ const voice = require('./services/voice');
 const appsState = require('./services/apps');
 const discord = require('./services/discord');
 const pairing = require('./services/pairing');
-const mail = require('./services/mail');
 const configCheck = require('./check');
 const plugins = require('./plugins');
 const home = require('./home');
@@ -237,7 +236,6 @@ function controlInfo() {
     discord: discord.panelInfo(),
     tablet: urls,
     pairing: pairing.links(PORT),
-    mail: mail.panelInfo(),
     checks: safeCheck(),
     ...plugins.controlInfo(),
     configErrors: config.errors(),
@@ -271,9 +269,6 @@ app.post('/api/control/discord', controlOnly, route(async function (req) {
   return controlInfo();
 }));
 app.post('/api/control/discord/authorize', controlOnly, route(async function () { await discord.authorize(); return controlInfo(); }));
-app.post('/api/control/mail/check', controlOnly, route(async function () { await mail.check(); return controlInfo(); }));
-app.post('/api/control/mail/open', controlOnly, route(function () { return mail.openWebmail(); }));
-app.post('/api/control/mail/show', controlOnly, route(function (req) { const b = req.body || {}; mail.setShown(String(b.id || ''), b.shown !== false); return controlInfo(); }));
 app.post('/api/control/discord/logout', controlOnly, route(function () { discord.logout(); return controlInfo(); }));
 
 
@@ -283,10 +278,6 @@ plugins.mountControl(app, express, localPage);
 app.use('/api', auth.requireToken);
 
 
-app.get('/api/mail', route(function () { return mail.state(); }));
-app.get('/api/mail/list', route(function (req) { return mail.list(String(req.query.account || ''), req.query.refresh === '1'); }));
-app.get('/api/mail/message', route(function (req) { return mail.message(String(req.query.account || ''), req.query.uid); }));
-app.post('/api/mail/open', route(function (req) { return mail.openWebmail(String((req.body || {}).account || '')); }));
 
 app.get('/api/discord/state', route(async function () { await discord.ensure(); return discord.state(); }));
 app.get('/api/discord/guilds', route(function (req) { return discord.guilds(req.query.refresh === '1'); }));
@@ -451,7 +442,7 @@ function start() {
       const server = app.listen(PORT, HOST, function () {
         banner(); todosync.start();
         safeCheck().filter(function (x) { return x.level === 'error'; }).forEach(function (x) { log.warn('config', x.where + ': ' + x.message); });
-        mail.startupCheck().catch(function (e) { log.debug('mail', 'controllo all\'avvio: ' + e.message); });
+        plugins.hook('start');
         resolve(server);
       });
       server.keepAliveTimeout = 65000;

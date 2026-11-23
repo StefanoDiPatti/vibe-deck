@@ -138,17 +138,17 @@ const MAILS = [
   ['Marco Verdi', 'marco@example.com', 'Riunione di giovedì', 26, true],
   ['Newsletter Musica', 'news@music.example', 'Le uscite della settimana', 50, true]
 ].map(function (m, i) { return { uid: 100 + i, date: new Date(Date.now() - m[3] * H).toISOString(), from: { name: m[0], address: m[1] }, subject: m[2], seen: m[4] }; });
-demo.get('/api/mail', function (req, res) { ok(res, { accounts: MAIL_ACCOUNTS }); });
-demo.get('/api/mail/list', function (req, res) {
+demo.get('/api/plugins/mail', function (req, res) { ok(res, { accounts: MAIL_ACCOUNTS }); });
+demo.get('/api/plugins/mail/list', function (req, res) {
   const a = MAIL_ACCOUNTS.filter(function (x) { return x.id === req.query.account; })[0] || MAIL_ACCOUNTS[0];
   const list = a.id === 'demo1' ? MAILS : [];
   ok(res, { account: a, unread: list.filter(function (m) { return !m.seen; }).length, total: list.length, messages: list });
 });
-demo.get('/api/mail/message', function (req, res) {
+demo.get('/api/plugins/mail/message', function (req, res) {
   const m = MAILS.filter(function (x) { return String(x.uid) === String(req.query.uid); })[0] || MAILS[0];
   ok(res, { subject: m.subject, from: m.from, date: m.date, text: 'Ciao!\n\nQuesto è un messaggio di esempio della demo di Vibe Deck.\n\nA presto', attachments: [], truncated: false });
 });
-demo.post('/api/mail/open', function (req, res) { ok(res, { message: 'Thunderbird aperto sul PC' }); });
+demo.post('/api/plugins/mail/open', function (req, res) { ok(res, { message: 'Thunderbird aperto sul PC' }); });
 
 const AUDIO = {
   devices: [

@@ -154,25 +154,6 @@ body.is-dragging, body.is-dragging * { cursor: grabbing !important; user-select:
 .bt-grid.drop, .bt-hidden.drop { background: var(--accent-soft); }
 .bt-hidden.drop { border-color: var(--accent); }
 
-.ml-acc { display: flex; align-items: center; gap: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
-.ml-acc .ico { flex: none; width: 36px; height: 36px; border-radius: 9px; background: var(--sunken); display: flex; align-items: center; justify-content: center; color: var(--accent-2); }
-.ml-acc .txt { flex: 1 1 auto; min-width: 0; }
-.ml-acc .name { font-weight: 650; }
-.ml-acc .desc { display: block; color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ml-acc .desc.err { color: var(--bad-text); white-space: normal; }
-.ml-login { margin: -2px 0 10px; padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); border: 1px solid var(--accent); }
-.ml-login .code { font: 700 22px/1.2 Consolas, monospace; letter-spacing: 3px; color: var(--strong); margin: 6px 0; user-select: all; }
-.ml-login a { color: var(--accent-2); }
-.ml-providers { margin: 14px 0 12px; }
-.ml-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: end; }
-.ml-form .wide { grid-column: 1 / -1; }
-.ml-help { color: var(--text-2); font-size: 14px; margin: 0 0 12px; }
-.ml-help a { color: var(--accent-2); }
-.ml-acc.off { opacity: .6; }
-.ml-acc .chip { flex: none; }
-.ml-steps { margin-top: 12px; }
-.ml-more { margin: 6px 0 12px; }
-.ml-more summary { cursor: pointer; color: var(--accent-2); font-weight: 600; margin-bottom: 8px; }
 .btn.add-acc { margin-top: 4px; }
 
 .pill { font-size: 12px; font-weight: 700; letter-spacing: .6px; padding: 4px 11px; border-radius: 20px; background: var(--panel-2); color: var(--muted); white-space: nowrap; }
@@ -216,10 +197,6 @@ input[type=text], input[type=password] { width: 100%; height: 40px; padding: 0 1
 
 .hint.err { color: var(--bad-text); }
 
-.ml-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: var(--sunken); }
-.ml-status .txt { flex: 1 1 260px; color: var(--text-2); font-size: 14px; }
-.ml-status .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
-.ml-status .dot.ok { background: var(--ok); }
 
 .ck-list { margin: 4px 0 0; padding-left: 20px; font-size: 13.5px; }
 .ck-list li { margin-bottom: 6px; color: var(--text-2); }

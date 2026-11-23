@@ -1,0 +1,18 @@
+{
+  "id": "mail",
+  "name": "Email",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Inbox of the Thunderbird accounts chosen in the control panel, message reading, opening Thunderbird on the PC",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "local": [
+      "thunderbird-profile"
+    ]
+  }
+}

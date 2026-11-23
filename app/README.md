@@ -95,8 +95,8 @@ Volume and undo buttons repeat while you hold them.
 | OLLAMA *(official plugin `ollama`)* | chat with local models |
 | CLAUDE *(official plugin `claude`)* | chat, Claude Code sessions, dictation, typing on the PC |
 | DISCORD | servers, voice channels with who is inside, who is talking, mute/deafen, webcam, Go Live, per-person volume and mute just for you |
-| GAMES | the games picked in the control panel, with their icons (green dot when running; if running it is brought to the front) |
-| EMAIL *(available)* | inbox of the Thunderbird accounts chosen in the control panel, message reading, opening Thunderbird on the PC |
+| GAMES *(official plugin `games`)* | the games picked in the control panel, with their icons (green dot when running; if running it is brought to the front) |
+| EMAIL *(official plugin `mail`)* | inbox of the Thunderbird accounts chosen in the control panel, message reading, opening Thunderbird on the PC |
 | SCREENS *(official plugin `screens`; Windows; Linux with KDE Plasma 6 + kdotool)* | PC monitors, window layouts, monitor apps open on, **virtual desktops** (switch, create, close, drag a window onto one) and a **GUIDE** button with the shortcuts |
 | AUDIO *(official plugin `audio`)* | outputs and microphones (default, volume, mute), volume and mute of every app playing audio |
 | VIRTUAL DESKTOPS *(official plugin `screens`, Linux only)* | guide to virtual desktop shortcuts (KDE Plasma, GNOME, Windows too); on Windows the same guide is in the SCREENS page |

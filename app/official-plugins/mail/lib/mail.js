@@ -2,10 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const { simpleParser } = require('mailparser');
 const { Worker } = require('worker_threads');
-const paths = require('../paths');
-const platform = require('../platform');
-const log = require('../log');
-const secrets = require('../secrets');
+const paths = require('../../../server/paths');
+const platform = require('../../../server/platform');
+const log = require('../../../server/log');
+const secrets = require('../../../server/secrets');
 const tb = require('./thunderbird');
 
 const FILE = path.join(paths.DATA_DIR, 'mail.json');

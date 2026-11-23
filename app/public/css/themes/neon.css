@@ -162,23 +162,6 @@ svg.ic.dc-camflag { fill: #39ff88; }
 .todo-sync.ok { color: #39ff88; }
 .todo-sync.err { color: #ff5c7a; background: #2a0a12; }
 .todo-sync.pressed { background: #06323d; }
-.ml-info { color: #8f8f8f; }
-.ml-info.err { color: #ff5c7a; }
-.ml-row { background: #111111; }
-.ml-row.pressed { background: #06323d; }
-.ml-row.unread { background: #1c1c1c; }
-.ml-from { color: #bdbdbd; }
-.ml-row.unread .ml-from { color: #f5f5f5; }
-.ml-dot { background: #007a99; }
-.ml-when { color: #8f8f8f; }
-.ml-row.unread .ml-when { color: #41d1ff; }
-.ml-subj { color: #8f8f8f; }
-.ml-row.unread .ml-subj { color: #bdbdbd; }
-.ml-reader { background: #0f0f0f; }
-.ml-rmeta { color: #8f8f8f; }
-.ml-body { color: #ededed; }
-.ml-note { background: #141414; color: #9e9e9e; }
-.ml-note svg.ic { fill: #9e9e9e; }
 .dm-p { background: #111111; color: #bdbdbd; }
 .dm-p.talk { border-color: #39ff88; color: #f5f5f5; }
 .dm-btn { background: #1c1c1c; }
