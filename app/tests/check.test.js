@@ -58,7 +58,7 @@ test('lo schema delle pagine conosce tutti i widget del tablet (suggerimenti in 
 
 test('lo schema delle pagine conosce tutti i campi usati dalle pagine predefinite', function () {
   const config = require('../server/config');
-  const dir = path.join(__dirname, '..', 'config', 'defaults', 'pages');
+  const files = require('./i18n-audit').pageFiles(path.join(__dirname, '..'));
   const S = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'schema', 'page.schema.json'), 'utf8'));
   const pageKeys = Object.keys(S.properties);
   const tileKeys = Object.keys(S.definitions.tile.properties);
@@ -71,8 +71,9 @@ test('lo schema delle pagine conosce tutti i campi usati dalle pagine predefinit
     if (types.indexOf(a.type) < 0) bad.push(where + ': tipo ' + a.type);
     (a.steps || []).forEach(function (s) { act(s, where); });
   }
-  fs.readdirSync(dir).forEach(function (f) {
-    const p = config.parseJson(fs.readFileSync(path.join(dir, f), 'utf8'));
+  files.forEach(function (file) {
+    const f = path.basename(file);
+    const p = config.parseJson(fs.readFileSync(file, 'utf8'));
     Object.keys(p).forEach(function (k) { if (pageKeys.indexOf(k) < 0) bad.push(f + ': campo pagina ' + k); });
     (p.tiles || []).forEach(function (t) {
       Object.keys(t).forEach(function (k) { if (tileKeys.indexOf(k) < 0) bad.push(f + ': campo pulsante ' + k); });
@@ -80,7 +81,12 @@ test('lo schema delle pagine conosce tutti i campi usati dalle pagine predefinit
       ['windows', 'linux'].forEach(function (o) { if (t[o]) act(t[o].action, f + ' ' + o); });
     });
   });
-  const handlers = require('../server/actions').BUILTIN.concat(['page']).filter(function (t) { return t !== 'shell'; }).sort();
+  const official = path.join(__dirname, '..', 'official-plugins');
+  const bare = fs.readdirSync(official).filter(function (n) {
+    const main = path.join(official, n, 'index.js');
+    return fs.existsSync(main) && require(main).actions && typeof require(main).actions[n] === 'function';
+  });
+  const handlers = require('../server/actions').BUILTIN.concat(['page'], bare).filter(function (t) { return t !== 'shell'; }).sort();
   assert.deepStrictEqual(types.slice().sort(), handlers);
   assert.deepStrictEqual(bad, []);
 });

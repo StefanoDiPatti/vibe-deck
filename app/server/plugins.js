@@ -143,6 +143,7 @@ function context(name) {
     dataDir: dataDir,
     get config() { return require('./config'); },
     get platform() { return require('./platform'); },
+    get keys() { return require('./platform/keys'); },
     log: {
       info: function (m) { log.info('plugin:' + name, m); },
       warn: function (m) { log.warn('plugin:' + name, m); },
@@ -197,7 +198,11 @@ function registerActions(HANDLERS) {
         log.warn('plugin', name + ': azione "' + key + '" ignorata (serve una funzione e un nome come "saluta")');
         return;
       }
-      const type = name + '.' + key;
+      const type = key === name ? name : name + '.' + key;
+      if (HANDLERS[type] && p.actions.indexOf(type) < 0 && key === name) {
+        log.warn('plugin', name + ': azione "' + key + '" ignorata (il tipo "' + type + '" esiste già)');
+        return;
+      }
       HANDLERS[type] = async function (a) {
         const r = await acts[key](a, ctx);
         return r && typeof r === 'object' ? r : { message: r === undefined || r === null ? null : String(r) };

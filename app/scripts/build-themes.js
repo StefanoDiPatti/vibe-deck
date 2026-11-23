@@ -88,9 +88,9 @@ function mapColor(theme, role, c) {
   return rgb ? 'rgba(' + rgb.join(', ') + ', ' + s.alpha + ')' : to;
 }
 
-function build(name) {
+function themeRules(css, name) {
   const theme = require('./themes/' + name);
-  const rules = parse(fs.readFileSync(CSS, 'utf8'));
+  const rules = parse(css);
   const lines = [];
   let media = null;
   rules.forEach(function (r) {
@@ -115,7 +115,11 @@ function build(name) {
     lines.push((media ? '  ' : '') + r.selector.replace(/\s+/g, ' ') + ' { ' + out.join('; ') + '; }');
   });
   if (media) lines.push('}');
-  return lines.join('\n') + '\n\n' + theme.css.trim() + '\n';
+  return lines.join('\n');
+}
+
+function build(name) {
+  return themeRules(fs.readFileSync(CSS, 'utf8'), name) + '\n\n' + require('./themes/' + name).css.trim() + '\n';
 }
 
 function buildAll() {
@@ -123,7 +127,7 @@ function buildAll() {
   THEMES.forEach(function (n) { fs.writeFileSync(path.join(OUT, n + '.css'), build(n)); });
 }
 
-module.exports = { build: build, THEMES: THEMES, parse: parse };
+module.exports = { build: build, themeRules: themeRules, THEMES: THEMES, parse: parse };
 
 if (require.main === module) {
   if (process.argv.indexOf('--report') >= 0) report();

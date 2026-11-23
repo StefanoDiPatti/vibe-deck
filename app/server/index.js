@@ -25,7 +25,6 @@ const discord = require('./services/discord');
 const screens = require('./services/screens');
 const vdesk = require('./services/vdesk');
 const claudeusage = require('./services/claudeusage');
-const viber = require('./services/viber');
 const pairing = require('./services/pairing');
 const mail = require('./services/mail');
 const games = require('./services/games');
@@ -100,9 +99,9 @@ function versionedIndex() {
     return plugins.scripts().map(function (s) {
       return '<script src="' + s.url + '?v=' + Math.round(s.mtime).toString(36) + '"></script>\n  ';
     }).join('') + m;
-  }).replace('</head>', function (m) {
+  }).replace('<script id="theme-boot">', function (m) {
     return plugins.styles().map(function (s) {
-      return '  <link rel="stylesheet" href="' + s.url + '?v=' + Math.round(s.mtime).toString(36) + '">\n';
+      return '<link rel="stylesheet" href="' + s.url + '?v=' + Math.round(s.mtime).toString(36) + '">\n  ';
     }).join('') + m;
   });
 }
@@ -118,6 +117,27 @@ app.use(express.static(paths.PUBLIC_DIR, {
     res.setHeader('Cache-Control', 'no-cache');
   }
 }));
+
+const pluginThemeCache = {};
+function pluginThemeCss(theme) {
+  const fs = require('fs');
+  const styles = plugins.styles();
+  const stamp = styles.map(function (s) { return s.path + ':' + s.mtime; }).join('|');
+  const hit = pluginThemeCache[theme];
+  if (hit && hit.stamp === stamp) return hit.css;
+  const themes = require('../scripts/build-themes');
+  const css = styles.map(function (s) {
+    try { return themes.themeRules(fs.readFileSync(s.path, 'utf8'), theme); } catch (e) { log.warn('plugin', s.plugin + '/' + s.file + ': ' + e.message); return ''; }
+  }).filter(Boolean).join('\n') + '\n';
+  pluginThemeCache[theme] = { stamp: stamp, css: css };
+  return css;
+}
+app.get('/plugins-theme/:file', function (req, res) {
+  const m = /^([a-z]+)\.css$/.exec(req.params.file);
+  if (!m || require('../scripts/build-themes').THEMES.indexOf(m[1]) < 0) return res.status(404).end();
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('css').send(pluginThemeCss(m[1]));
+});
 
 app.get('/plugins/:name/:file', function (req, res) {
   const name = req.params.name, file = req.params.file;
@@ -334,13 +354,6 @@ app.post('/api/screens/window', route(function (req) {
   const b = req.body || {};
   return screens.act(String(b.window || ''), String(b.action || ''));
 }));
-app.get('/api/viber/state', route(function () { return viber.state(); }));
-app.get('/api/viber/tasks', route(function () { return viber.tasks(); }));
-app.post('/api/viber/panel', route(function (req) { return viber.focusPanel(String((req.body || {}).panel || '')); }));
-app.post('/api/viber/view', route(function (req) { return viber.view(String((req.body || {}).mode || '')); }));
-app.post('/api/viber/layout', route(function (req) { return viber.setLayout(String((req.body || {}).preset || '')); }));
-app.get('/api/viber/projects', route(function () { return viber.projects(); }));
-app.post('/api/viber/project', route(function (req) { return viber.project(String((req.body || {}).target || '')); }));
 
 app.get('/api/screens/desktops', route(function () { return vdesk.list(); }));
 app.post('/api/screens/move', route(function (req) {

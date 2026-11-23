@@ -192,10 +192,6 @@ const HANDLERS = {
     return Object.assign(st, { message: message });
   },
 
-  viber: async function (a) {
-    const viber = require('../services/viber');
-    return { message: null, viber: await viber.action(a) };
-  },
 
   wait: async function (a) {
     const ms = Math.max(0, Math.min(parseInt(a.ms, 10) || 0, MAX_WAIT_MS));

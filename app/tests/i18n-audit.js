@@ -17,8 +17,9 @@ function check(s, where) {
   if (I.t(s) !== s) return;
   (out[s] = out[s] || []).push(where);
 }
-['app.js', 'widgets.js', 'core.js'].forEach(function (f) {
-  const src = fs.readFileSync(path.join(APP, 'public', 'js', f), 'utf8');
+['app.js', 'widgets.js', 'core.js'].map(function (f) { return path.join(APP, 'public', 'js', f); }).concat(pluginScripts(APP)).forEach(function (file) {
+  const f = path.basename(file);
+  const src = fs.readFileSync(file, 'utf8');
   (function walk(n) {
     if (!n || typeof n !== 'object') return;
     if (n.type === 'Literal' && typeof n.value === 'string' && !SKIP.test(n.value.trim())) {
@@ -44,5 +45,13 @@ function pageFiles(APP) {
   const official = path.join(APP, 'official-plugins');
   const lists = fs.readdirSync(official).map(function (n) { return jsonIn(path.join(official, n, 'pages')); });
   return [].concat.apply(jsonIn(path.join(APP, 'config', 'defaults', 'pages')), lists);
+}
+function pluginScripts(APP) {
+  const official = path.join(APP, 'official-plugins');
+  const lists = fs.readdirSync(official).map(function (n) {
+    const dir = path.join(official, n, 'public');
+    try { return fs.readdirSync(dir).filter(function (f) { return /\.js$/i.test(f); }).map(function (f) { return path.join(dir, f); }); } catch (e) { return []; }
+  });
+  return [].concat.apply([], lists);
 }
 module.exports.pageFiles = pageFiles;

@@ -12,6 +12,7 @@ process.env.DOCK_OFFICIAL_PLUGINS_DIR = path.join(tmp, 'official');
 process.env.DOCK_TOKEN = 'TESTCODE';
 process.env.LOG_LEVEL = 'error';
 fs.mkdirSync(process.env.DOCK_CONFIG_DIR, { recursive: true });
+fs.cpSync(path.join(__dirname, '..', 'official-plugins', 'viber'), path.join(process.env.DOCK_OFFICIAL_PLUGINS_DIR, 'viber'), { recursive: true });
 
 const home = require('../server/home');
 const config = require('../server/config');
@@ -42,7 +43,10 @@ test('catalogo: un widget per pagina, solo widget che il tablet sa disegnare', f
     assert.ok(c.minW <= c.w && c.minH <= c.h, c.id + ': misura minima');
     assert.ok(c.page, c.id + ': pagina di provenienza');
   });
-  ['claudeusage', 'desks', 'viber-projects', 'viber-tasks', 'ollama', 'games', 'discordmini'].forEach(function (id) { assert.ok(ids[id], id); });
+  ['claudeusage', 'desks', 'ollama', 'games', 'discordmini'].forEach(function (id) { assert.ok(ids[id], id); });
+  const all = {};
+  home.catalog().forEach(function (c) { all[c.id] = c; });
+  ['viber-projects', 'viber-tasks'].forEach(function (id) { assert.strictEqual(all[id] && all[id].plugin, 'viber', id + ' from the viber plugin'); });
 });
 
 test('griglia: le posizioni scelte restano, le altre nella prima cella libera', function () {

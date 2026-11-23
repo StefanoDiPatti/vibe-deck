@@ -100,7 +100,7 @@ Volume and undo buttons repeat while you hold them.
 | SCREENS *(Windows; Linux with KDE Plasma 6 + kdotool)* | PC monitors, window layouts, monitor apps open on, **virtual desktops** (switch, create, close, drag a window onto one) and a **GUIDE** button with the shortcuts |
 | AUDIO | outputs and microphones (default, volume, mute), volume and mute of every app playing audio |
 | VIRTUAL DESKTOPS *(Linux only)* | guide to virtual desktop shortcuts (KDE Plasma, GNOME, Windows too); on Windows the same guide is in the SCREENS page |
-| VIBER *(add it from the panel)* | switch to Viber's open panels (terminal, git, browser, chat, tasks, files), change view (tabs, agents, focus), show the tasks of the open project |
+| VIBER *(official plugin `viber`, add it from the panel)* | switch to Viber's open panels (terminal, git, browser, chat, tasks, files), change view (tabs, agents, focus), show the tasks of the open project |
 | BROWSER DEV *(available)* | official plugin `official-plugins/browserdev/`: browser shortcuts: HARD RELOAD, DEVTOOLS, CONSOLE, INSPECT, DEVICE, CLEAR DATA (hold), LOCALHOST:5173 and :3000; keys go to the window in front |
 | ANDROID *(available)* | adb (Android SDK platform-tools): DEVICES, logcat ERRORS and CRASHES, SCREENSHOT to Pictures, SCREEN with scrcpy, HOME/BACK/RECENTS, React Native DEV MENU and RELOAD, METRO 8081, RESTART ADB. Official plugin `official-plugins/android/` (page, adb commands, scrcpy) |
 | BLENDER, DAVINCI, UNREAL *(available: add them to the bar from the panel)* | shortcuts for the three programs (UNREAL: play, simulate, compile C++ with Live Coding, W/E/R tools, views) |
@@ -117,7 +117,7 @@ The **VIBER** page controls the Viber window in front on the PC (Windows and Lin
 
 For buttons in your pages: `{ "type": "viber", "panel": "terminal" }`, `{ "type": "viber", "layout": "review" }`, `{ "type": "viber", "view": "agents" }`, `{ "type": "viber", "project": "next" }`.
 
-The deck uses Viber's local API: port and token are in `~/.viber/browser-mcp.json`, which Viber writes while it is open (it only talks to `127.0.0.1`). With several Viber windows, the one in front wins. If Viber rejects a command (for example a tab closed in the meantime) the tablet shows a warning.
+The official plugin `official-plugins/viber/` talks to Viber as an **MCP client**: it starts Viber's own MCP server (`browser-mcp-server.cjs`, the one Viber registers as `viber-browser` in `~/.claude.json`; otherwise it is looked for in the Viber install folder, or set `VIBER_MCP_SERVER`) and calls its tools. Projects, agents and tasks come from the `--agents` tools (`viber_agent_projects`, `viber_agent_list`, `viber_task_list`); panels and layouts from `viber_focus_panel` and `viber_set_layout`, run in the folder of the project on screen, because Viber only lets a window be changed by a client working in the project it shows. Views and project switching use Viber's keyboard shortcuts. Viber must be open: the deck checks it from `~/.viber/browser-mcp.json` before calling. With several Viber windows, the one in front wins. If Viber rejects a command (for example a tab closed in the meantime) the tablet shows a warning.
 
 ## Phone
 

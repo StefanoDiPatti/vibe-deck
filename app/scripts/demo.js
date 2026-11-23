@@ -211,16 +211,16 @@ demo.get('/api/discord/channels', function (req, res) {
   ok(res, [{ id: 'c1', name: 'Salotto', type: 'voice', members: 3 }, { id: 'c2', name: 'Giochi', type: 'voice', members: 0 }]);
 });
 
-demo.get('/api/viber/state', function (req, res) {
+demo.get('/api/plugins/viber/state', function (req, res) {
   ok(res, { online: true, panels: ['terminal', 'git', 'browser', 'chat', 'tasks', 'files'], project: '/home/demo/shop-web', name: 'shop-web', active: 'chat', open: ['terminal', 'git', 'browser', 'chat', 'tasks', 'files'] });
 });
-demo.get('/api/viber/projects', function (req, res) {
+demo.get('/api/plugins/viber/projects', function (req, res) {
   ok(res, { projects: [
     { path: '/home/demo/shop-web', name: 'shop-web', active: true, state: 'working', agents: 1, title: 'Pagamento con un tocco' },
     { path: '/home/demo/shop-api', name: 'shop-api', active: false, state: 'question', agents: 1, title: 'Filtro ordini per data' },
     { path: '/home/demo/blog', name: 'blog', active: false, state: 'completed', agents: 1, title: 'Tema scuro' }] });
 });
-demo.get('/api/viber/tasks', function (req, res) {
+demo.get('/api/plugins/viber/tasks', function (req, res) {
   ok(res, { project: 'shop-web', tasks: [{ id: 't1', text: 'Pagamento con un tocco', status: 'in_progress', branch: 'feature/pagamento', steps: [
     { text: 'Pulsante nel carrello', status: 'done' }, { text: 'Conferma con impronta', status: 'in_progress' }, { text: 'Test e PR', status: 'open' }] }] });
 });

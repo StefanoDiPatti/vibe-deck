@@ -1,0 +1,21 @@
+{
+  "id": "viber",
+  "name": "Viber",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Viber through its MCP server: panels, layouts and views of the window in front, open projects with their agents, tasks of the project on screen",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "apps": [
+      "viber"
+    ],
+    "local": [
+      "viber-mcp"
+    ]
+  }
+}

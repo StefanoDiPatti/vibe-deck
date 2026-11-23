@@ -388,7 +388,7 @@ add the WEATHER page to the bar. Then change the files:
 |---|---|---|
 | `plugins/weather/index.js` | server: actions and routes | restart the deck |
 | `plugins/weather/public/weather.js` | tablet: the widget and the icons (ES5) | reloads by itself |
-| `plugins/weather/public/weather.css` | widget style (no flexbox) | reloads by itself |
+| `plugins/weather/public/weather.css` | widget style (no flexbox); the themes recolor it by themselves | reloads by itself |
 | `plugins/weather/pages/weather.json` | plugin pages (like `config/defaults/pages`) | reloads by itself |
 | `plugins/weather/apps/`, `commands/` | apps and allowed commands, if needed | reloads by itself |
 | `plugins/weather/plugin.json` | name, version, systems, minimum Vibe Deck version, permissions ([schema](app/schema/plugin.schema.json)) | reloads by itself |
@@ -549,6 +549,8 @@ A **pack** groups plugins and contains nothing but its `plugin.json`:
 - `platforms` and `engine`: on another system, or with an older Vibe Deck, the plugin stays off and the control panel says why.
 - `type: "pack"` with `includes: [...]`: a bundle of existing plugins; the control panel reports packs with other files or unknown plugins.
 - `permissions` lists what the plugin uses (sites, apps, commands, local resources): it will be shown before installing from the market.
+- **Actions**: `actions.<name>` in `index.js` becomes the type `"<plugin>.<name>"`; an action named like the plugin is just `"<plugin>"` (the `viber` plugin keeps `{ "type": "viber", ... }`).
+- **Themes**: the CSS in `public/` is recolored for Material, Neon and Neo-brutalist by the server (`/plugins-theme/<theme>.css`) with the same rules as `dock.css`: no generated files for plugins.
 
 **Tablet language.** Tablet text is written in Italian (code and pages); with English selected the tablet translates what
 appears on screen on the fly, using the dictionary in `public/js/lang-en.js` (`I18n.add({ 'Testo': 'Text' })`, case-insensitive;

@@ -11,8 +11,6 @@ const CATALOG = [
   { id: 'audio', widget: 'audio', label: 'Audio', icon: 'volup', page: 'AUDIO', description: 'Uscita, microfono e volume delle app', w: 3, h: 3, minW: 3, minH: 2 },
   { id: 'discordmini', widget: 'discordmini', label: 'Discord', icon: 'headset', page: 'DISCORD', description: 'La stanza in cui sei, chi parla, mute e silenzia', w: 2, h: 2, minW: 2, minH: 2 },
   { id: 'desks', widget: 'desks', label: 'Desktop virtuali', icon: 'desktop', page: 'SCHERMI', description: 'Tocco = passa a quel desktop, + = nuovo', w: 2, h: 2, minW: 2, minH: 1 },
-  { id: 'viber-projects', widget: 'viber', props: { show: 'projects' }, label: 'Viber: progetti', icon: 'code', page: 'VIBER', description: 'Progetti aperti con lo stato degli agenti, tocco = passa al progetto', w: 2, h: 2, minW: 2, minH: 2 },
-  { id: 'viber-tasks', widget: 'viber', props: { show: 'tasks' }, label: 'Viber: task', icon: 'flag', page: 'VIBER', description: 'Le task del progetto aperto, con i passi', w: 2, h: 2, minW: 2, minH: 2 },
   { id: 'ollama', widget: 'chat', props: { provider: 'ollama' }, label: 'Ollama', icon: 'chat', page: 'OLLAMA', description: 'Chat con il modello locale', w: 3, h: 2, minW: 3, minH: 2 },
   { id: 'games', widget: 'games', label: 'Giochi', icon: 'gamepad', page: 'GAMES', description: 'I tuoi giochi in piccolo, tocco = avvia', w: 2, h: 1, minW: 1, minH: 1 }
 ];
