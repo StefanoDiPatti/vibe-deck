@@ -1,0 +1,34 @@
+{
+  "id": "android",
+  "name": "Android",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "adb and logcat: devices, errors and crashes, screenshot, phone screen with scrcpy, React Native",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "apps": [
+      "scrcpy"
+    ],
+    "commands": [
+      "adb_devices",
+      "adb_logcat_errors",
+      "adb_logcat_crash",
+      "adb_logcat_clear",
+      "adb_screencap",
+      "adb_screenpull",
+      "adb_devmenu",
+      "adb_reload_rn",
+      "adb_reverse_metro",
+      "adb_home",
+      "adb_back",
+      "adb_recents",
+      "adb_kill_server",
+      "adb_start_server"
+    ]
+  }
+}

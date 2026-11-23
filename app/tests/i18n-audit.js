@@ -29,10 +29,20 @@ function check(s, where) {
 });
 fs.readFileSync(path.join(APP, 'public', 'index.html'), 'utf8').replace(/<script[\s\S]*?<\/script>/g, '').split(/<[^>]*>/).forEach(function (t) { check(t, 'index.html'); });
 const parse = require(path.join(APP, 'server', 'config.js')).parseJson;
-fs.readdirSync(path.join(APP, 'config', 'defaults', 'pages')).forEach(function (f) {
-  const p = parse(fs.readFileSync(path.join(APP, 'config', 'defaults', 'pages', f), 'utf8'));
+pageFiles(APP).forEach(function (file) {
+  const f = path.basename(file);
+  const p = parse(fs.readFileSync(file, 'utf8'));
   [p.title, p.description].forEach(function (x) { if (x) check(x, f); });
   (p.tiles || []).forEach(function (t) { [t.label, t.sub, t.linux && t.linux.label, t.linux && t.linux.sub].forEach(function (x) { if (x) check(x, f); }); });
 });
 return out;
 };
+function jsonIn(dir) {
+  try { return fs.readdirSync(dir).filter(function (f) { return /\.json$/i.test(f); }).map(function (f) { return path.join(dir, f); }); } catch (e) { return []; }
+}
+function pageFiles(APP) {
+  const official = path.join(APP, 'official-plugins');
+  const lists = fs.readdirSync(official).map(function (n) { return jsonIn(path.join(official, n, 'pages')); });
+  return [].concat.apply(jsonIn(path.join(APP, 'config', 'defaults', 'pages')), lists);
+}
+module.exports.pageFiles = pageFiles;

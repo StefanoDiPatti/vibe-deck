@@ -101,8 +101,8 @@ Volume and undo buttons repeat while you hold them.
 | AUDIO | outputs and microphones (default, volume, mute), volume and mute of every app playing audio |
 | VIRTUAL DESKTOPS *(Linux only)* | guide to virtual desktop shortcuts (KDE Plasma, GNOME, Windows too); on Windows the same guide is in the SCREENS page |
 | VIBER *(add it from the panel)* | switch to Viber's open panels (terminal, git, browser, chat, tasks, files), change view (tabs, agents, focus), show the tasks of the open project |
-| BROWSER DEV *(available)* | browser shortcuts: HARD RELOAD, DEVTOOLS, CONSOLE, INSPECT, DEVICE, CLEAR DATA (hold), LOCALHOST:5173 and :3000; keys go to the window in front |
-| ANDROID *(available)* | adb (Android SDK platform-tools): DEVICES, logcat ERRORS and CRASHES, SCREENSHOT to Pictures, SCREEN with scrcpy, HOME/BACK/RECENTS, React Native DEV MENU and RELOAD, METRO 8081, RESTART ADB. Commands in `config/defaults/commands/android.json` |
+| BROWSER DEV *(available)* | official plugin `official-plugins/browserdev/`: browser shortcuts: HARD RELOAD, DEVTOOLS, CONSOLE, INSPECT, DEVICE, CLEAR DATA (hold), LOCALHOST:5173 and :3000; keys go to the window in front |
+| ANDROID *(available)* | adb (Android SDK platform-tools): DEVICES, logcat ERRORS and CRASHES, SCREENSHOT to Pictures, SCREEN with scrcpy, HOME/BACK/RECENTS, React Native DEV MENU and RELOAD, METRO 8081, RESTART ADB. Official plugin `official-plugins/android/` (page, adb commands, scrcpy) |
 | BLENDER, DAVINCI, UNREAL *(available: add them to the bar from the panel)* | shortcuts for the three programs (UNREAL: play, simulate, compile C++ with Live Coding, W/E/R tools, views) |
 
 ## Viber
@@ -350,7 +350,7 @@ Allowed commands for `{ "type": "command", "id": "<id>" }`. The tablet can only 
 | `showOutput` | show the output on the tablet in a window |
 | `timeoutMs` | maximum time (20 s by default) |
 
-`{root}` in arguments = the deck folder. The ANDROID page commands (adb and logcat) are in `config/defaults/commands/android.json`: on Windows the adb of the standard SDK folder is used, otherwise the one in the PATH. To change one, copy an entry to `config/commands/<id>.json`.
+`{root}` in arguments = the deck folder. The ANDROID page commands (adb and logcat) are in the official plugin, `official-plugins/android/commands/android.json`: on Windows the adb of the standard SDK folder is used, otherwise the one in the PATH. To change one, copy an entry to `config/commands/<id>.json`.
 
 ### services.json
 
