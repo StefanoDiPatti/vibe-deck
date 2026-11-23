@@ -9,13 +9,17 @@ svg.ic { fill: #111111; }
 #status-dot.on { background: #2bd96b; }
 #page-title { color: #2b2b2b; }
 #mini { color: #5a5446; }
-#theme-btn svg.ic { fill: #2b2b2b; }
-#lang-btn { color: #2b2b2b; }
+#settings-btn svg.ic { fill: #2b2b2b; }
 .theme-menu { background: #fffdf7; border: 1px solid #111111; }
 .theme-h { color: #5a5446; }
 .theme-opt { background: #ffffff; }
 .theme-opt.on { background: #ffd23f; -webkit-box-shadow: inset 4px 0 0 #111111; box-shadow: inset 4px 0 0 #111111; }
 .theme-opt.pressed { background: #efe8d8; }
+.set-code { color: #2b2b2b; }
+.set-tog { background: #bdb5a3; }
+.set-tog i { background: #111111; }
+.set-awake.on .set-tog { background: #4d9dff; }
+.set-desc { color: #5a5446; }
 #banner { background: #ff6b5b; color: #111111; }
 .tile { background: #ffffff; border: 1px solid #111111; }
 .tile.btn { background-color: #ffffff; }

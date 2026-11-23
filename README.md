@@ -137,7 +137,7 @@ Tutto il resto è già pronto tra le **pagine disponibili** del pannello di cont
 DISCORD, GIOCHI, EMAIL, BROWSER DEV, ANDROID, BLENDER, DAVINCI, UNREAL. Trascinale nella barra quando ti servono.
 Nella pagina APP i programmi per sviluppatori (VS Code, Docker, Blender…) sono tra i **nascosti**: *Pulsanti delle pagine* >
 APP > *Mostra tutti*, oppure trascina solo quelli che vuoi. La HOME la cambi dal pannello (*HOME*), la lingua e il tema dal tablet
-(bandierina e tavolozza in alto). Per tornare a questa configurazione: *Predefinite* nella barra in fondo al pannello.
+(rotellina in alto). Per tornare a questa configurazione: *Predefinite* nella barra in fondo al pannello.
 
 ## Aggiornare
 
@@ -160,8 +160,9 @@ Se qualcosa non va: [Problemi comuni](app/README.md#problemi-comuni).
 - **Barra in basso**: le pagine. Quali e in che ordine lo scegli dal pannello di controllo.
 - **Pulsanti**: un tocco esegue l'azione. Quelli con la barra arancione in basso (es. BLOCCA) vanno **tenuti premuti** circa
   un secondo. Volume e annulla si ripetono se tieni premuto. Il **pallino verde** dice che l'app è aperta.
-- **In alto a destra**: rete del PC, velocità, la **lingua** (IT / EN: un tocco cambia), il pulsante dei **temi** (tavolozza) e l'orologio
-  (toccalo per lo schermo intero). La lingua si ricorda sul tablet; il pannello di controllo sul PC resta in italiano.
+- **In alto a destra**: rete del PC, velocità, la **rotellina delle impostazioni** e l'orologio (toccalo per lo schermo intero).
+  La rotellina apre un menù con **tema**, **lingua** (IT / EN) e **Sempre attivo** (niente salvaschermo con l'ora).
+  Le scelte si ricordano sul tablet; il pannello di controllo sul PC resta in italiano.
 - **Batteria**: dopo un minuto senza tocchi la dock aggiorna i dati più lentamente; dopo 10 minuti parte il **salvaschermo**
   (orologio fioco). Un tocco la riattiva.
 - **Telefono**: funziona anche da telefono, in orizzontale.

@@ -1,6 +1,6 @@
 {
   "name": "vibe-deck",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "description": "Trasforma un vecchio tablet Android 4 in una Stream Deck wireless per Windows e Linux",
   "main": "server/index.js",

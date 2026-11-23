@@ -76,7 +76,7 @@ Lo trovi dal menu dell'icona (Windows) o nella finestra del server (Linux / `--c
 
 In alto a destra trovi la rete del PC (nome del Wi-Fi e segnale, oppure Ethernet), la velocità di download/upload e la RAM.
 
-**Batteria:** dopo un minuto senza tocchi la dock aggiorna i dati più lentamente (stato del PC ogni 15 secondi invece di 2); dopo 10 minuti parte il salvaschermo, nero con un orologio fioco, e smette del tutto di chiamare il PC. Un tocco la riattiva, senza premere il pulsante sotto. Tempi in `services.json` → `tablet`. Il consumo maggiore resta lo schermo: abbassa la luminosità di Android, e se il tablet resta in carica usa *Rimani attivo* solo quando serve.
+**Batteria:** dopo un minuto senza tocchi la dock aggiorna i dati più lentamente (stato del PC ogni 15 secondi invece di 2); dopo 10 minuti parte il salvaschermo, nero con un orologio fioco, e smette del tutto di chiamare il PC. Un tocco la riattiva, senza premere il pulsante sotto. Tempi in `services.json` → `tablet`; per non far mai partire il salvaschermo su un tablet: rotellina in alto → *Sempre attivo*. Il consumo maggiore resta lo schermo: abbassa la luminosità di Android, e se il tablet resta in carica usa *Rimani attivo* solo quando serve.
 
 Pulsanti con la barra arancione in basso (es. BLOCCA): vanno **tenuti premuti** circa 1 secondo.
 I pulsanti volume e annulla si ripetono se tieni premuto.
@@ -132,7 +132,7 @@ La dock funziona anche da telefono (inquadra il QR del pannello). La disposizion
 Vale per gli schermi con il lato corto sotto i 600 px; il tablet non cambia.
 ## Temi del tablet
 
-Il pulsante con la **tavolozza** nella barra in alto, accanto all'orario, apre il menu dei temi:
+La **rotellina** nella barra in alto, accanto all'orario, apre il menù delle impostazioni: tema, lingua (IT / EN) e *Sempre attivo*. I temi:
 
 | Tema | Com'è |
 |---|---|
