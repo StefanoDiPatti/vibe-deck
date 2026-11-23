@@ -90,7 +90,7 @@ Volume and undo buttons repeat while you hold them.
 | HOME | music (basic controls), PC status, todo |
 | MUSIC | full player (seek, shuffle, repeat, app volume) and track queue |
 | APPS | programs (green dot = already running, another tap closes it), Claude, PowerShell/Terminal, screenshot, lock PC, screen off, **system volume**, Blender and DaVinci |
-| DEV | VS Code, Claude Code, PowerShell, OpenClaw, VS Code shortcuts |
+| DEV *(official plugin `dev`)* | VS Code, Claude Code, PowerShell, OpenClaw, VS Code shortcuts |
 | GITHUB | PRs, issues, CI, latest deployment (GitHub Actions workflows with deploy, release, publish or pages in their name: DEPLOY ✓/✗/… badge) and latest commit of your repositories |
 | OLLAMA | chat with local models |
 | CLAUDE | chat, Claude Code sessions, dictation, typing on the PC |

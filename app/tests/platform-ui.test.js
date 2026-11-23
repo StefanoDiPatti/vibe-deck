@@ -89,8 +89,9 @@ test('pagina APP di default: CLAUDE unico, Viber su entrambi, terminale su Linux
   assert.strictEqual(lin.tiles.filter(function (t) { return t.id === 'screenshot'; })[0].action.type, 'launch');
 });
 
-test('pagina DEV di default: TERM VSC e PALETTE subito dopo VS CODE, pulsanti con id fissi', function () {
-  const raw = config.defaultDock();
+test('pagina DEV del plugin ufficiale: TERM VSC e PALETTE subito dopo VS CODE, pulsanti con id fissi', function () {
+  const dev = config.parseJson(fs.readFileSync(path.join(__dirname, '..', 'official-plugins', 'dev', 'pages', 'dev.json'), 'utf8'));
+  const raw = Object.assign({}, config.defaultDock(), { pages: [dev] });
   ['linux', 'windows'].forEach(function (os) {
     const p = page(config.normalizeDock(raw, {}, os), 'dev');
     assert.ok(p.editable);

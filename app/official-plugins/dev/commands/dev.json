@@ -1,0 +1,30 @@
+{
+  "commands": {
+    "openclaw_health": {
+      "label": "OpenClaw health",
+      "cmd": "openclaw", "args": ["health"], "showOutput": true, "timeoutMs": 30000
+    },
+    "openclaw_status": {
+      "label": "OpenClaw status",
+      "cmd": "openclaw", "args": ["daemon", "status"], "showOutput": true, "timeoutMs": 30000
+    },
+    "openclaw_restart": {
+      "label": "Riavvio OpenClaw",
+      "cmd": "openclaw", "args": ["daemon", "restart"], "showOutput": true, "timeoutMs": 90000
+    },
+    "openclaw_dashboard": {
+      "label": "Dashboard OpenClaw",
+      "cmd": "openclaw", "args": ["dashboard"], "timeoutMs": 30000
+    },
+    "ollama_ps": {
+      "label": "Modelli Ollama attivi",
+      "cmd": "ollama", "args": ["ps"], "showOutput": true
+    },
+    "git_status_projects": {
+      "label": "Git status",
+      "cmd": "git", "args": ["status", "--short", "--branch"],
+      "cwd": "~/Documents/AI Projects",
+      "showOutput": true
+    }
+  }
+}

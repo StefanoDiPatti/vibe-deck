@@ -1,0 +1,32 @@
+{
+  "id": "dev",
+  "name": "Dev",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "VS Code, Claude Code, terminal, git status, OpenClaw and editor shortcuts",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "apps": [
+      "vscode",
+      "claude_code",
+      "powershell"
+    ],
+    "commands": [
+      "openclaw_health",
+      "openclaw_status",
+      "openclaw_restart",
+      "openclaw_dashboard",
+      "ollama_ps",
+      "git_status_projects"
+    ],
+    "http": [
+      "github.com",
+      "claude.ai"
+    ]
+  }
+}
