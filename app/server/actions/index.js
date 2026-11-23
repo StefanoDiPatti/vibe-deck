@@ -7,7 +7,6 @@ const keys = require('../platform/keys');
 const common = require('../platform/common');
 const media = require('../services/media');
 const appsState = require('../services/apps');
-const screens = require('../services/screens');
 const fs = require('fs');
 const log = require('../log');
 
@@ -107,13 +106,13 @@ const HANDLERS = {
       return { message: appLabel(id, app) + ' in primo piano' };
     }
     appsState.invalidate();
-    const follow = screens.followLaunch(appsState.processNames(app));
+    const follow = require('../plugins').hook('launch', { app: id, processes: appsState.processNames(app) }).filter(function (f) { return typeof f === 'function'; });
     try {
       await platform.launch({ path: pickPath(app.path), args: normalizeArgs(app.args), cwd: app.cwd });
     } catch (e) {
       throw fail(appLabel(id, app) + ': ' + e.message, 'NOT_FOUND');
     }
-    if (follow) follow();
+    follow.forEach(function (f) { f(); });
     return { message: appLabel(id, app) + ' avviata' };
   },
 

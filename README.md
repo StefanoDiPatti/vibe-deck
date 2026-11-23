@@ -248,7 +248,7 @@ Customizations are made **one file at a time**: one page, app or command per fil
 | `config/services.json` | music, Claude, GitHub, Ollama, TODO, tablet timings ([reference](app/README.md#servicesjson)) | no |
 | `config/layout.json` | control panel choices (pages in the bar, button order) | no, the panel writes it |
 | `config/defaults/` | the project defaults: `pages/` (one page per file) and the other JSON files | yes |
-| `official-plugins/<id>/` | **official plugins** shipped with Vibe Deck (one per feature: `blender`, `davinci`, `unreal`, `android`, `browserdev`, `dev`, `claude`, `ollama`, `github`, `viber`) and **packs** that group them (`creative`: Blender, DaVinci, Unreal; `developer`: Dev, Claude, Ollama, GitHub, Android, Browser dev), each with its `plugin.json` | yes |
+| `official-plugins/<id>/` | **official plugins** shipped with Vibe Deck (one per feature: `blender`, `davinci`, `unreal`, `android`, `browserdev`, `dev`, `claude`, `ollama`, `github`, `screens`, `viber`) and **packs** that group them (`creative`: Blender, DaVinci, Unreal; `developer`: Dev, Claude, Ollama, GitHub, Android, Browser dev), each with its `plugin.json` | yes |
 | `plugins/<name>/` | **your plugins** (and, later, the ones from the market): extra actions, routes, pages, widgets and icons (see [Plugins](#plugins-new-widgets-and-actions)) | your choice |
 | `schema/` | JSON schemas for the editor (suggestions and field checks) | yes |
 | `data/` | personal data: games, accounts to show, log, encrypted secrets | no |
@@ -551,6 +551,10 @@ A **pack** groups plugins and contains nothing but its `plugin.json`:
   Packs are only ready-made suggestions: **every plugin installs and works on its own**, using only the core and its own files.
 - `permissions` lists what the plugin uses (sites, apps, commands, local resources): it will be shown before installing from the market.
 - **Actions**: `actions.<name>` in `index.js` becomes the type `"<plugin>.<name>"`; an action named like the plugin is just `"<plugin>"` (the `viber` plugin keeps `{ "type": "viber", ... }`).
+- **Hooks**: `hooks.launch({ app, processes })` in `index.js` runs before an app is started from the tablet and may return a
+  function called right after it starts (the `screens` plugin uses it to move the new window to the chosen monitor).
+- **Tabs**: a plugin page joins the bar by default only when its file says `"tab": true` (per-system variants work too);
+  otherwise it is among the available pages.
 - **Themes**: the CSS in `public/` is recolored for Material, Neon and Neo-brutalist by the server (`/plugins-theme/<theme>.css`) with the same rules as `dock.css`: no generated files for plugins.
 
 **Tablet language.** Tablet text is written in Italian (code and pages); with English selected the tablet translates what

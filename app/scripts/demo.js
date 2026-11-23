@@ -188,13 +188,13 @@ const WINDOWS = [
   { id: 'w2', pid: 202, process: 'code', state: 'normal', monitor: 'm2', x: 2560, y: 0, w: 1920, h: 1040, active: false, title: 'shop-web - Editor' },
   { id: 'w3', pid: 203, process: 'music', state: 'min', monitor: 'm2', x: 2600, y: 100, w: 900, h: 700, active: false, title: 'Music' }
 ];
-demo.get('/api/screens/windows', function (req, res) { ok(res, WINDOWS); });
-demo.get('/api/screens', function (req, res, next) {
+demo.get('/api/plugins/screens/windows', function (req, res) { ok(res, WINDOWS); });
+demo.get('/api/plugins/screens', function (req, res, next) {
   const json = res.json.bind(res);
   res.json = function (body) { if (body && body.data) Object.assign(body.data, { monitors: MONITORS, target: null }); return json(body); };
   next();
 });
-demo.get('/api/screens/desktops', function (req, res) {
+demo.get('/api/plugins/screens/desktops', function (req, res) {
   ok(res, { supported: true, max: 3, monitors: MONITORS.map(function (m) { return { id: m.id, n: m.n, x: m.x, y: m.y, w: m.w, h: m.h }; }),
     desktops: [{ id: 'd1', n: 1, name: 'Lavoro', current: true, windows: WINDOWS.slice(0, 2) }, { id: 'd2', n: 2, name: 'Svago', current: false, windows: [WINDOWS[2]] }] });
 });

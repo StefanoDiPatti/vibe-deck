@@ -212,6 +212,17 @@ function registerActions(HANDLERS) {
   });
 }
 
+function hook(name, payload) {
+  const all = load();
+  const out = [];
+  Object.keys(all).forEach(function (n) {
+    const h = all[n].module && all[n].module.hooks;
+    if (!h || typeof h[name] !== 'function') return;
+    try { out.push(h[name](payload, context(n))); } catch (e) { log.warn('plugin', n + ': hook ' + name + ': ' + e.message); }
+  });
+  return out;
+}
+
 function mountRoutes(app, express) {
   const all = load();
   Object.keys(all).forEach(function (name) {
@@ -358,6 +369,6 @@ function reset() {
 
 module.exports = {
   baseDir: baseDir, officialDir: officialDir, dirOf: dirOf, manifests: manifests, readManifest: readManifest, versionAtLeast: versionAtLeast, names: names, configDirs: configDirs, load: load,
-  registerActions: registerActions, mountRoutes: mountRoutes,
+  registerActions: registerActions, mountRoutes: mountRoutes, hook: hook,
   scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
 };

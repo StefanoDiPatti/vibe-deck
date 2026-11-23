@@ -18,8 +18,6 @@ const bridge = require('./services/bridge');
 const voice = require('./services/voice');
 const appsState = require('./services/apps');
 const discord = require('./services/discord');
-const screens = require('./services/screens');
-const vdesk = require('./services/vdesk');
 const pairing = require('./services/pairing');
 const mail = require('./services/mail');
 const games = require('./services/games');
@@ -330,33 +328,6 @@ app.get('/api/audio', route(function () { return mixer.state(); }));
 app.post('/api/audio/default', route(function (req) { return mixer.setDefault(String((req.body || {}).id || '')); }));
 app.post('/api/audio/device', route(function (req) { const b = req.body || {}; return mixer.device(String(b.id || ''), b); }));
 app.post('/api/audio/app', route(function (req) { const b = req.body || {}; return mixer.app(String(b.id || ''), b); }));
-
-app.get('/api/screens', route(function () { return screens.info(); }));
-app.get('/api/screens/windows', route(function () { return screens.windows(); }));
-app.post('/api/screens/target', route(function (req) {
-  const m = (req.body || {}).monitor;
-  return screens.setTarget(m === null || m === undefined || m === '' ? null : String(m));
-}));
-app.post('/api/screens/place', route(function (req) {
-  const b = req.body || {};
-  return screens.place(String(b.window || ''), String(b.monitor || ''), String(b.layout || ''), b.zone, b.focus !== false);
-}));
-app.post('/api/screens/window', route(function (req) {
-  const b = req.body || {};
-  return screens.act(String(b.window || ''), String(b.action || ''));
-}));
-
-app.get('/api/screens/desktops', route(function () { return vdesk.list(); }));
-app.post('/api/screens/move', route(function (req) {
-  const b = req.body || {};
-  if (b.monitor) return screens.moveWindowToMonitor(String(b.window || ''), String(b.monitor));
-  if (b.desktop) return vdesk.moveWindow(String(b.window || ''), String(b.desktop));
-  throw badRequest('desktop o monitor richiesti');
-}));
-app.post('/api/screens/desktops', route(function (req) {
-  const b = req.body || {};
-  return vdesk.action(String(b.action || ''), b.desktop ? String(b.desktop) : '');
-}));
 
 function tabletPower() {
   const t = (config.get('services') || {}).tablet || {};

@@ -97,9 +97,9 @@ Volume and undo buttons repeat while you hold them.
 | DISCORD | servers, voice channels with who is inside, who is talking, mute/deafen, webcam, Go Live, per-person volume and mute just for you |
 | GAMES | the games picked in the control panel, with their icons (green dot when running; if running it is brought to the front) |
 | EMAIL *(available)* | inbox of the Thunderbird accounts chosen in the control panel, message reading, opening Thunderbird on the PC |
-| SCREENS *(Windows; Linux with KDE Plasma 6 + kdotool)* | PC monitors, window layouts, monitor apps open on, **virtual desktops** (switch, create, close, drag a window onto one) and a **GUIDE** button with the shortcuts |
+| SCREENS *(official plugin `screens`; Windows; Linux with KDE Plasma 6 + kdotool)* | PC monitors, window layouts, monitor apps open on, **virtual desktops** (switch, create, close, drag a window onto one) and a **GUIDE** button with the shortcuts |
 | AUDIO | outputs and microphones (default, volume, mute), volume and mute of every app playing audio |
-| VIRTUAL DESKTOPS *(Linux only)* | guide to virtual desktop shortcuts (KDE Plasma, GNOME, Windows too); on Windows the same guide is in the SCREENS page |
+| VIRTUAL DESKTOPS *(official plugin `screens`, Linux only)* | guide to virtual desktop shortcuts (KDE Plasma, GNOME, Windows too); on Windows the same guide is in the SCREENS page |
 | VIBER *(official plugin `viber`, add it from the panel)* | switch to Viber's open panels (terminal, git, browser, chat, tasks, files), change view (tabs, agents, focus), show the tasks of the open project |
 | BROWSER DEV *(available)* | official plugin `official-plugins/browserdev/`: browser shortcuts: HARD RELOAD, DEVTOOLS, CONSOLE, INSPECT, DEVICE, CLEAR DATA (hold), LOCALHOST:5173 and :3000; keys go to the window in front |
 | ANDROID *(available)* | adb (Android SDK platform-tools): DEVICES, logcat ERRORS and CRASHES, SCREENSHOT to Pictures, SCREEN with scrcpy, HOME/BACK/RECENTS, React Native DEV MENU and RELOAD, METRO 8081, RESTART ADB. Official plugin `official-plugins/android/` (page, adb commands, scrcpy) |

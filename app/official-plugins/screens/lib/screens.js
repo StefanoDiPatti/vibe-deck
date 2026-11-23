@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const paths = require('../paths');
-const platform = require('../platform');
-const log = require('../log');
+const paths = require('../../../server/paths');
+const platform = require('../../../server/platform');
+const log = require('../../../server/log');
 
 const FILE = path.join(paths.DATA_DIR, 'screens.json');
 const T = 1 / 3;

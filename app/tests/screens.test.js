@@ -4,7 +4,7 @@ const assert = require('node:assert');
 process.env.DOCK_TOKEN = 'TESTCODE';
 process.env.LOG_LEVEL = 'error';
 process.env.DOCK_DATA_DIR = require('fs').mkdtempSync(require('path').join(require('os').tmpdir(), 'dock-test-'));
-const screens = require('../server/services/screens');
+const screens = require('../official-plugins/screens/lib/screens');
 const common = require('../server/platform/common');
 const config = require('../server/config');
 
@@ -49,7 +49,8 @@ test('nome del monitor dall\'EDID abbinato al DeviceID', function () {
 test('nessun gioco nei default (si aggiungono dal pannello); pagine GAMES e SCHERMI', function () {
   const defApps = config.parseJson(require('fs').readFileSync(require('path').join(__dirname, '..', 'config', 'defaults', 'apps.json'), 'utf8')).apps;
   Object.keys(defApps).forEach(function (id) { assert.ok(!defApps[id].game, id + ': i giochi non vanno nel repository'); });
-  const raw = config.defaultDock();
+  const sp = config.parseJson(require('fs').readFileSync(require('path').join(__dirname, '..', 'official-plugins', 'screens', 'pages', 'screens.json'), 'utf8'));
+  const raw = Object.assign({}, config.defaultDock(), { pages: config.defaultDock().pages.concat([sp]) });
   assert.strictEqual(raw.pages.filter(function (p) { return p.id === 'games'; })[0].source, 'games');
   const ids = config.normalizeDock(raw, {}, 'windows').pages.map(function (p) { return p.id; });
   assert.ok(ids.indexOf('games') >= 0 && ids.indexOf('screens') >= 0);

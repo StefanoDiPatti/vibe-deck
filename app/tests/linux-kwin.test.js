@@ -61,7 +61,7 @@ test('KWin: errori di KWin e kdotool vecchio diventano messaggi chiari', async f
 
 test('Desktop virtuali in modalità Linux: elenco, passa, crea, chiudi e trascina una finestra', async function (t) {
   const platform = require('../server/platform');
-  const vdesk = require('../server/services/vdesk');
+  const vdesk = require('../official-plugins/screens/lib/vdesk');
   const keys = ['name', 'monitors', 'virtualDesktops', 'deskWindows', 'switchDesktop', 'createDesktop', 'removeDesktop', 'moveWindowToDesktop', 'screensNote'];
   const saved = {};
   keys.forEach(function (k) { saved[k] = platform[k]; });

@@ -209,9 +209,11 @@ test('GitHub: i workflow di deploy si riconoscono dal nome o dal file', function
 });
 
 test('configurazione standard (prima installazione): barra semplice, il resto tra le disponibili', function () {
+  const sp = config.parseJson(fs.readFileSync(path.join(__dirname, '..', 'official-plugins', 'screens', 'pages', 'screens.json'), 'utf8'));
+  const withPlugin = Object.assign({}, config.defaultDock(), { pages: config.defaultDock().pages.concat([Object.assign({}, sp, { tab: sp.tab === true })]) });
+  const tabs = function (os) { return config.normalizeDock(withPlugin, {}, os).pages.filter(function (p) { return p.tab; }).map(function (p) { return p.id; }); };
+  assert.deepStrictEqual(tabs('windows'), ['main', 'media', 'apps', 'audio', 'screens'], 'SCHERMI from its plugin, a tab because its page says "tab": true');
   const raw = config.defaultDock();
-  const tabs = function (os) { return config.normalizeDock(raw, {}, os).pages.filter(function (p) { return p.tab; }).map(function (p) { return p.id; }); };
-  assert.deepStrictEqual(tabs('windows'), ['main', 'media', 'apps', 'screens', 'audio']);
   assert.deepStrictEqual(tabs('linux'), ['main', 'media', 'apps', 'audio'], 'SCHERMI su Linux richiede KDE: la aggiungi tu');
   const apps = page(config.normalizeDock(raw, {}, 'windows'), 'apps');
   assert.deepStrictEqual(labels({ tiles: apps.tiles }), ['APPLE MUSIC', 'DISCORD', 'FILE', 'SCREENSHOT', 'DESKTOP', 'BLOCCA', 'SCHERMO OFF', 'VOL -', 'MUTE', 'VOL +']);

@@ -1,0 +1,20 @@
+{
+  "id": "screens",
+  "name": "Screens and virtual desktops",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "PC monitors, window layouts, the monitor apps open on, virtual desktops (switch, create, close, move windows) and their shortcut guide",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "local": [
+      "windows",
+      "monitors",
+      "virtual-desktops"
+    ]
+  }
+}

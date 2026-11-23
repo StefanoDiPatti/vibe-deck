@@ -164,53 +164,6 @@ svg.ic.dc-camflag { fill: #127a3a; }
 .dc-setup { color: #5a5446; }
 .dc-setup svg.ic { fill: #3b44c4; }
 .dc-setup b { color: #111111; }
-.sc-title { color: #5a5446; }
-.sc-hint { color: #1f5fd1; }
-.sc-hint .err { color: #c4271a; }
-.sc-mon { background: #fffdf7; border: 2px solid #111111; }
-.sc-mon.sel { border-color: #111111; background: #fff0b3; }
-.sc-mon.pressed { background: #ffd23f; }
-.sc-mlabel { color: #2b2b2b; }
-.sc-mlabel b { background: #4d9dff; color: #111111; }
-.sc-mlabel span { color: #5a5446; }
-.sc-zin { border: 1px dashed #111111; background: rgba(77, 157, 255, 0.06); }
-.sc-zin b { color: #1f5fd1; }
-.sc-zin span { color: #2b2b2b; }
-.sc-zone.on .sc-zin, .sc-zone.drop .sc-zin { border: 2px solid #111111; background: rgba(77, 157, 255, 0.28); }
-.sc-zone.on .sc-zin b, .sc-zone.drop .sc-zin b { color: #111111; }
-.sc-lay { background: #fffdf7; }
-.sc-lay.on { background: #c9b8ff; }
-.sc-lay.pressed { background: #ffd23f; }
-.sc-lbox i { border: 1.5px solid #111111; background: #4d9dff; }
-.sc-lay span { color: #2b2b2b; }
-.sc-olabel { color: #5a5446; }
-.sc-opt { background: #efe8d8; }
-.sc-opt.on { background: #2bd96b; }
-.sc-right { background: #fffdf7; border-left: 1px solid #111111; }
-.sc-whead { color: #5a5446; }
-.sc-dhead { color: #5a5446; border-top: 1px solid #111111; }
-.sc-dsub { color: #5a5446; }
-.sc-dk { background: #fffdf7; }
-.sc-dk.on { border-color: #111111; background: #fff0b3; }
-.sc-dk.pressed, .sc-dk.busy { background: #ffd23f; }
-.sc-dk svg.sc-dkic { fill: #5a5446; }
-.sc-dk.on svg.sc-dkic { fill: #1f5fd1; }
-.sc-dkn { color: #111111; }
-.sc-dksub { color: #5a5446; }
-.sc-ghost { background: #9cc4ff; border: 2px solid #111111; color: #111111; }
-.sc-dragging .sc-dk, .sc-dragging .sc-mon { border-color: #111111; }
-.sc-dragging .sc-dk.drop, .sc-dragging .sc-mon.drop { border-color: #111111; background: #9cc4ff; }
-.sc-dk.on .sc-dksub { color: #1f5fd1; }
-.sc-dkx { background: rgba(255, 208, 201, 0.92); }
-.sc-dkx.holding { background: #ff6b5b; }
-.sc-dknew { background: #fffdf7; border: 2px dashed #111111; color: #5a5446; }
-.sc-guide { background: #ffffff; }
-.sc-win { background: #fffdf7; }
-.sc-win.active { -webkit-box-shadow: inset 3px 0 0 #111111; box-shadow: inset 3px 0 0 #111111; }
-.sc-win.pressed, .sc-win.busy { background: #ffd23f; }
-.sc-wmon { background: #efe8d8; }
-.sc-wproc { color: #5a5446; }
-.sc-wbtn { background: #efe8d8; }
 .todo-sync { background: #fffdf7; color: #5a5446; }
 .todo-sync.ok { color: #127a3a; }
 .todo-sync.err { color: #c4271a; background: #ffd0c9; }
@@ -251,14 +204,6 @@ svg.ic.dc-camflag { fill: #127a3a; }
 .au-bar i { background: #4d9dff; }
 .au-ctl.muted .au-mute { background: #ff6b5b; }
 .au-ctl.muted .au-bar i { background: #bdb5a3; }
-.dk-item { background: #fffdf7; }
-.dk-item b { background: #efe8d8; }
-.dk-item small { color: #5a5446; }
-.dk-item.on { border-color: #111111; background: #fff0b3; }
-.dk-item.on small { color: #1f5fd1; }
-.dk-item.pressed, .dk-item.busy { background: #ffd23f; }
-.dk-item svg.ic { fill: #5a5446; }
-.dk-new { border: 2px dashed #111111; }
 .gm-item { background: #fffdf7; }
 .gm-item.pressed, .gm-item.busy { background: #ffd23f; }
 .gm-pic svg.ic { fill: #5a5446; }

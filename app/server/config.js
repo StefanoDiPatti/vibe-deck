@@ -354,7 +354,7 @@ function mergedDock() {
     if (!have[id]) { have[id] = true; out.push(mine[id]); }
   });
   Object.keys(defaults).forEach(function (id) {
-    if (!have[id]) { have[id] = true; out.push(Object.assign({}, defaults[id], { tab: false })); }
+    if (!have[id]) { have[id] = true; out.push(Object.assign({}, defaults[id], { tab: defaults[id].tab === true })); }
   });
   return Object.assign({}, d, { pages: out });
 }

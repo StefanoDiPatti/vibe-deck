@@ -3,6 +3,7 @@
   "title": "SCHERMI",
   "icon": "layout",
   "description": "Monitor, disposizione delle finestre (come Snap di Windows), desktop virtuali; trascina una finestra su un desktop. Linux: KDE Plasma con kdotool",
+  "tab": true,
   "linux": { "tab": false },
   "tiles": [ { "widget": "screens", "system": "windows", "linux": { "system": "linux" }, "w": 5, "h": 3 } ]
 }

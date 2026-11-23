@@ -77,6 +77,16 @@ test('pages come from active plugins only', function () {
   assert.ok(ids.indexOf('messypage') < 0, 'pages inside a pack are ignored');
 });
 
+test('a plugin page is a tab of the bar only when its file says "tab": true', function () {
+  const dir = path.join(tmp, 'official', 'studio', 'pages');
+  fs.writeFileSync(path.join(dir, 'studiotab.json'), JSON.stringify({ id: 'studiotab', tab: true, tiles: [] }));
+  const byId = {};
+  config.dock().pages.forEach(function (p) { byId[p.id] = p; });
+  assert.strictEqual(byId.studiotab.tab, true);
+  assert.strictEqual(byId.studio.tab, false, 'no "tab" field: among the available pages');
+  fs.unlinkSync(path.join(dir, 'studiotab.json'));
+});
+
 test('a new plugin folder is picked up without a restart', function () {
   plugin('plugins', 'late', null, ['latepage']);
   assert.ok(plugins.names().indexOf('late') >= 0);

@@ -1,7 +1,7 @@
 'use strict';
 const { execFile } = require('child_process');
-const platform = require('../platform');
-const log = require('../log');
+const platform = require('../../../server/platform');
+const log = require('../../../server/log');
 
 const KEY = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops';
 const SESSION_KEY = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo';
