@@ -1,13 +1,14 @@
 {
   "id": "creative",
-  "name": "Creative",
+  "name": "Creative pack",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
-  "description": "Shortcut pages for Blender, DaVinci Resolve and Unreal Editor",
-  "type": "plugin",
-  "platforms": ["windows", "linux"],
-  "engine": ">=2.1.1",
-  "permissions": {
-    "apps": ["blender", "davinci", "unreal"]
-  }
+  "description": "Blender, DaVinci Resolve and Unreal Editor shortcut pages",
+  "type": "pack",
+  "includes": [
+    "blender",
+    "davinci",
+    "unreal"
+  ],
+  "engine": ">=2.1.1"
 }

@@ -565,7 +565,7 @@ The guide to customize pages, buttons, actions and widgets is in the [main READM
 | `public/` | tablet client (ES5, no framework) |
 | `extension/` | browser extension for Apple Music web and YouTube |
 | `config/defaults/` | default configuration |
-| `official-plugins/<id>/` | official plugins shipped with Vibe Deck, each with `plugin.json` (`creative`: BLENDER, DAVINCI, UNREAL) |
+| `official-plugins/<id>/` | official plugins shipped with Vibe Deck, each with `plugin.json`: one plugin per feature (`blender`, `davinci`, `unreal`) and packs that group them (`creative`) |
 | `plugins/<name>/` | local plugins: extra actions, routes, pages and widgets (`npm run new:widget -- <name>`) |
 | `scripts/bootstrap.js` | automatic startup (same on Windows and Linux) |
 | `scripts/windows/` | notification area icon and hidden startup |

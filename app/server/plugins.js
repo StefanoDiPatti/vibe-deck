@@ -109,7 +109,17 @@ function scan() {
 }
 
 function names() {
-  return scan().list.filter(function (e) { return e.active; }).map(function (e) { return e.name; });
+  return scan().list.filter(function (e) { return e.active && e.manifest.type !== 'pack'; }).map(function (e) { return e.name; });
+}
+
+function packProblems(entry, cat) {
+  const out = [];
+  let extra = [];
+  try { extra = fs.readdirSync(entry.dir).filter(function (f) { return f !== 'plugin.json'; }); } catch (e) { extra = []; }
+  if (extra.length) out.push('un pacchetto contiene solo plugin.json (togli ' + extra.join(', ') + ')');
+  const missing = entry.manifest.includes.filter(function (n) { return !cat.byName[n] || cat.byName[n].manifest.type === 'pack'; });
+  if (missing.length) out.push('plugin non trovati: ' + missing.join(', '));
+  return out;
 }
 
 function dirOf(name) {
@@ -299,6 +309,7 @@ function info() {
     const codeDesc = (p.module && typeof p.module.description === 'string') ? p.module.description : '';
     const hasCode = fs.existsSync(path.join(dir, 'index.js'));
     const problems = m.problems.slice();
+    if (m.type === 'pack') problems.push.apply(problems, packProblems(entry, cat));
     if (p.error) problems.push(p.error);
     else if (entry.active && hasCode && !all[name]) problems.push('riavvia la dock per caricare il codice');
     return {

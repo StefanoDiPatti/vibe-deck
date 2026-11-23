@@ -1,0 +1,18 @@
+{
+  "id": "blender",
+  "name": "Blender",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Shortcut page for Blender",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "apps": [
+      "blender"
+    ]
+  }
+}

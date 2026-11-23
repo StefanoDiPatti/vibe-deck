@@ -248,7 +248,7 @@ Customizations are made **one file at a time**: one page, app or command per fil
 | `config/services.json` | music, Claude, GitHub, Ollama, TODO, tablet timings ([reference](app/README.md#servicesjson)) | no |
 | `config/layout.json` | control panel choices (pages in the bar, button order) | no, the panel writes it |
 | `config/defaults/` | the project defaults: `pages/` (one page per file) and the other JSON files | yes |
-| `official-plugins/<id>/` | **official plugins** shipped with Vibe Deck (e.g. `creative`: BLENDER, DAVINCI, UNREAL pages), each with its `plugin.json` | yes |
+| `official-plugins/<id>/` | **official plugins** shipped with Vibe Deck (one per feature: `blender`, `davinci`, `unreal`…) and **packs** that group them (`creative`), each with its `plugin.json` | yes |
 | `plugins/<name>/` | **your plugins** (and, later, the ones from the market): extra actions, routes, pages, widgets and icons (see [Plugins](#plugins-new-widgets-and-actions)) | your choice |
 | `schema/` | JSON schemas for the editor (suggestions and field checks) | yes |
 | `data/` | personal data: games, accounts to show, log, encrypted secrets | no |
@@ -517,22 +517,37 @@ How to add the most common things **inside the project** (for your personal addi
 
 **Plugin manifest (`plugin.json`).** Every official plugin has one, local plugins may have one (`npm run new:widget` creates it):
 
+A **plugin** is one feature (here the BLENDER page, in `official-plugins/blender/pages/blender.json`):
+
 ```json
 {
-  "id": "creative",
-  "name": "Creative",
+  "id": "blender",
+  "name": "Blender",
   "version": "1.0.0",
-  "description": "Shortcut pages for Blender, DaVinci Resolve and Unreal Editor",
+  "description": "Shortcut page for Blender",
   "type": "plugin",
   "platforms": ["windows", "linux"],
   "engine": ">=2.1.1",
-  "permissions": { "apps": ["blender", "davinci", "unreal"] }
+  "permissions": { "apps": ["blender"] }
+}
+```
+
+A **pack** groups plugins and contains nothing but its `plugin.json`:
+
+```json
+{
+  "id": "creative",
+  "name": "Creative pack",
+  "version": "1.0.0",
+  "description": "Blender, DaVinci Resolve and Unreal Editor shortcut pages",
+  "type": "pack",
+  "includes": ["blender", "davinci", "unreal"]
 }
 ```
 
 - `id` must match the folder name; an official plugin wins over a local folder with the same name.
 - `platforms` and `engine`: on another system, or with an older Vibe Deck, the plugin stays off and the control panel says why.
-- `type: "pack"` with `includes: [...]` describes a bundle of plugins (used by the market).
+- `type: "pack"` with `includes: [...]`: a bundle of existing plugins; the control panel reports packs with other files or unknown plugins.
 - `permissions` lists what the plugin uses (sites, apps, commands, local resources): it will be shown before installing from the market.
 
 **Tablet language.** Tablet text is written in Italian (code and pages); with English selected the tablet translates what

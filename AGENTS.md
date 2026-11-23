@@ -61,6 +61,8 @@ breaking anything. The guide for people is in the [README](README.md), section *
    degrade with a clear message on Linux.
 8. **New features are plugins**: anything outside the base (HOME, MUSIC, APPS) goes in an official plugin
    (`official-plugins/<id>/` with `plugin.json`, see `schema/plugin.schema.json`), never in `config/defaults/`.
+   One plugin = one feature (e.g. `blender`); a **pack** (`"type": "pack"`, e.g. `creative`) only lists plugins in
+   `includes` and contains nothing but its `plugin.json`.
    The project is moving every existing page there, one plugin per pull request, to prepare the market.
 9. **Default files**: before changing a JSON file in `config/defaults/` that is not a page, add the fingerprint
    of the previous version to `config/defaults/history.json`. Better still: add a new file in the

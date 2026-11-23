@@ -1,0 +1,18 @@
+{
+  "id": "unreal",
+  "name": "Unreal Editor",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Play, compile C++, tools and views for Unreal Editor",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "apps": [
+      "unreal"
+    ]
+  }
+}

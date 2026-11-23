@@ -25,6 +25,8 @@ function plugin(root, name, manifest, pages) {
 
 plugin('official', 'studio', { id: 'studio', name: 'Studio', version: '1.2.0', description: 'Studio pages' }, ['studio']);
 plugin('official', 'bundle', { id: 'bundle', name: 'Bundle', version: '1.0.0', type: 'pack', includes: ['studio'] });
+fs.rmdirSync(path.join(tmp, 'official', 'bundle', 'pages'));
+plugin('official', 'messy', { id: 'messy', name: 'Messy', version: '1.0.0', type: 'pack', includes: ['studio', 'ghost'] }, ['messypage']);
 plugin('official', 'other-os', { id: 'other-os', name: 'Other OS', version: '1.0.0', platforms: [OTHER] }, ['otheros']);
 plugin('official', 'future', { id: 'future', name: 'Future', version: '1.0.0', engine: '>=99.0.0' }, ['future']);
 plugin('official', 'broken', '{ "id": "wrong", "version": "one" }');
@@ -35,7 +37,7 @@ const plugins = require('../server/plugins');
 const config = require('../server/config');
 
 test('official and local plugins are found together; inactive ones are left out', function () {
-  assert.deepStrictEqual(plugins.names(), ['broken', 'bundle', 'local', 'studio']);
+  assert.deepStrictEqual(plugins.names(), ['broken', 'local', 'studio'], 'packs carry no content of their own');
 });
 
 test('an official plugin wins over a local folder with the same name', function () {
@@ -52,6 +54,9 @@ test('manifest fields are read and checked', function () {
   assert.strictEqual(byName.studio.official, true);
   assert.strictEqual(byName.bundle.type, 'pack');
   assert.deepStrictEqual(byName.bundle.includes, ['studio']);
+  assert.strictEqual(byName.bundle.error, '');
+  assert.match(byName.messy.error, /solo plugin\.json/);
+  assert.match(byName.messy.error, /ghost/);
   assert.strictEqual(byName.local.official, false);
   assert.strictEqual(byName.local.error, '', 'a local plugin does not need plugin.json');
   assert.match(byName.broken.error, /"id"/);
@@ -69,6 +74,7 @@ test('pages come from active plugins only', function () {
   assert.ok(ids.indexOf('fakestudio') < 0, 'the shadowed local folder is not loaded');
   assert.ok(ids.indexOf('otheros') < 0);
   assert.ok(ids.indexOf('future') < 0);
+  assert.ok(ids.indexOf('messypage') < 0, 'pages inside a pack are ignored');
 });
 
 test('a new plugin folder is picked up without a restart', function () {
@@ -82,10 +88,15 @@ test('versions compare numerically', function () {
   assert.ok(!plugins.versionAtLeast('2.1.1', '2.2.0'));
 });
 
-test('the real official plugins have a valid manifest', function () {
+test('the real official plugins have a valid manifest; packs only list existing plugins', function () {
   const real = path.join(__dirname, '..', 'official-plugins');
-  fs.readdirSync(real).forEach(function (name) {
+  const all = fs.readdirSync(real);
+  all.forEach(function (name) {
     const m = plugins.readManifest(name, path.join(real, name), true);
     assert.deepStrictEqual(m.problems, [], name);
+    if (m.type === 'pack') {
+      assert.deepStrictEqual(fs.readdirSync(path.join(real, name)), ['plugin.json'], name + ' contains only plugin.json');
+      m.includes.forEach(function (n) { assert.ok(all.indexOf(n) >= 0, name + ' includes ' + n); });
+    }
   });
 });
