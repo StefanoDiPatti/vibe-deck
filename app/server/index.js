@@ -12,7 +12,6 @@ const actions = require('./actions');
 const system = require('./services/system');
 const media = require('./services/media');
 const github = require('./services/github');
-const ollama = require('./services/ollama');
 const claude = require('./services/claude');
 const todo = require('./services/todo');
 const todosync = require('./services/todosync');
@@ -439,13 +438,6 @@ app.post('/api/todo/toggle', route(async function (req) { await todo.toggle((req
 app.post('/api/todo/remove', route(async function (req) { await todo.remove((req.body || {}).id); return todoState(); }));
 app.post('/api/todo/sync', route(async function () { await todosync.sync(); return todoState(); }));
 app.post('/api/todo/clear', route(async function () { const removed = await todo.clearDone(); return Object.assign(todoState(), { removed: removed }); }));
-
-app.get('/api/ollama/models', route(function () { return ollama.models(); }));
-app.post('/api/ollama/chat', route(function (req) {
-  const b = req.body || {};
-  if (!b.text || !String(b.text).trim()) throw badRequest('Messaggio vuoto');
-  return ollama.chat(b.sessionId, String(b.model || ''), String(b.text).slice(0, 8000));
-}));
 
 app.get('/api/claude/info', route(function () {
   return Object.assign(claude.info(), { voiceServer: voice.available() });

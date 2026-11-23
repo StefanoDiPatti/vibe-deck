@@ -224,7 +224,7 @@ demo.get('/api/plugins/viber/tasks', function (req, res) {
   ok(res, { project: 'shop-web', tasks: [{ id: 't1', text: 'Pagamento con un tocco', status: 'in_progress', branch: 'feature/pagamento', steps: [
     { text: 'Pulsante nel carrello', status: 'done' }, { text: 'Conferma con impronta', status: 'in_progress' }, { text: 'Test e PR', status: 'open' }] }] });
 });
-demo.get('/api/ollama/models', function (req, res) { ok(res, { running: true, models: [{ name: 'llama3.2:3b', size: 2 }, { name: 'qwen2.5-coder:7b', size: 4.7 }], error: '' }); });
+demo.get('/api/plugins/ollama/models', function (req, res) { ok(res, { running: true, models: [{ name: 'llama3.2:3b', size: 2 }, { name: 'qwen2.5-coder:7b', size: 4.7 }], error: '' }); });
 
 function shotScript(q, panel) {
   const set = function (k, v) { return 'localStorage.setItem(' + JSON.stringify(k) + ',' + JSON.stringify(v) + ');'; };
