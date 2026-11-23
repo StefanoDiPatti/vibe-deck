@@ -439,7 +439,7 @@
   setInterval(function () {
     var mins = powerCfg().sleepAfterMin;
     if (D.power.state() === 'asleep') { paintSaver(); return; }
-    if (mins > 0 && app.cfg && !D.$('pair').offsetParent && new Date().getTime() - D.power.lastInput() > mins * 60000) sleepNow();
+    if (mins > 0 && !D.store.get('awake', false) && app.cfg && !D.$('pair').offsetParent && new Date().getTime() - D.power.lastInput() > mins * 60000) sleepNow();
   }, 30000);
 
   function loadConfig() {
@@ -545,7 +545,7 @@
   D.$('pair-code').addEventListener('keydown', function (e) { if (e.keyCode === 13) submitPair(); }, false);
 
   // ------------------------------------------------------------ temi
-  // Scelti dal pulsante accanto all'orario, ricordati su questo tablet. Il CSS del tema
+  // Scelti dal menù impostazioni (rotellina accanto all'orario), ricordati su questo tablet. Il CSS del tema
   // (css/themes/<tema>.css, generato da scripts/build-themes.js) si carica dopo dock.css.
   var THEMES = [
     { id: 'classic', name: 'Classico', sw: ['#0b0f14', '#18212c', '#3d8bfd'] },
@@ -602,45 +602,60 @@
     if (app.cfg && app.page) showPage(app.page.id);   // ridisegna (colori dei pulsanti)
   }
 
-  var themeBtn = D.$('theme-btn');
-  themeBtn.innerHTML = Icons.html('palette');
-  var themeMenu = null;
-  function closeThemes() { if (themeMenu) { themeMenu.parentNode.removeChild(themeMenu); themeMenu = null; } }
-  function openThemes() {
-    closeThemes();
-    themeMenu = D.el('div', 'theme-layer');
-    var html = '<div class="theme-menu"><div class="theme-h">TEMA</div>';
-    for (var i = 0; i < THEMES.length; i++) {
-      var t = THEMES[i], sw = '';
-      for (var k = 0; k < t.sw.length; k++) sw += '<i style="background:' + t.sw[k] + '"></i>';
-      html += '<div class="theme-opt' + (t.id === app.theme ? ' on' : '') + '" data-theme="' + t.id + '"><span class="theme-sw">' + sw + '</span>' + D.esc(t.name) + '</div>';
-    }
-    themeMenu.innerHTML = html + '</div>';
-    document.body.appendChild(themeMenu);
-    D.bindTap(themeMenu, {
-      onTap: function (t) {
-        var o = D.closestAttr(t, 'data-theme', themeMenu);
-        closeThemes();                       // tocco fuori dal menu = chiude
-        if (o) setTheme(o.getAttribute('data-theme'));
-      }
-    });
-  }
-  D.bindTap(themeBtn, { onTap: function () { if (themeMenu) closeThemes(); else openThemes(); } });
-
-  // Lingua (accanto al tema): bandierina della lingua attuale, un tocco passa all'altra e ricarica la pagina
+  // ------------------------------------------------------------ impostazioni (rotellina accanto all'orario)
+  // Un solo menù: tema, lingua e "Sempre attivo" (niente salvaschermo con l'ora). Tutto ricordato su questo tablet.
   var FLAGS = {
     it: '<svg class="flag" viewBox="0 0 3 2" width="30" height="20"><rect width="1" height="2" fill="#009246"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#ce2b37"/></svg>',
     en: '<svg class="flag" viewBox="0 0 60 40" width="30" height="20"><rect width="60" height="40" fill="#012169"/>' +
       '<path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" stroke-width="8"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#c8102e" stroke-width="3"/>' +
       '<path d="M30,0 V40 M0,20 H60" stroke="#fff" stroke-width="12"/><path d="M30,0 V40 M0,20 H60" stroke="#c8102e" stroke-width="7"/></svg>'
   };
-  var langBtn = D.$('lang-btn');
-  var langNow = I18n.lang() === 'en' ? 'en' : 'it';
-  // senza SVG (browser molto vecchi) resta la sigla
-  langBtn.innerHTML = Icons.has('home') ? FLAGS[langNow] : (langNow === 'en' ? 'EN' : 'IT');
-  langBtn.className = 'notr';
-  langBtn.setAttribute('title', langNow === 'en' ? 'English · tocca per l\'italiano' : 'Italiano · tap for English');
-  D.bindTap(langBtn, { onTap: function () { I18n.set(I18n.lang() === 'en' ? 'it' : 'en'); } });
+  var LANGS = [{ code: 'it', name: 'Italiano' }, { code: 'en', name: 'English' }];
+  var setBtn = D.$('settings-btn');
+  setBtn.innerHTML = Icons.html('settings');
+  setBtn.setAttribute('title', 'Impostazioni');
+  var setMenu = null;
+  function closeSettings() { if (setMenu) { setMenu.parentNode.removeChild(setMenu); setMenu = null; } }
+  function openSettings() {
+    closeSettings();
+    setMenu = D.el('div', 'theme-layer');
+    var i, html = '<div class="theme-menu set-menu"><div class="set-col"><div class="theme-h">TEMA</div>';
+    for (i = 0; i < THEMES.length; i++) {
+      var t = THEMES[i], sw = '';
+      for (var k = 0; k < t.sw.length; k++) sw += '<i style="background:' + t.sw[k] + '"></i>';
+      html += '<div class="theme-opt' + (t.id === app.theme ? ' on' : '') + '" data-theme="' + t.id + '"><span class="theme-sw">' + sw + '</span>' + D.esc(t.name) + '</div>';
+    }
+    html += '</div><div class="set-col set-col2"><div class="theme-h">LINGUA</div>';
+    var now = I18n.lang() === 'en' ? 'en' : 'it';
+    for (i = 0; i < LANGS.length; i++) {
+      var l = LANGS[i];
+      // senza SVG (browser molto vecchi) resta la sigla
+      var flag = Icons.has('home') ? FLAGS[l.code] : '<b class="set-code">' + l.code.toUpperCase() + '</b>';
+      html += '<div class="theme-opt notr' + (l.code === now ? ' on' : '') + '" data-lang="' + l.code + '"><span class="set-flag">' + flag + '</span>' + l.name + '</div>';
+    }
+    html += '<div class="theme-h set-h2">SCHERMO</div>' +
+      '<div class="theme-opt set-awake' + (D.store.get('awake', false) ? ' on' : '') + '" data-awake="1">' + 'Sempre attivo' + '<span class="set-tog"><i></i></span></div>' +
+      '<div class="set-desc">Niente schermata con l\'ora per il risparmio energetico.</div>';
+    setMenu.innerHTML = html + '</div></div>';
+    document.body.appendChild(setMenu);
+    D.bindTap(setMenu, {
+      onTap: function (t) {
+        var aw = D.closestAttr(t, 'data-awake', setMenu);
+        if (aw) {                            // interruttore: il menù resta aperto
+          var on = !D.store.get('awake', false);
+          D.store.set('awake', on);
+          if (on) D.addClass(aw, 'on'); else D.removeClass(aw, 'on');
+          return;
+        }
+        var th = D.closestAttr(t, 'data-theme', setMenu);
+        var lg = D.closestAttr(t, 'data-lang', setMenu);
+        closeSettings();                     // tocco fuori dal menù = chiude
+        if (th) setTheme(th.getAttribute('data-theme'));
+        if (lg && lg.getAttribute('data-lang') !== now) I18n.set(lg.getAttribute('data-lang'));   // ricarica la pagina
+      }
+    });
+  }
+  D.bindTap(setBtn, { onTap: function () { if (setMenu) closeSettings(); else openSettings(); } });
   I18n.watch();
 
   // ------------------------------------------------------------ orologio, fullscreen

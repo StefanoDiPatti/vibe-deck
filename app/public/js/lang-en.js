@@ -69,7 +69,9 @@
     'Il PC ha una versione vecchia della dock: riavviala (icona vicino all\'orologio → Riavvia).': 'The PC runs an old version of the dock: restart it (icon near the clock → Restart).',
     'Caricamento…': 'Loading…', 'Carico…': 'Loading…', 'Errore': 'Error', 'Non disponibili': 'Not available',
     'Non disponibili su questo sistema': 'Not available on this system', 'Su questo sistema non è supportato': 'Not supported on this system',
-    'Classico': 'Classic', 'Neo-brutalista': 'Neo-brutalist', 'Lingua': 'Language'
+    'Classico': 'Classic', 'Neo-brutalista': 'Neo-brutalist', 'Lingua': 'Language',
+    'Impostazioni': 'Settings', 'Sempre attivo': 'Always on',
+    'Niente schermata con l\'ora per il risparmio energetico.': 'No power-saving clock screen.'
   });
 
   // ---------------------------------------------------------------- musica
