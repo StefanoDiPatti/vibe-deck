@@ -134,6 +134,8 @@ function manifests() {
 }
 
 let loaded = null;
+let control = { only: function (req, res, next) { next(); }, info: function () { return {}; } };
+function setControl(c) { control = c; }
 
 function context(name) {
   const dataDir = path.join(paths.DATA_DIR, 'plugins', name);
@@ -144,6 +146,8 @@ function context(name) {
     get config() { return require('./config'); },
     get platform() { return require('./platform'); },
     get keys() { return require('./platform/keys'); },
+    get controlOnly() { return control.only; },
+    controlInfo: function () { return control.info(); },
     log: {
       info: function (m) { log.info('plugin:' + name, m); },
       warn: function (m) { log.warn('plugin:' + name, m); },
@@ -212,6 +216,56 @@ function registerActions(HANDLERS) {
   });
 }
 
+function withModule(fn) {
+  const all = load();
+  Object.keys(all).forEach(function (n) { if (all[n].module) fn(n, all[n].module); });
+}
+
+function controlInfo() {
+  const out = {};
+  withModule(function (n, m) {
+    if (!m.control || typeof m.control.info !== 'function') return;
+    try { out[n] = m.control.info(context(n)); } catch (e) { log.warn('plugin', n + ': control.info: ' + e.message); }
+  });
+  return out;
+}
+
+async function controlPrepare() {
+  const jobs = [];
+  withModule(function (n, m) {
+    if (m.control && typeof m.control.prepare === 'function') jobs.push(Promise.resolve().then(function () { return m.control.prepare(context(n)); }).catch(function (e) { log.warn('plugin', n + ': control.prepare: ' + e.message); }));
+  });
+  await Promise.all(jobs);
+}
+
+function mountControl(app, express, guard) {
+  withModule(function (n, m) {
+    if (!m.control || typeof m.control.routes !== 'function') return;
+    const router = express.Router();
+    try {
+      m.control.routes(router, context(n));
+      app.use('/api/control/' + n, guard, router);
+    } catch (e) {
+      load()[n].error = 'rotte del pannello non registrate: ' + e.message;
+      log.error('plugin', n + ': ' + load()[n].error);
+    }
+  });
+}
+
+function sources() {
+  const out = {};
+  withModule(function (n, m) {
+    if (m.sources && typeof m.sources === 'object') Object.keys(m.sources).forEach(function (k) { if (typeof m.sources[k] === 'function') out[k] = { plugin: n, fn: m.sources[k] }; });
+  });
+  return out;
+}
+
+function sourceTiles(name) {
+  const s = sources()[name];
+  if (!s) return null;
+  try { return s.fn(context(s.plugin)); } catch (e) { log.warn('plugin', s.plugin + ': source ' + name + ': ' + e.message); return []; }
+}
+
 function hook(name, payload) {
   const all = load();
   const out = [];
@@ -239,22 +293,25 @@ function mountRoutes(app, express) {
   });
 }
 
-function scripts(ext) {
+function scripts(ext, sub) {
   const re = ext === 'css' ? /\.css$/i : /\.js$/i;
+  const folder = sub || 'public';
   const out = [];
   names().forEach(function (name) {
-    const dir = path.join(dirOf(name), 'public');
+    const dir = path.join(dirOf(name), folder);
     let files = [];
     try { files = fs.readdirSync(dir).filter(function (f) { return re.test(f); }).sort(); } catch (e) { files = []; }
     files.forEach(function (f) {
       let mtime = 0;
       try { mtime = fs.statSync(path.join(dir, f)).mtimeMs; } catch (e) { mtime = 0; }
-      out.push({ plugin: name, file: f, url: 'plugins/' + name + '/' + f, path: path.join(dir, f), mtime: mtime });
+      out.push({ plugin: name, file: f, url: 'plugins/' + name + '/' + (sub ? sub + '/' : '') + f, path: path.join(dir, f), mtime: mtime });
     });
   });
   return out;
 }
 function styles() { return scripts('css'); }
+function controlScripts() { return scripts('js', 'control'); }
+function controlStyles() { return scripts('css', 'control'); }
 
 function registered(kind) {
   const re = new RegExp(kind + "\\.register\\(\\s*['\"]([A-Za-z0-9_.-]+)['\"]", 'g');
@@ -370,5 +427,7 @@ function reset() {
 module.exports = {
   baseDir: baseDir, officialDir: officialDir, dirOf: dirOf, manifests: manifests, readManifest: readManifest, versionAtLeast: versionAtLeast, names: names, configDirs: configDirs, load: load,
   registerActions: registerActions, mountRoutes: mountRoutes, hook: hook,
+  setControl: setControl, controlInfo: controlInfo, controlPrepare: controlPrepare, mountControl: mountControl, sourceTiles: sourceTiles,
+  controlScripts: controlScripts, controlStyles: controlStyles,
   scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
 };

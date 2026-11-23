@@ -1,0 +1,19 @@
+{
+  "id": "games",
+  "name": "Games",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Your games on the tablet: picked in the control panel with their icons, green dot when running, a tap brings them to the front",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "local": [
+      "game-files",
+      "game-icons"
+    ]
+  }
+}

@@ -50,7 +50,8 @@ test('nessun gioco nei default (si aggiungono dal pannello); pagine GAMES e SCHE
   const defApps = config.parseJson(require('fs').readFileSync(require('path').join(__dirname, '..', 'config', 'defaults', 'apps.json'), 'utf8')).apps;
   Object.keys(defApps).forEach(function (id) { assert.ok(!defApps[id].game, id + ': i giochi non vanno nel repository'); });
   const sp = config.parseJson(require('fs').readFileSync(require('path').join(__dirname, '..', 'official-plugins', 'screens', 'pages', 'screens.json'), 'utf8'));
-  const raw = Object.assign({}, config.defaultDock(), { pages: config.defaultDock().pages.concat([sp]) });
+  const gp = config.parseJson(require('fs').readFileSync(require('path').join(__dirname, '..', 'official-plugins', 'games', 'pages', 'games.json'), 'utf8'));
+  const raw = Object.assign({}, config.defaultDock(), { pages: config.defaultDock().pages.concat([sp, gp]) });
   assert.strictEqual(raw.pages.filter(function (p) { return p.id === 'games'; })[0].source, 'games');
   const ids = config.normalizeDock(raw, {}, 'windows').pages.map(function (p) { return p.id; });
   assert.ok(ids.indexOf('games') >= 0 && ids.indexOf('screens') >= 0);

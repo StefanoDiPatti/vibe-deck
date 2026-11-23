@@ -186,10 +186,6 @@ svg.ic.dc-camflag { fill: #127a3a; }
 .ml-note { background: #ffffff; color: #2b2b2b; }
 .ml-note svg.ic { fill: #2b2b2b; }
 .saver { background: #111111; }
-.gm-item { background: #fffdf7; }
-.gm-item.pressed, .gm-item.busy { background: #ffd23f; }
-.gm-pic svg.ic { fill: #5a5446; }
-.gm-item.running:before { background: #2bd96b; }
 .dm-p { background: #fffdf7; color: #2b2b2b; }
 .dm-p.talk { border-color: #2bd96b; color: #111111; }
 .dm-btn { background: #efe8d8; }

@@ -177,10 +177,6 @@ svg.ic.dc-camflag { fill: #7fd99a; }
 .ml-body { color: #e2e2e6; }
 .ml-note { background: #272a2f; color: #c4c6cf; }
 .ml-note svg.ic { fill: #c4c6cf; }
-.gm-item { background: #1d2024; }
-.gm-item.pressed, .gm-item.busy { background: #2c3a4f; }
-.gm-pic svg.ic { fill: #8e9099; }
-.gm-item.running:before { background: #7fd99a; }
 .dm-p { background: #1d2024; color: #c4c6cf; }
 .dm-p.talk { border-color: #7fd99a; color: #e9e9ee; }
 .dm-btn { background: #32353a; }

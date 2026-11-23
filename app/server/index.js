@@ -19,7 +19,6 @@ const appsState = require('./services/apps');
 const discord = require('./services/discord');
 const pairing = require('./services/pairing');
 const mail = require('./services/mail');
-const games = require('./services/games');
 const configCheck = require('./check');
 const plugins = require('./plugins');
 const home = require('./home');
@@ -160,14 +159,23 @@ function controlOnly(req, res, next) {
   if (isLoopback(req) && req.get('x-dock-control') === '1') return next();
   res.status(403).json({ ok: false, error: { code: 'FORBIDDEN', message: 'Solo dal pannello di controllo su questo PC' } });
 }
+function assetUrl(s) { return '/' + s.url + '?v=' + Math.round(s.mtime).toString(36); }
 app.get(['/control', '/control/'], localPage, function (req, res) {
   res.setHeader('Cache-Control', 'no-store');
   const list = plugins.scripts();
-  const html = require('fs').readFileSync(path.join(paths.CONTROL_DIR, 'index.html'), 'utf8');
-  if (!list.length) return res.type('html').send(html);
-  const tags = '<script>window.Widgets = window.Widgets || { register: function () {}, helpers: {} };</script>\n  ' +
-    list.map(function (s) { return '<script src="/' + s.url + '?v=' + Math.round(s.mtime).toString(36) + '"></script>\n  '; }).join('');
-  res.type('html').send(html.replace('<script src="/control/control.js"', function (m) { return tags + m; }));
+  let html = require('fs').readFileSync(path.join(paths.CONTROL_DIR, 'index.html'), 'utf8');
+  const before = list.length ? '<script>window.Widgets = window.Widgets || { register: function () {}, helpers: {} };</script>\n  ' +
+    list.map(function (s) { return '<script src="' + assetUrl(s) + '"></script>\n  '; }).join('') : '';
+  const after = plugins.controlScripts().map(function (s) { return '\n  <script src="' + assetUrl(s) + '"></script>'; }).join('');
+  const css = plugins.controlStyles().map(function (s) { return '  <link rel="stylesheet" href="' + assetUrl(s) + '">\n'; }).join('');
+  html = html.replace('<script src="/control/control.js"></script>', function (m) { return before + m + after; });
+  res.type('html').send(html.replace('</head>', function (m) { return css + m; }));
+});
+app.get('/plugins/:name/control/:file', localPage, function (req, res) {
+  const name = req.params.name, file = req.params.file;
+  if (!plugins.NAME_RE.test(name) || plugins.names().indexOf(name) < 0 || !/^[A-Za-z0-9_-][A-Za-z0-9_.-]*\.(js|css)$/.test(file)) return res.status(404).end();
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(plugins.dirOf(name), 'control', file), function (err) { if (err && !res.headersSent) res.status(404).end(); });
 });
 app.use('/control', localPage, express.static(paths.CONTROL_DIR, { index: false, setHeaders: function (res) { res.setHeader('Cache-Control', 'no-cache'); } }));
 
@@ -230,8 +238,8 @@ function controlInfo() {
     tablet: urls,
     pairing: pairing.links(PORT),
     mail: mail.panelInfo(),
-    games: games.panelInfo(),
     checks: safeCheck(),
+    ...plugins.controlInfo(),
     configErrors: config.errors(),
     version: pkg.version,
     platform: platform.name
@@ -243,7 +251,7 @@ app.get('/api/control/qr', controlOnly, route(async function (req) {
   if (!ok) throw Object.assign(new Error('Link sconosciuto'), { code: 'BAD_REQUEST' });
   return { link: link, svg: await pairing.svg(link) };
 }));
-app.get('/api/control/info', controlOnly, route(async function () { await discord.ensure(); return controlInfo(); }));
+app.get('/api/control/info', controlOnly, route(async function () { await discord.ensure(); await plugins.controlPrepare(); return controlInfo(); }));
 app.post('/api/control/layout', controlOnly, route(function (req) {
   const b = req.body || {};
   config.saveLayout(b.tabs, b.home, b.tiles);
@@ -268,32 +276,12 @@ app.post('/api/control/mail/open', controlOnly, route(function () { return mail.
 app.post('/api/control/mail/show', controlOnly, route(function (req) { const b = req.body || {}; mail.setShown(String(b.id || ''), b.shown !== false); return controlInfo(); }));
 app.post('/api/control/discord/logout', controlOnly, route(function () { discord.logout(); return controlInfo(); }));
 
-app.post('/api/control/games/pick', controlOnly, route(async function () {
-  const picked = await games.pickFile();
-  if (!picked.path) return { path: '' };
-  const info = await games.fileInfo(picked.path);
-  const icon = await games.fileIcon(picked.path).catch(function (e) { log.debug('games', 'icona del file: ' + e.message); return { token: '' }; });
-  return Object.assign(info, { iconToken: icon.token });
-}));
-app.post('/api/control/games/fileicon', controlOnly, route(function (req) { return games.fileIconOf((req.body || {}).id); }));
-app.post('/api/control/games/search', controlOnly, route(function (req) { return games.searchIcons((req.body || {}).name); }));
-app.post('/api/control/games', controlOnly, route(async function (req) { await games.add(req.body || {}); return controlInfo(); }));
-app.post('/api/control/games/remove', controlOnly, route(function (req) { games.remove((req.body || {}).id); return controlInfo(); }));
-app.post('/api/control/games/icon', controlOnly, route(async function (req) { const b = req.body || {}; await games.setIcon(b.id, b.icon); return controlInfo(); }));
-app.post('/api/control/games/order', controlOnly, route(function (req) { games.reorder((req.body || {}).ids); return controlInfo(); }));
-function sendImage(res, file) { res.setHeader('Cache-Control', 'no-cache'); res.sendFile(file); }
-app.get('/api/control/games/preview/:token', localPage, function (req, res) {
-  try { sendImage(res, games.previewFile(req.params.token)); } catch (e) { res.status(404).end(); }
-});
-app.get('/api/control/games/icon/:id', localPage, function (req, res) {
-  try { sendImage(res, games.icon(req.params.id)); } catch (e) { res.status(404).end(); }
-});
+
+plugins.setControl({ only: controlOnly, info: controlInfo });
+plugins.mountControl(app, express, localPage);
 
 app.use('/api', auth.requireToken);
 
-app.get('/api/games/icon/:id', function (req, res) {
-  try { res.setHeader('Cache-Control', 'private, max-age=86400'); res.sendFile(games.icon(req.params.id)); } catch (e) { res.status(404).end(); }
-});
 
 app.get('/api/mail', route(function () { return mail.state(); }));
 app.get('/api/mail/list', route(function (req) { return mail.list(String(req.query.account || ''), req.query.refresh === '1'); }));

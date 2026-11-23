@@ -3,8 +3,8 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { execFile } = require('child_process');
-const paths = require('../paths');
-const log = require('../log');
+const paths = require('../../../server/paths');
+const log = require('../../../server/log');
 
 const FILE = path.join(paths.DATA_DIR, 'games.json');
 const ICON_DIR = path.join(paths.DATA_DIR, 'game-icons');
@@ -48,7 +48,7 @@ function apps() {
 }
 
 function iconUrl(g) {
-  return g.icon ? '/api/games/icon/' + encodeURIComponent(g.id) + '?v=' + encodeURIComponent(g.iconRev || '') : null;
+  return g.icon ? '/api/plugins/games/icon/' + encodeURIComponent(g.id) + '?v=' + encodeURIComponent(g.iconRev || '') : null;
 }
 
 function tiles() {

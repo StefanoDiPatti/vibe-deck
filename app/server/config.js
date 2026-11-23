@@ -367,15 +367,19 @@ function defaultDock() {
   return Object.assign({}, d, { pages: pages });
 }
 
-function withGames(d) {
-  if (!Array.isArray(d.pages) || !d.pages.some(function (p) { return p && p.source === 'games'; })) return d;
-  const games = require('./services/games');
+function withSources(d) {
+  if (!Array.isArray(d.pages) || !d.pages.some(function (p) { return p && typeof p.source === 'string'; })) return d;
+  const plugins = require('./plugins');
   return Object.assign({}, d, {
-    pages: d.pages.map(function (p) { return p && p.source === 'games' ? Object.assign({}, p, { tiles: games.tiles(), autoGrid: true }) : p; })
+    pages: d.pages.map(function (p) {
+      if (!p || typeof p.source !== 'string') return p;
+      const tiles = plugins.sourceTiles(p.source);
+      return Array.isArray(tiles) ? Object.assign({}, p, { tiles: tiles, autoGrid: true }) : p;
+    })
   });
 }
 
-function dock() { return normalizeDock(withGames(mergedDock()), get('layout')); }
+function dock() { return normalizeDock(withSources(mergedDock()), get('layout')); }
 
 function tabletDock() {
   const d = dock();
@@ -393,10 +397,11 @@ function defaultSection(name) {
 }
 
 function apps() {
-  const games = require('./services/games').apps();
+  const fromHooks = {};
+  require('./plugins').hook('apps').forEach(function (a) { if (a && typeof a === 'object') Object.assign(fromHooks, a); });
   const user = (get('apps').apps) || {};
   const defaults = fileFor('apps') === path.join(paths.DEFAULTS_DIR, 'apps.json') ? {} : defaultSection('apps');
-  return Object.assign({}, defaults, entriesIn(paths.DEFAULTS_DIR, 'apps'), fromPlugins('apps'), user, entriesIn(paths.CONFIG_DIR, 'apps'), games);
+  return Object.assign({}, defaults, entriesIn(paths.DEFAULTS_DIR, 'apps'), fromPlugins('apps'), user, entriesIn(paths.CONFIG_DIR, 'apps'), fromHooks);
 }
 
 function commands() {
@@ -421,8 +426,8 @@ function findTile(pageId, tileId) {
   return null;
 }
 
-function gamesStamp() {
-  try { return Math.round(fs.statSync(path.join(paths.DATA_DIR, 'games.json')).mtimeMs); } catch (e) { return 0; }
+function pluginStamp() {
+  return require('./plugins').hook('stamp').filter(function (s) { return s !== undefined && s !== null; }).join('.');
 }
 
 function dirsStamp() {
@@ -440,11 +445,11 @@ function version() {
   return FILES.map(function (name) {
     get(name);
     return cache[name] ? Math.round(cache[name].mtime) : 0;
-  }).concat([gamesStamp(), dirsStamp()]).join('-');
+  }).concat([pluginStamp(), dirsStamp()]).join('-');
 }
 
 function saveLayout(tabs, home, tiles) {
-  const all = normalizeDock(withGames(mergedDock()), {});
+  const all = normalizeDock(withSources(mergedDock()), {});
   const ids = {};
   all.pages.forEach(function (p) { ids[p.id] = p; });
   tabs = (Array.isArray(tabs) ? tabs : []).map(String).filter(function (id, i, a) { return ids[id] && a.indexOf(id) === i; });
