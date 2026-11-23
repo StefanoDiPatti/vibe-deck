@@ -80,7 +80,7 @@ test('media: comando non valido rifiutato', async function () {
 });
 
 test('github/open accetta solo repository noti', async function () {
-  const r = await call('POST', '/api/github/open', { repo: 'evil/repo' }, 'TESTCODE');
+  const r = await call('POST', '/api/plugins/github/open', { repo: 'evil/repo' }, 'TESTCODE');
   assert.strictEqual(r.status, 404);
 });
 

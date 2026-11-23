@@ -73,14 +73,6 @@ svg.ic { fill: #111111; }
 .np-btn.np-opt { background: #ffffff; border: 1px solid #111111; color: #2b2b2b; }
 .np-btn.on { border-color: #111111; background: #9cc4ff; color: #111111; }
 .np-vollabel { color: #2b2b2b; }
-.gh-totals { color: #2b2b2b; }
-.gh-totals.err { color: #c4271a; }
-.gh-row { background: #ffffff; }
-.gh-row.pressed { background: #ffd23f; }
-.gh-priv { color: #8a5a00; border: 1px solid #ffd23f; }
-.gh-msg { color: #2b2b2b; }
-.gh-msg.err { color: #c4271a; }
-.gh-when { color: #5a5446; }
 .badge { background: #efe8d8; }
 .badge.pr { background: #fff0b3; }
 .badge.is { background: #fff0b3; }
@@ -276,7 +268,6 @@ svg.ic.dc-camflag { fill: #127a3a; }
 .dm-btn { background: #efe8d8; }
 .dm-btn.on { background: #ff6b5b; }
 .dm-btn.pressed { background: #4d9dff; }
-.gh-tools .sbtn.on { background: #9cc4ff; }
 .gg-sec { color: #1f5fd1; }
 .gg-note { color: #5a5446; }
 .gg-row { background: #ffffff; border-left: 4px solid #111111; }

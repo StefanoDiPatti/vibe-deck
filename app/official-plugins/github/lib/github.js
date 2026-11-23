@@ -1,6 +1,6 @@
-const config = require('../config');
-const common = require('../platform/common');
-const log = require('../log');
+const config = require('../../../server/config');
+const common = require('../../../server/platform/common');
+const log = require('../../../server/log');
 
 const API = 'https://api.github.com';
 let tokenCache = { value: undefined };

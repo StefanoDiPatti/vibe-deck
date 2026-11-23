@@ -200,7 +200,7 @@ test('pagine BROWSER DEV e ANDROID e app DOCKER: disponibili e con una variante 
 });
 
 test('GitHub: i workflow di deploy si riconoscono dal nome o dal file', function () {
-  const g = require('../server/services/github');
+  const g = require('../official-plugins/github/lib/github');
   assert.ok(g.isDeploy({ name: 'Deploy to Vercel' }));
   assert.ok(g.isDeploy({ name: 'pages build and deployment' }));
   assert.ok(g.isDeploy({ name: 'build', path: '.github/workflows/cd.yml' }));

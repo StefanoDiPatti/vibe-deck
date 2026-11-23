@@ -1,0 +1,18 @@
+.w-gh .w-list { top: 74px; }
+.w-gh .gg { top: 40px; }
+.gh-totals { font-size: 14px; color: #b6c4d2; height: 26px; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gh-totals.err { color: #ff9c94; }
+.gh-row { position: relative; background: #1d2835; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; min-height: 64px; }
+.gh-row.pressed { background: #26354a; }
+.gh-name { font-weight: bold; font-size: 17px; margin-right: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gh-priv { font-size: 11px; color: #d29922; border: 1px solid #d29922; border-radius: 4px; padding: 0 4px; vertical-align: 2px; }
+.gh-msg { font-size: 14px; color: #9fb3c8; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gh-msg.err { color: #ff9c94; }
+.gh-when { color: #6e7f90; }
+.gh-badges { position: absolute; right: 10px; top: 8px; white-space: nowrap; }
+.gh-tools { position: absolute; right: 0; top: 0; white-space: nowrap; }
+.gh-tools .sbtn { position: static; display: inline-block; margin-left: 6px; }
+.gh-tools .sbtn.on { background: #1f3b63; }
+@media (max-width: 860px) {
+  .gh-name { margin-right: 220px; }
+}

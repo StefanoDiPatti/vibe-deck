@@ -5,7 +5,6 @@ const CATALOG = [
   { id: 'todo', widget: 'todo', label: 'Note e TODO', icon: 'check', page: 'HOME', description: 'Le attività (Memo di Windows o lista della dock), con dettatura', w: 3, h: 4, minW: 2, minH: 2 },
   { id: 'system', widget: 'system', label: 'Diagnostica', icon: 'cpu', page: 'HOME', description: 'CPU, GPU e RAM con le temperature', w: 3, h: 2, minW: 2, minH: 2 },
   { id: 'clock', widget: 'clock', label: 'Orologio', icon: 'target', page: 'HOME', description: 'Ora e data grandi, nel font del tema', w: 2, h: 1, minW: 1, minH: 1 },
-  { id: 'github', widget: 'github', label: 'GitHub', icon: 'github', page: 'GITHUB', description: 'I tuoi repository con CI e pull request', w: 3, h: 2, minW: 2, minH: 2 },
   { id: 'mail', widget: 'mail', label: 'Email', icon: 'mail', page: 'EMAIL', description: 'Messaggi da Thunderbird', w: 3, h: 2, minW: 3, minH: 2 },
   { id: 'audio', widget: 'audio', label: 'Audio', icon: 'volup', page: 'AUDIO', description: 'Uscita, microfono e volume delle app', w: 3, h: 3, minW: 3, minH: 2 },
   { id: 'discordmini', widget: 'discordmini', label: 'Discord', icon: 'headset', page: 'DISCORD', description: 'La stanza in cui sei, chi parla, mute e silenzia', w: 2, h: 2, minW: 2, minH: 2 },

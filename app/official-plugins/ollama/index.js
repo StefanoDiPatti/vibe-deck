@@ -1,7 +1,7 @@
 'use strict';
 const ollama = require('./lib/ollama');
 
-function bad(msg) { return Object.assign(new Error(msg), { code: 'BAD_REQUEST', status: 400 }); }
+function bad(msg) { return Object.assign(new Error(msg), { code: 'BAD_REQUEST' }); }
 
 module.exports = {
   description: 'Chat with the local Ollama models',

@@ -3,14 +3,15 @@
   "name": "Developer pack",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
-  "description": "Dev, Claude, Ollama, Android and browser developer pages for programmers",
+  "description": "Dev, Claude, Ollama, GitHub, Android and browser developer pages for programmers",
   "type": "pack",
   "includes": [
     "dev",
     "claude",
     "ollama",
     "android",
-    "browserdev"
+    "browserdev",
+    "github"
   ],
   "engine": ">=2.1.1"
 }

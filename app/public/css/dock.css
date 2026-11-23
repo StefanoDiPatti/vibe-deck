@@ -281,17 +281,6 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .np-btn.off { opacity: 0.3; }
 .np-vollabel { display: inline-block; vertical-align: top; height: 38px; line-height: 38px; margin-left: 6px; font-size: 13px; font-weight: bold; color: #9fb3c8; min-width: 72px; }
 
-.gh-totals { font-size: 14px; color: #b6c4d2; height: 26px; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gh-totals.err { color: #ff9c94; }
-.w-gh .w-list { top: 74px; }
-.gh-row { position: relative; background: #1d2835; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; min-height: 64px; }
-.gh-row.pressed { background: #26354a; }
-.gh-name { font-weight: bold; font-size: 17px; margin-right: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gh-priv { font-size: 11px; color: #d29922; border: 1px solid #d29922; border-radius: 4px; padding: 0 4px; vertical-align: 2px; }
-.gh-msg { font-size: 14px; color: #9fb3c8; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gh-msg.err { color: #ff9c94; }
-.gh-when { color: #6e7f90; }
-.gh-badges { position: absolute; right: 10px; top: 8px; white-space: nowrap; }
 .badge { display: inline-block; font-size: 12px; font-weight: bold; padding: 4px 8px; border-radius: 6px; margin-left: 4px; background: #2a3746; }
 .badge.pr { background: #213a5c; }
 .badge.is { background: #3a3220; }
@@ -391,7 +380,6 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 @media (max-width: 860px) {
   #mini { display: none; }
   #page-title { margin: 0 25%; }
-  .gh-name { margin-right: 220px; }
   .w-chat .w-title { margin-right: 300px; }
   .chat-model { max-width: 200px; }
   .np-btn.np-opt span { display: none; }
@@ -694,10 +682,7 @@ body.phone .sc-map { bottom: 120px; }
 .dm-btn.on { background: #8b1d1d; }
 .dm-btn.pressed { background: #3d8bfd; }
 
-.gh-tools { position: absolute; right: 0; top: 0; white-space: nowrap; }
-.gh-tools .sbtn { position: static; display: inline-block; margin-left: 6px; }
-.gh-tools .sbtn.on { background: #1f3b63; }
-.w-gh .gg, .w-vdesk .gg { top: 40px; }
+.w-vdesk .gg { top: 40px; }
 .gg-sec { font-size: 12px; font-weight: bold; letter-spacing: 1px; color: #6cb6ff; margin: 14px 4px 6px; }
 .gg-sec:first-child { margin-top: 2px; }
 .gg-note { font-size: 13px; color: #8b9bab; margin: 0 4px 8px; }

@@ -167,7 +167,7 @@ const AUDIO = {
 };
 demo.get('/api/audio', function (req, res) { ok(res, AUDIO); });
 
-demo.get('/api/github', function (req, res) {
+demo.get('/api/plugins/github', function (req, res) {
   const repo = function (name, prs, issues, ci, deploy, msg, ago) {
     const run = function (c) { return c ? { status: 'completed', conclusion: c, name: 'CI', url: 'https://github.com/' } : null; };
     return { name: name, full: 'demo/' + name, url: 'https://github.com/', private: false, stars: 12, prs: prs, issues: issues, pushedAt: new Date(Date.now() - ago * H).toISOString(),

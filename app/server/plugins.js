@@ -158,7 +158,7 @@ function context(name) {
           if (!res.headersSent) res.json({ ok: true, data: data === undefined ? null : data });
         }).catch(function (e) {
           log.warn('plugin:' + name, req.method + ' ' + req.path + ': ' + e.message);
-          if (!res.headersSent) res.status(e.status || 500).json({ ok: false, error: { code: e.code || 'ACTION_FAILED', message: e.message || 'Errore' } });
+          if (!res.headersSent) require('./http-error').sendError(res, e);
         });
       };
     }

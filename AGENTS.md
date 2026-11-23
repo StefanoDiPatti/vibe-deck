@@ -62,7 +62,9 @@ breaking anything. The guide for people is in the [README](README.md), section *
 8. **New features are plugins**: anything outside the base (HOME, MUSIC, APPS) goes in an official plugin
    (`official-plugins/<id>/` with `plugin.json`, see `schema/plugin.schema.json`), never in `config/defaults/`.
    One plugin = one feature (e.g. `blender`); a **pack** (`"type": "pack"`, e.g. `creative`) only lists plugins in
-   `includes` and contains nothing but its `plugin.json`.
+   `includes` and contains nothing but its `plugin.json`. **Every plugin must install and work on its own**: it
+   only uses the core and its own files (apps, commands, widgets, actions, pages), never another plugin. Packs are
+   only ready-made suggestions, and a plugin is in at most one pack. `tests/plugin-standalone.test.js` checks it.
    Server code of a plugin lives in its `index.js` and `lib/`; official plugins may require core modules
    (`../../server/...`), plugins for the market only use `ctx`. Tablet scripts and styles go in `public/`: the
    themes recolor plugin CSS by themselves. The project is moving every existing page there in the

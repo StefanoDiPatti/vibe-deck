@@ -71,13 +71,6 @@ svg.ic { fill: #e9e9ee; }
 .np-btn.np-opt { background: #1d2024; border: 1px solid #3a3d42; color: #c4c6cf; }
 .np-btn.on { border-color: #a8c7fa; background: #0f3b62; color: #e9e9ee; }
 .np-vollabel { color: #c4c6cf; }
-.gh-totals { color: #c4c6cf; }
-.gh-totals.err { color: #ffb4ab; }
-.gh-row { background: #272a2f; }
-.gh-row.pressed { background: #2c3a4f; }
-.gh-msg { color: #c4c6cf; }
-.gh-msg.err { color: #ffb4ab; }
-.gh-when { color: #74777f; }
 .badge { background: #32353a; }
 .badge.pr { background: #2c3a4f; }
 .badge.good { background: #1f5135; }
@@ -266,7 +259,6 @@ svg.ic.dc-camflag { fill: #7fd99a; }
 .dm-btn { background: #32353a; }
 .dm-btn.on { background: #93000a; }
 .dm-btn.pressed { background: #1f5a96; }
-.gh-tools .sbtn.on { background: #0f3b62; }
 .gg-sec { color: #a8c7fa; }
 .gg-note { color: #8e9099; }
 .gg-row { background: #272a2f; border-left: 4px solid #a8c7fa; }

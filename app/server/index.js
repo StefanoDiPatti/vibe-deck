@@ -11,7 +11,6 @@ const platform = require('./platform');
 const actions = require('./actions');
 const system = require('./services/system');
 const media = require('./services/media');
-const github = require('./services/github');
 const todo = require('./services/todo');
 const todosync = require('./services/todosync');
 const mixer = require('./services/mixer');
@@ -41,11 +40,7 @@ app.use(auth.lanOnly);
 app.use(express.json({ limit: '64kb' }));
 
 function ok(res, data) { res.json({ ok: true, data: data === undefined ? null : data }); }
-function sendError(res, e) {
-  const map = { UNAUTHORIZED: 409, BAD_REQUEST: 400, BAD_CONFIG: 400, UNKNOWN_ACTION: 400, NOT_FOUND: 404, CONFIG_CHANGED: 409, BUSY: 409, TOO_LONG: 409, UNAVAILABLE: 503, UNSUPPORTED: 501 };
-  const code = e.code && map[e.code] ? e.code : 'ACTION_FAILED';
-  res.status(map[code] || 500).json({ ok: false, error: { code: code, message: e.message || 'Errore' } });
-}
+const sendError = require('./http-error').sendError;
 function route(fn) {
   return function (req, res) {
     Promise.resolve().then(function () { return fn(req, res); }).then(function (data) {
@@ -413,15 +408,6 @@ app.get('/api/media/art', function (req, res) {
     res.end(art.data);
   }).catch(function () { res.status(404).end(); });
 });
-
-app.get('/api/github', route(function (req) { return github.summary(req.query.refresh === '1'); }));
-app.post('/api/github/open', route(async function (req) {
-  const b = req.body || {};
-  const url = github.urlFor(String(b.repo || ''), String(b.what || ''));
-  if (!url) throw Object.assign(new Error('Repository sconosciuto'), { code: 'NOT_FOUND' });
-  await platform.open(url);
-  return { message: 'Aperto sul PC' };
-}));
 
 function todoState() { return { items: todo.list(), source: todo.source(), notes: todo.notes(), voiceServer: voice.available(), sync: todosync.status() }; }
 app.get('/api/todo', route(todoState));

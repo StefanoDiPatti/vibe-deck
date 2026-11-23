@@ -1,0 +1,18 @@
+{
+  "id": "github",
+  "name": "GitHub",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Your repositories with CI, deploys, pull requests and issues",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "http": [
+      "api.github.com"
+    ]
+  }
+}
