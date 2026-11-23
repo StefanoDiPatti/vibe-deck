@@ -9,6 +9,7 @@ npm run new:widget -- weather
 
 | File | What it is |
 |---|---|
+| `plugins/weather/plugin.json` | name, version, systems, minimum Vibe Deck version, permissions (`schema/plugin.schema.json`) |
 | `plugins/weather/index.js` | server: actions (`"weather.saluta"`) and routes (`/api/plugins/weather/...`) |
 | `plugins/weather/pages/*.json` | pages (turn them on from the control panel) |
 | `plugins/weather/apps/*.json`, `commands/*.json` | apps and allowed commands |

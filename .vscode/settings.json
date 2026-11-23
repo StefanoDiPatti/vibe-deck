@@ -1,20 +1,41 @@
 {
   "files.associations": {
     "app/config/**/*.json": "jsonc",
-    "app/plugins/**/*.json": "jsonc"
+    "app/plugins/**/*.json": "jsonc",
+    "app/official-plugins/**/*.json": "jsonc"
   },
   "json.schemas": [
     {
-      "fileMatch": ["app/config/pages/*.json", "app/config/defaults/pages/*.json", "app/plugins/*/pages/*.json"],
+      "fileMatch": [
+        "app/config/pages/*.json",
+        "app/config/defaults/pages/*.json",
+        "app/plugins/*/pages/*.json",
+        "app/official-plugins/*/pages/*.json"
+      ],
       "url": "./app/schema/page.schema.json"
     },
     {
-      "fileMatch": ["app/config/apps/*.json", "app/plugins/*/apps/*.json"],
+      "fileMatch": [
+        "app/config/apps/*.json",
+        "app/plugins/*/apps/*.json",
+        "app/official-plugins/*/apps/*.json"
+      ],
       "url": "./app/schema/app.schema.json"
     },
     {
-      "fileMatch": ["app/config/commands/*.json", "app/plugins/*/commands/*.json"],
+      "fileMatch": [
+        "app/config/commands/*.json",
+        "app/plugins/*/commands/*.json",
+        "app/official-plugins/*/commands/*.json"
+      ],
       "url": "./app/schema/command.schema.json"
+    },
+    {
+      "fileMatch": [
+        "app/plugins/*/plugin.json",
+        "app/official-plugins/*/plugin.json"
+      ],
+      "url": "./app/schema/plugin.schema.json"
     }
   ]
 }

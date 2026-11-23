@@ -8,6 +8,7 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dock-plugins-'));
 process.env.DOCK_CONFIG_DIR = path.join(tmp, 'config');
 process.env.DOCK_DATA_DIR = path.join(tmp, 'data');
 process.env.DOCK_PLUGINS_DIR = path.join(tmp, 'plugins');
+process.env.DOCK_OFFICIAL_PLUGINS_DIR = path.join(tmp, 'official');
 process.env.DOCK_TOKEN = 'TESTCODE';
 process.env.LOG_LEVEL = 'error';
 

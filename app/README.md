@@ -292,7 +292,7 @@ All files are JSON. **Save and the tablet updates by itself**, without restartin
 | `config/services.json` | music, Claude, voice, GitHub, Ollama, system monitor |
 | `.env` | port, access code, tokens and API keys |
 
-The files in `config/` are yours and do not go to git. The defaults live in `config/defaults/` (pages in `config/defaults/pages/`, one per file): delete a file from `config/` to restore it. Step-by-step examples in the [developer guide](../README.md#3-developer-guide-make-vibe-deck-your-own); at the bottom of the control panel you find the list of configuration problems.
+The files in `config/` are yours and do not go to git. The defaults live in `config/defaults/` (pages in `config/defaults/pages/`, one per file) and in the official plugins (`official-plugins/<id>/pages/`): delete a file from `config/` to restore it. Step-by-step examples in the [developer guide](../README.md#3-developer-guide-make-vibe-deck-your-own); at the bottom of the control panel you find the list of configuration problems.
 If you never edited a file in `config/`, it is upgraded to the new default at startup (after a `git pull`). Edited files stay as they are.
 
 ### dock.json
@@ -565,7 +565,8 @@ The guide to customize pages, buttons, actions and widgets is in the [main READM
 | `public/` | tablet client (ES5, no framework) |
 | `extension/` | browser extension for Apple Music web and YouTube |
 | `config/defaults/` | default configuration |
-| `plugins/<name>/` | plugins: extra actions, routes, pages and widgets (`npm run new:widget -- <name>`) |
+| `official-plugins/<id>/` | official plugins shipped with Vibe Deck, each with `plugin.json` (`creative`: BLENDER, DAVINCI, UNREAL) |
+| `plugins/<name>/` | local plugins: extra actions, routes, pages and widgets (`npm run new:widget -- <name>`) |
 | `scripts/bootstrap.js` | automatic startup (same on Windows and Linux) |
 | `scripts/windows/` | notification area icon and hidden startup |
 | `scripts/linux/` | background startup, desktop and app menu icon |

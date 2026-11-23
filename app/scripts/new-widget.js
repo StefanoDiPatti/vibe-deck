@@ -91,6 +91,16 @@ const HOME = `{
 }
 `;
 
+const MANIFEST = `{
+  "id": "__NOME__",
+  "name": "__TITOLO__",
+  "version": "1.0.0",
+  "description": "Widget di esempio: ora del PC e un contatore",
+  "type": "plugin",
+  "platforms": ["windows", "linux"]
+}
+`;
+
 const PAGE = `{
   "id": "__NOME__",
   "title": "__TITOLO__",
@@ -118,6 +128,7 @@ function main(argv) {
   fs.mkdirSync(path.join(dir, 'public'), { recursive: true });
   fs.mkdirSync(path.join(dir, 'pages'), { recursive: true });
   const files = [
+    ['plugin.json', MANIFEST],
     ['index.js', SERVER],
     [path.join('public', name + '.js'), CLIENT],
     [path.join('public', name + '.css'), STYLE],

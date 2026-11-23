@@ -1,0 +1,13 @@
+{
+  "id": "creative",
+  "name": "Creative",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Shortcut pages for Blender, DaVinci Resolve and Unreal Editor",
+  "type": "plugin",
+  "platforms": ["windows", "linux"],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "apps": ["blender", "davinci", "unreal"]
+  }
+}

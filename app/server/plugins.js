@@ -6,21 +6,122 @@ const log = require('./log');
 const NAME_RE = /^[a-z0-9][a-z0-9_-]*$/;
 
 function baseDir() { return process.env.DOCK_PLUGINS_DIR || path.join(paths.ROOT, 'plugins'); }
+function officialDir() { return process.env.DOCK_OFFICIAL_PLUGINS_DIR || path.join(paths.ROOT, 'official-plugins'); }
 
-function names() {
-  let list = [];
+const TYPES = ['plugin', 'pack'];
+const PLATFORMS = ['windows', 'linux'];
+const VERSION_RE = /^\d+\.\d+\.\d+$/;
+
+function folders(dir) {
   try {
-    list = fs.readdirSync(baseDir(), { withFileTypes: true })
+    return fs.readdirSync(dir, { withFileTypes: true })
       .filter(function (d) { return d.isDirectory() && NAME_RE.test(d.name); })
-      .map(function (d) { return d.name; })
-      .sort();
-  } catch (e) { list = []; }
-  return list;
+      .map(function (d) { return d.name; });
+  } catch (e) { return []; }
 }
 
-function dirOf(name) { return path.join(baseDir(), name); }
+function versionAtLeast(have, want) {
+  const a = String(have).split('.').map(Number), b = String(want).split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) > (b[i] || 0);
+  }
+  return true;
+}
+
+function appVersion() {
+  try { return require('../package.json').version; } catch (e) { return '0.0.0'; }
+}
+
+function readManifest(name, dir, official) {
+  const file = path.join(dir, 'plugin.json');
+  const m = { id: name, name: name, version: '', description: '', author: '', type: 'plugin', platforms: PLATFORMS.slice(),
+    engine: '', includes: [], permissions: {}, official: official, hasManifest: false, problems: [] };
+  let data;
+  try { data = require('./config').parseJson(fs.readFileSync(file, 'utf8')); } catch (e) {
+    if (e.code !== 'ENOENT') m.problems.push('plugin.json non valido: ' + e.message);
+    else if (official) m.problems.push('plugin.json mancante');
+    return m;
+  }
+  m.hasManifest = true;
+  if (!data || typeof data !== 'object' || Array.isArray(data)) { m.problems.push('plugin.json deve essere un oggetto'); return m; }
+  if (data.id !== name) m.problems.push('"id" deve essere "' + name + '", come la cartella');
+  if (typeof data.name === 'string' && data.name) m.name = data.name;
+  if (typeof data.description === 'string') m.description = data.description;
+  if (typeof data.author === 'string') m.author = data.author;
+  if (VERSION_RE.test(data.version || '')) m.version = data.version;
+  else m.problems.push('"version" deve essere nel formato 1.0.0');
+  if (data.type !== undefined) {
+    if (TYPES.indexOf(data.type) >= 0) m.type = data.type;
+    else m.problems.push('"type" deve essere "plugin" o "pack"');
+  }
+  if (data.platforms !== undefined) {
+    if (Array.isArray(data.platforms) && data.platforms.length && data.platforms.every(function (p) { return PLATFORMS.indexOf(p) >= 0; })) m.platforms = data.platforms.slice();
+    else m.problems.push('"platforms" deve elencare "windows" e/o "linux"');
+  }
+  if (data.engine !== undefined) {
+    const want = String(data.engine).replace(/^>=\s*/, '');
+    if (VERSION_RE.test(want)) m.engine = want;
+    else m.problems.push('"engine" deve essere nel formato ">=2.2.0"');
+  }
+  if (data.includes !== undefined) {
+    if (Array.isArray(data.includes) && data.includes.every(function (n) { return typeof n === 'string' && NAME_RE.test(n); })) m.includes = data.includes.slice();
+    else m.problems.push('"includes" deve essere una lista di id di plugin');
+  }
+  if (m.type === 'pack' && !m.includes.length) m.problems.push('un pacchetto deve elencare i plugin in "includes"');
+  if (data.permissions && typeof data.permissions === 'object' && !Array.isArray(data.permissions)) m.permissions = data.permissions;
+  return m;
+}
+
+function currentPlatform() { return process.platform === 'win32' ? 'windows' : 'linux'; }
+
+let catalog = null;
+function scanStamp() {
+  const parts = [];
+  [officialDir(), baseDir()].forEach(function (root) {
+    folders(root).sort().forEach(function (n) {
+      let t = 0;
+      try { t = fs.statSync(path.join(root, n, 'plugin.json')).mtimeMs; } catch (e) { t = 0; }
+      parts.push(root + '/' + n + ':' + t);
+    });
+  });
+  return parts.join('|');
+}
+function scan() {
+  const stamp = scanStamp();
+  if (catalog && catalog.stamp === stamp) return catalog;
+  catalog = { stamp: stamp, list: [], byName: {}, skipped: [] };
+  const add = function (name, dir, official) {
+    if (catalog.byName[name]) {
+      catalog.skipped.push({ name: name, dir: dir, reason: 'esiste già un plugin ufficiale con questo nome' });
+      return;
+    }
+    const manifest = readManifest(name, dir, official);
+    const entry = { name: name, dir: dir, official: official, manifest: manifest, active: true, reason: '' };
+    if (manifest.platforms.indexOf(currentPlatform()) < 0) { entry.active = false; entry.reason = 'non disponibile su questo sistema'; }
+    else if (manifest.engine && !versionAtLeast(appVersion(), manifest.engine)) { entry.active = false; entry.reason = 'richiede Vibe Deck ' + manifest.engine + ' o successiva'; }
+    catalog.byName[name] = entry;
+    catalog.list.push(entry);
+  };
+  folders(officialDir()).sort().forEach(function (n) { add(n, path.join(officialDir(), n), true); });
+  folders(baseDir()).sort().forEach(function (n) { add(n, path.join(baseDir(), n), false); });
+  catalog.list.sort(function (a, b) { return a.name < b.name ? -1 : a.name > b.name ? 1 : 0; });
+  return catalog;
+}
+
+function names() {
+  return scan().list.filter(function (e) { return e.active; }).map(function (e) { return e.name; });
+}
+
+function dirOf(name) {
+  const e = scan().byName[name];
+  return e ? e.dir : path.join(baseDir(), name);
+}
 
 function configDirs() { return names().map(dirOf); }
+
+function manifests() {
+  return scan().list.map(function (e) { return Object.assign({}, e.manifest, { active: e.active, reason: e.reason }); });
+}
 
 let loaded = null;
 
@@ -188,23 +289,46 @@ function info() {
   const all = load();
   const w = widgets();
   const ic = icons();
-  return names().map(function (name) {
+  const cat = scan();
+  const rows = cat.list.map(function (entry) {
+    const name = entry.name;
+    const m = entry.manifest;
     const p = all[name] || { actions: [], error: '' };
-    const dir = dirOf(name);
+    const dir = entry.dir;
     const count = function (sub) { try { return fs.readdirSync(path.join(dir, sub)).filter(function (f) { return /\.json$/i.test(f); }).length; } catch (e) { return 0; } };
+    const codeDesc = (p.module && typeof p.module.description === 'string') ? p.module.description : '';
+    const hasCode = fs.existsSync(path.join(dir, 'index.js'));
+    const problems = m.problems.slice();
+    if (p.error) problems.push(p.error);
+    else if (entry.active && hasCode && !all[name]) problems.push('riavvia la dock per caricare il codice');
     return {
       name: name,
-      description: (p.module && typeof p.module.description === 'string') ? p.module.description : '',
-      error: p.error || (all[name] ? '' : 'riavvia la dock per caricare il codice'),
+      title: m.name,
+      version: m.version,
+      author: m.author,
+      type: m.type,
+      includes: m.includes.slice(),
+      platforms: m.platforms.slice(),
+      official: entry.official,
+      active: entry.active,
+      inactiveReason: entry.reason,
+      description: m.description || codeDesc,
+      error: problems.join('; '),
       actions: p.actions.slice(),
       widgets: Object.keys(w).filter(function (k) { return w[k] === name; }),
       icons: Object.keys(ic).filter(function (k) { return ic[k] === name; }),
       pages: count('pages'),
       apps: count('apps'),
       commands: count('commands'),
-      scripts: scripts().filter(function (s) { return s.plugin === name; }).map(function (s) { return s.file; })
+      scripts: entry.active ? scripts().filter(function (s) { return s.plugin === name; }).map(function (s) { return s.file; }) : []
     };
   });
+  cat.skipped.forEach(function (sk) {
+    rows.push({ name: sk.name, title: sk.name, version: '', author: '', type: 'plugin', includes: [], platforms: [], official: false,
+      active: false, inactiveReason: sk.reason, description: '', error: 'cartella ' + sk.dir + ' ignorata: ' + sk.reason,
+      actions: [], widgets: [], icons: [], pages: 0, apps: 0, commands: 0, scripts: [] });
+  });
+  return rows;
 }
 
 function reset() {
@@ -213,10 +337,11 @@ function reset() {
     try { delete require.cache[require.resolve(main)]; } catch (e) { }
   });
   loaded = null;
+  catalog = null;
 }
 
 module.exports = {
-  baseDir: baseDir, names: names, configDirs: configDirs, load: load,
+  baseDir: baseDir, officialDir: officialDir, dirOf: dirOf, manifests: manifests, readManifest: readManifest, versionAtLeast: versionAtLeast, names: names, configDirs: configDirs, load: load,
   registerActions: registerActions, mountRoutes: mountRoutes,
   scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
 };

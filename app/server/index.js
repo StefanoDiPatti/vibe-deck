@@ -123,7 +123,7 @@ app.get('/plugins/:name/:file', function (req, res) {
   const name = req.params.name, file = req.params.file;
   if (!plugins.NAME_RE.test(name) || plugins.names().indexOf(name) < 0 || !/^[A-Za-z0-9_-][A-Za-z0-9_.-]*\.(js|css)$/.test(file)) return res.status(404).end();
   res.setHeader('Cache-Control', 'no-cache');
-  res.sendFile(path.join(plugins.baseDir(), name, 'public', file), function (err) { if (err && !res.headersSent) res.status(404).end(); });
+  res.sendFile(path.join(plugins.dirOf(name), 'public', file), function (err) { if (err && !res.headersSent) res.status(404).end(); });
 });
 
 function bridgeOnly(req, res, next) {

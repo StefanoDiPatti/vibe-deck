@@ -618,9 +618,13 @@
       p.commands && p.commands + (p.commands === 1 ? ' comando' : ' comandi'),
       p.icons.length && 'icone ' + p.icons.join(', ')
     ].filter(Boolean).join(' · ');
+    const label = (p) => (p.title && p.title !== p.name ? p.title + ' [' + p.name + ']' : p.name) +
+      (p.version ? ' ' + p.version : '') + (p.official ? ' · ufficiale' : '') + (p.type === 'pack' ? ' · pacchetto' : '');
+    const body = (p) => p.error || (!p.active ? 'spento: ' + p.inactiveReason : '') ||
+      (p.type === 'pack' ? 'contiene ' + p.includes.join(', ') : what(p)) || 'niente da mostrare';
     $('pl-list').innerHTML = pl.length ? '<h3 class="pl-head">Plugin</h3><ul class="ck-list">' + pl.map((p) =>
-      '<li class="' + (p.error ? 'err' : 'info') + '"><b>' + esc(p.name) + '</b>' + (p.description ? ' (' + esc(p.description) + ')' : '') + ': ' +
-        esc(p.error || what(p) || 'niente da mostrare') + '</li>').join('') + '</ul>' : '';
+      '<li class="' + (p.error ? 'err' : 'info') + '"><b>' + esc(label(p)) + '</b>' + (p.description ? ' (' + esc(p.description) + ')' : '') + ': ' +
+        esc(body(p)) + '</li>').join('') + '</ul>' : '';
   }
 
   let gm = null;

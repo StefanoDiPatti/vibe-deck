@@ -248,7 +248,8 @@ Customizations are made **one file at a time**: one page, app or command per fil
 | `config/services.json` | music, Claude, GitHub, Ollama, TODO, tablet timings ([reference](app/README.md#servicesjson)) | no |
 | `config/layout.json` | control panel choices (pages in the bar, button order) | no, the panel writes it |
 | `config/defaults/` | the project defaults: `pages/` (one page per file) and the other JSON files | yes |
-| `plugins/<name>/` | **plugins**: extra actions, routes, pages, widgets and icons (see [Plugins](#plugins-new-widgets-and-actions)) | your choice |
+| `official-plugins/<id>/` | **official plugins** shipped with Vibe Deck (e.g. `creative`: BLENDER, DAVINCI, UNREAL pages), each with its `plugin.json` | yes |
+| `plugins/<name>/` | **your plugins** (and, later, the ones from the market): extra actions, routes, pages, widgets and icons (see [Plugins](#plugins-new-widgets-and-actions)) | your choice |
 | `schema/` | JSON schemas for the editor (suggestions and field checks) | yes |
 | `data/` | personal data: games, accounts to show, log, encrypted secrets | no |
 | `.env` | port, access code, tokens and API keys | no |
@@ -299,7 +300,7 @@ without them, widgets go in order into the first free cell. To add a widget to t
 in `server/home.js` (plugin widgets are already there); small widgets made for the HOME: `claudeusage`, `desks`, `games`,
 `discordmini`, and `viber` with `"show": "projects"` or `"tasks"`.
 
-**Changing a default page:** copy its file from `config/defaults/pages/` (e.g. `apps.json`) to `config/pages/` and edit
+**Changing a default page:** copy its file from `config/defaults/pages/` or `official-plugins/<id>/pages/` (e.g. `apps.json`) to `config/pages/` and edit
 the copy. For order and hidden buttons the control panel is enough, no files to touch.
 
 **Page order:** in `config/dock.json`, `"pages"` is a list of ids (`["main", "media", "stream", ...]`). Pages not
@@ -390,6 +391,7 @@ add the WEATHER page to the bar. Then change the files:
 | `plugins/weather/public/weather.css` | widget style (no flexbox) | reloads by itself |
 | `plugins/weather/pages/weather.json` | plugin pages (like `config/defaults/pages`) | reloads by itself |
 | `plugins/weather/apps/`, `commands/` | apps and allowed commands, if needed | reloads by itself |
+| `plugins/weather/plugin.json` | name, version, systems, minimum Vibe Deck version, permissions ([schema](app/schema/plugin.schema.json)) | reloads by itself |
 
 **Server (`index.js`)**:
 
@@ -486,7 +488,8 @@ is set in `plugins/<name>/home.json` (`npm run new:widget` already creates it; i
 | `server/actions/` | action engine (`HANDLERS`) and macros |
 | `server/plugins.js` | plugin loader (actions, routes, pages, tablet scripts) |
 | `server/home.js` | HOME from the control panel: widget catalog, checks, layout |
-| `plugins/` | the plugins, one per folder |
+| `official-plugins/` | official plugins, one per folder, with `plugin.json` |
+| `plugins/` | local plugins, one per folder |
 | `server/platform/` | `windows.js` (+ PowerShell helpers), `linux.js`: everything that depends on the OS |
 | `server/services/` | one file per feature: media, discord, mail, games, screens, mixer, claude... |
 | `public/` | tablet client (ES5, no framework): `app.js`, `widgets.js`, `icons.js`, `css/` |
@@ -507,9 +510,30 @@ How to add the most common things **inside the project** (for your personal addi
   if it is missing, a test tells you) and, for the HOME, a line in `CATALOG` in `server/home.js`
   (`{ id, widget, label, icon, page, description, w, h, minW, minH }`). Data comes from `/api/state` (in `update`)
   or from a new route in `server/index.js`.
-- **A default page**: a new file in `config/defaults/pages/` and its id in the `"pages"` list of `config/defaults/dock.json`.
+- **A new feature or page**: an **official plugin** in `official-plugins/<id>/` with its `plugin.json` (see below). Only the base
+  (HOME, MUSIC, APPS) stays in `config/defaults/`, where a page also needs its id in the `"pages"` list of `config/defaults/dock.json`.
   Before changing a JSON file in `config/defaults/` (not the pages) add the fingerprint of the old version to
   `config/defaults/history.json` (so users who never edited it get the update).
+
+**Plugin manifest (`plugin.json`).** Every official plugin has one, local plugins may have one (`npm run new:widget` creates it):
+
+```json
+{
+  "id": "creative",
+  "name": "Creative",
+  "version": "1.0.0",
+  "description": "Shortcut pages for Blender, DaVinci Resolve and Unreal Editor",
+  "type": "plugin",
+  "platforms": ["windows", "linux"],
+  "engine": ">=2.1.1",
+  "permissions": { "apps": ["blender", "davinci", "unreal"] }
+}
+```
+
+- `id` must match the folder name; an official plugin wins over a local folder with the same name.
+- `platforms` and `engine`: on another system, or with an older Vibe Deck, the plugin stays off and the control panel says why.
+- `type: "pack"` with `includes: [...]` describes a bundle of plugins (used by the market).
+- `permissions` lists what the plugin uses (sites, apps, commands, local resources): it will be shown before installing from the market.
 
 **Tablet language.** Tablet text is written in Italian (code and pages); with English selected the tablet translates what
 appears on screen on the fly, using the dictionary in `public/js/lang-en.js` (`I18n.add({ 'Testo': 'Text' })`, case-insensitive;
