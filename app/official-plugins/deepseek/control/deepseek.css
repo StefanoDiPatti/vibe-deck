@@ -1,0 +1,7 @@
+.ds-pform { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; gap: 12px; align-items: end; margin-top: 12px; }
+.ds-pform label, .ds-system { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.ds-pform input, .ds-pform select, .ds-system textarea { height: 40px; padding: 0 10px; border-radius: var(--r-ctl); border: 1px solid var(--line); background: var(--field); color: var(--text); font: inherit; font-size: 14px; text-transform: none; }
+.ds-system { margin-top: 12px; }
+.ds-system textarea { height: 64px; padding: 8px 10px; resize: vertical; }
+.ds-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+@media (max-width: 760px) { .ds-pform { grid-template-columns: minmax(0, 1fr); } }

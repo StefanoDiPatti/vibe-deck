@@ -391,6 +391,7 @@ svg.ic .p-fog { fill: #9fb3c8; }
 .voice-file { position: absolute; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; }
 
 .chat-tools { white-space: nowrap; }
+.w-head .chat-tools .sbtn { position: static; display: inline-block; vertical-align: top; margin-left: 6px; }
 .chat-model {
   height: 30px; font-size: 14px; max-width: 280px; background: #0b0f14; color: #fff;
   border: 1px solid #2a3746; border-radius: 8px; padding: 0 6px; vertical-align: top;

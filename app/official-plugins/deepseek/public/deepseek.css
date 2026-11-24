@@ -1,0 +1,13 @@
+.w-deepseek .w-title { margin-right: 380px; }
+.ds-balance { display: inline-block; height: 30px; line-height: 30px; padding: 0 10px; margin-right: 6px; border-radius: 15px; background: #1d2835; color: #9fd8b0; font-size: 13px; font-weight: bold; vertical-align: top; }
+.ds-balance.low { background: #4d1717; color: #ffc9c4; }
+.ds-tiny .ds-balance { display: none; }
+.ds-mic { position: absolute; left: 0; top: 0; width: 58px; height: 58px; border-radius: 10px; background: #243142; text-align: center; padding-top: 13px; }
+.ds-mic svg.ic { width: 30px; height: 30px; }
+.ds-mic.on { background: #e5534b; }
+.ds-mic.pressed { -webkit-transform: scale(0.94); transform: scale(0.94); }
+.ds-form .ds-input { left: 66px; }
+.ds-send { background: #4d6bfe; }
+.ds-send.ds-stop { background: #8b1d1d; }
+.msg.ds-thinking { color: #8b9bab; font-style: italic; }
+.msg.ds-live { -webkit-box-shadow: inset 3px 0 0 #4d6bfe; box-shadow: inset 3px 0 0 #4d6bfe; }

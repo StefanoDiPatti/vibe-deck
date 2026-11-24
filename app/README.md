@@ -93,6 +93,7 @@ Volume and undo buttons repeat while you hold them.
 | DEV *(official plugin `dev`)* | VS Code, Claude Code, PowerShell, OpenClaw, VS Code shortcuts |
 | GITHUB *(official plugin `github`)* | PRs, issues, CI, latest deployment (GitHub Actions workflows with deploy, release, publish or pages in their name: DEPLOY ✓/✗/… badge) and latest commit of your repositories |
 | OLLAMA *(official plugin `ollama`)* | chat with local models |
+| DEEPSEEK *(official plugin `deepseek`)* | chat with DeepSeek: write or dictate, the answer appears while it is written (STOP to cut it), model choice, account balance |
 | CLAUDE *(official plugin `claude`)* | chat, Claude Code sessions, dictation, typing on the PC |
 | DISCORD *(official plugin `discord`)* | servers, voice channels with who is inside, who is talking, mute/deafen, webcam, Go Live, per-person volume and mute just for you |
 | GAMES *(official plugin `games`)* | the games picked in the control panel, with their icons (green dot when running; if running it is brought to the front) |
@@ -461,6 +462,17 @@ Tap a repository to open it on the PC; tap the PR, ISSUE or CI badges to open th
 ### Ollama
 
 Ollama just needs to be running on the PC. The tablet never talks to Ollama directly: it always goes through the server.
+
+### DeepSeek
+
+Create an API key on [platform.deepseek.com](https://platform.deepseek.com/api_keys) (pay as you go: top up some credit), then
+paste it in the **DeepSeek** card of the control panel and press **Save and test**: the key is saved encrypted on the PC and never
+reaches the tablet. The card also picks the default model (the list comes from DeepSeek, e.g. `deepseek-v4-flash` and
+`deepseek-v4-pro`) and the instructions sent with every chat. Page **DEEPSEEK** (developer pack) and a HOME widget: write or
+dictate, the answer streams from DeepSeek to the PC and the tablet shows it while it grows; tap the red button to stop it (what was
+already written stays). The balance is shown at the top (red when it ran out). DeepSeek is also a connector for JSON widgets:
+source `deepseek.balance` (fields `total`, `currency`, `toppedUp`, `granted`, `available`). For tests, `DEEPSEEK_URL` points the
+plugin to another server.
 
 ### OBS Studio
 
