@@ -1,0 +1,8 @@
+{
+  "id": "deepseek",
+  "title": "DEEPSEEK",
+  "icon": "chat",
+  "description": "Chat con DeepSeek: scrivi o detta, risposta in diretta, saldo dell'account",
+  "tab": false,
+  "tiles": [ { "widget": "deepseek", "w": 5, "h": 3 } ]
+}

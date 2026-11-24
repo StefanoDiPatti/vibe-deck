@@ -19,6 +19,7 @@
     "e2e:twitch": "node scripts/e2e-twitch.js",
     "e2e:market": "node scripts/e2e-market.js",
     "e2e:lol": "node scripts/e2e-lol.js",
+    "e2e:deepseek": "node scripts/e2e-deepseek.js",
     "site": "node scripts/build-site.js",
     "themes": "node scripts/build-themes.js",
     "demo": "node scripts/demo.js",
