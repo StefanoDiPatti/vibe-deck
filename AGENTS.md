@@ -93,6 +93,10 @@ Code map: `server/shapes/` (Registry of shapes, sources and filters; `Shape` bas
 registry + a controller per tile). A new shape = a `Shape` subclass on the server + a renderer on the tablet.
 A new built-in source = a `Source` subclass in `server/shapes/sources.js`; a plugin connector = `module.exports.sources`
 (wrapped by `PluginSourceAdapter`). Sources that reach outside the PC must declare permissions in `plugin.json`.
+Everything new must be **described** for the editor: a shape in `SHAPE_INFO` (`server/shapes/shapes.js`), a filter in
+`FILTER_INFO` (`template.js`), a built-in action in `server/actions/descriptors.js`, a source through its `info`, a plugin
+action as `{ label, description, params, run }`. `tests/catalog.test.js` fails when something is not described.
+The catalog is built by `CatalogBuilder` (`server/shapes/catalog.js`); `fields.js` (`FieldWalker`) turns sampled data into fields.
 
 ### When you need code: a plugin
 

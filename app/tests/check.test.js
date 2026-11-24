@@ -84,7 +84,8 @@ test('lo schema delle pagine conosce tutti i campi usati dalle pagine predefinit
   const official = path.join(__dirname, '..', 'official-plugins');
   const bare = fs.readdirSync(official).filter(function (n) {
     const main = path.join(official, n, 'index.js');
-    return fs.existsSync(main) && require(main).actions && typeof require(main).actions[n] === 'function';
+    const a = fs.existsSync(main) && require(main).actions && require(main).actions[n];
+    return typeof a === 'function' || !!(a && typeof a.run === 'function');
   });
   const handlers = require('../server/actions').BUILTIN.concat(['page'], bare).filter(function (t) { return t !== 'shell'; }).sort();
   assert.deepStrictEqual(types.slice().sort(), handlers);

@@ -189,4 +189,39 @@ function report() {
 
 function keys() { return all().filter(function (e) { return e.def; }).map(function (e) { return e.key; }); }
 
-module.exports = { all: all, view: view, tap: tap, set: set, voice: voice, catalog: catalog, report: report, keys: keys, validate: validate, cache: cache, runner: runner };
+const PREVIEW_MAX = 4000;
+
+function checkPlugin(plugin) {
+  const p = String(plugin || '');
+  if (!FILE_RE.test(p)) throw fail('Nome del plugin non valido', 'BAD_REQUEST');
+  return pluginContext(p);
+}
+
+async function sample(plugin, src) {
+  const ctx = checkPlugin(plugin);
+  if (!isObject(src) || typeof src.type !== 'string') throw fail('Manca la fonte da provare', 'BAD_REQUEST');
+  const problems = sourceProblems(src, ctx);
+  if (problems.length) throw fail(problems[0], 'BAD_REQUEST');
+  const data = await resolve(src.type).read(src, { source: src }, ctx);
+  const text = JSON.stringify(data === undefined ? null : data);
+  return {
+    fields: require('./fields').fieldsOf(data),
+    preview: text.length > PREVIEW_MAX ? text.slice(0, PREVIEW_MAX) + '…' : text
+  };
+}
+
+async function preview(plugin, def, id) {
+  const ctx = checkPlugin(plugin);
+  const name = FILE_RE.test(String(id || '')) ? String(id) : 'anteprima';
+  const problems = validate(def, name, ctx);
+  if (problems.length) return { problems: problems, view: null };
+  const full = Object.assign({}, def, { id: name, source: sourceOf(def) });
+  const source = resolve(full.source.type);
+  let data;
+  try { data = await source.read(full.source, full, ctx); } catch (err) {
+    return { problems: [], view: { shape: full.shape, label: full.name, icon: full.icon || '', error: err.message || 'Dati non disponibili', every: source.every(full) } };
+  }
+  return { problems: [], view: Object.assign(shapes.get(full.shape).view(full, data), { every: source.every(full) }) };
+}
+
+module.exports = { all: all, view: view, tap: tap, set: set, voice: voice, sample: sample, preview: preview, catalog: catalog, report: report, keys: keys, validate: validate, cache: cache, runner: runner };

@@ -3,6 +3,25 @@ const path = require('path');
 const Registry = require('./registry');
 
 const sources = new Registry('source');
+const PC_FIELDS = [
+  { path: 'cpu.usage', label: 'Uso CPU', type: 'number', unit: '%' },
+  { path: 'cpu.temp', label: 'Temperatura CPU', type: 'number', unit: '°C' },
+  { path: 'cpu.cores', label: 'Core della CPU', type: 'number' },
+  { path: 'cpu.model', label: 'Modello CPU', type: 'text' },
+  { path: 'ram.usage', label: 'Memoria usata', type: 'number', unit: '%' },
+  { path: 'ram.usedGb', label: 'Memoria usata (GB)', type: 'number', unit: 'GB' },
+  { path: 'ram.totalGb', label: 'Memoria totale', type: 'number', unit: 'GB' },
+  { path: 'gpu.name', label: 'Scheda video', type: 'text' },
+  { path: 'gpu.usage', label: 'Uso GPU', type: 'number', unit: '%' },
+  { path: 'gpu.temp', label: 'Temperatura GPU', type: 'number', unit: '°C' },
+  { path: 'gpu.memUsedGb', label: 'Memoria video usata', type: 'number', unit: 'GB' },
+  { path: 'gpu.memTotalGb', label: 'Memoria video totale', type: 'number', unit: 'GB' },
+  { path: 'net.downMbps', label: 'Download', type: 'number', unit: 'Mbps' },
+  { path: 'net.upMbps', label: 'Upload', type: 'number', unit: 'Mbps' },
+  { path: 'net.name', label: 'Rete', type: 'text' },
+  { path: 'uptimeSeconds', label: 'Acceso da (secondi)', type: 'number', unit: 's' },
+  { path: 'hostname', label: 'Nome del PC', type: 'text' }
+];
 const HTTP_TIMEOUT_MS = 8000;
 const HTTP_MAX_BYTES = 512 * 1024;
 const FILE_MAX_BYTES = 1024 * 1024;
@@ -19,9 +38,24 @@ function parseText(text) {
 }
 
 class Source {
-  constructor(name, minEvery) {
+  constructor(name, minEvery, info) {
     this.name = name;
     this.minEvery = minEvery;
+    this.info = info || {};
+  }
+  describe() {
+    const i = this.info;
+    return {
+      type: this.name,
+      label: i.label || this.name,
+      description: i.description || '',
+      params: require('../actions/descriptors').cleanParams(i.params),
+      fields: Array.isArray(i.fields) ? i.fields.filter(function (f) { return f && typeof f.path === 'string'; }).map(function (f) {
+        return { path: f.path, label: f.label || f.path, type: f.type || 'text', unit: f.unit || '' };
+      }) : [],
+      sample: !Array.isArray(i.fields),
+      minEvery: this.minEvery
+    };
   }
   validate() { return []; }
   async read() { return {}; }
@@ -32,7 +66,13 @@ class Source {
 }
 
 class StaticSource extends Source {
-  constructor() { super('static', 60); }
+  constructor() {
+    super('static', 60, {
+      label: 'Dati scritti a mano',
+      description: 'Valori fissi scritti nel widget: utile per prove, liste di link o pulsanti',
+      params: [{ name: 'data', label: 'Dati', type: 'json', required: true }]
+    });
+  }
   validate(src) {
     return src.data !== undefined && (typeof src.data !== 'object' || src.data === null) ? ['"source.data" deve essere un oggetto o una lista'] : [];
   }
@@ -40,7 +80,14 @@ class StaticSource extends Source {
 }
 
 class PcSource extends Source {
-  constructor() { super('pc', 2); }
+  constructor() {
+    super('pc', 2, {
+      label: 'Dati del PC',
+      description: 'CPU, GPU, memoria, rete, da quanto è acceso e quali app sono aperte',
+      params: [],
+      fields: PC_FIELDS
+    });
+  }
   async read() {
     const system = require('../services/system').get() || {};
     let apps = {};
@@ -62,7 +109,13 @@ function allowedHosts(ctx) {
 }
 
 class HttpSource extends Source {
-  constructor() { super('http', 30); }
+  constructor() {
+    super('http', 30, {
+      label: 'Da internet (senza chiavi)',
+      description: 'Legge un indirizzo pubblico che risponde in JSON (es. Open-Meteo). Il sito va elencato in permissions.http del plugin',
+      params: [{ name: 'url', label: 'Indirizzo', type: 'url', required: true }]
+    });
+  }
   validate(src, ctx) {
     const host = hostOf(src.url);
     if (!host) return ['"source.url" deve essere un indirizzo http:// o https://'];
@@ -99,7 +152,13 @@ function dataPath(rel) {
 }
 
 class FileSource extends Source {
-  constructor() { super('file', 2); }
+  constructor() {
+    super('file', 2, {
+      label: 'Da un file',
+      description: 'Legge un file JSON o di testo dentro la cartella data/ della dock',
+      params: [{ name: 'path', label: 'File (dentro data/)', type: 'path', required: true }]
+    });
+  }
   validate(src) {
     if (typeof src.path !== 'string' || !src.path) return ['"source.path" mancante (un file dentro data/)'];
     return path.isAbsolute(src.path) || !dataPath(src.path) ? ['"source.path" deve stare dentro data/ (es. "miei/stato.json")'] : [];
@@ -115,14 +174,20 @@ class FileSource extends Source {
 }
 
 class CommandSource extends Source {
-  constructor() { super('command', 10); }
+  constructor() {
+    super('command', 10, {
+      label: 'Da un comando',
+      description: 'Esegue un comando consentito e legge quello che stampa (JSON o testo)',
+      params: [{ name: 'id', label: 'Comando', type: 'command', required: true }]
+    });
+  }
   validate(src) { return typeof src.id === 'string' && src.id ? [] : ['"source.id" deve essere un comando di commands.json']; }
   async read(src) { return parseText(await require('../actions').capture(src.id)); }
 }
 
 class PluginSourceAdapter extends Source {
   constructor(name, plugin, impl) {
-    super(name, Math.max(1, parseInt(impl.every, 10) || 2));
+    super(name, Math.max(1, parseInt(impl.every, 10) || 2), { label: impl.label, description: impl.description, params: impl.params, fields: impl.fields });
     this.plugin = plugin;
     this.impl = impl;
   }

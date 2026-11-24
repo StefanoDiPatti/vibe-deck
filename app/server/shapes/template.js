@@ -91,6 +91,32 @@ filters.register('date', function (v, format) {
   return d.getDate() + ' ' + MONTHS[d.getMonth()];
 });
 
+const FILTER_INFO = {
+  round: { label: 'Arrotonda', args: [{ label: 'Decimali', type: 'number', default: 0 }] },
+  percent: { label: 'Percentuale (62%)', args: [] },
+  bytes: { label: 'Dimensione (KB, MB, GB)', args: [] },
+  duration: { label: 'Durata da secondi (2 h 5 min)', args: [] },
+  ago: { label: 'Quanto tempo fa', args: [] },
+  upper: { label: 'MAIUSCOLO', args: [] },
+  lower: { label: 'minuscolo', args: [] },
+  default: { label: 'Se manca, mostra', args: [{ label: 'Testo', type: 'text' }] },
+  yesno: { label: 'Sì / no', args: [{ label: 'Se vero', type: 'text', default: 'sì' }, { label: 'Se falso', type: 'text', default: 'no' }] },
+  url: { label: 'Per un link', args: [] },
+  count: { label: 'Quanti elementi', args: [] },
+  map: { label: 'Traduci con una tabella', args: [{ label: 'Tabella (in "maps")', type: 'text' }] },
+  zip: { label: 'Colonne in righe', args: [] },
+  first: { label: 'Il primo', args: [] },
+  join: { label: 'Unisci una lista', args: [{ label: 'Separatore', type: 'text', default: ', ' }] },
+  date: { label: 'Data', args: [{ label: 'Formato', type: 'select', options: [{ value: '', label: '24 nov' }, { value: 'day', label: 'mar 24' }, { value: 'weekday', label: 'mar' }, { value: 'time', label: '14:05' }] }] }
+};
+
+function describeFilters() {
+  return filters.names().map(function (n) {
+    const i = FILTER_INFO[n] || {};
+    return { name: n, label: i.label || n, args: i.args || [] };
+  });
+}
+
 function lookup(data, path) {
   if (path === '.' || path === '') return data;
   const parts = path.split('.');
@@ -183,4 +209,4 @@ class View {
   child(data) { return new View(data, this.ctx); }
 }
 
-module.exports = { filters: filters, text: text, value: value, number: number, deep: deep, check: check, lookup: lookup, View: View };
+module.exports = { filters: filters, describeFilters: describeFilters, FILTER_INFO: FILTER_INFO, text: text, value: value, number: number, deep: deep, check: check, lookup: lookup, View: View };
