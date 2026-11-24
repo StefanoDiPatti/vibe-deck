@@ -1,0 +1,11 @@
+{
+  "id": "twitch",
+  "name": "Twitch",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Twitch on the tablet: live chat of any channel without login; with your account also viewers, uptime, title and category, markers, clips, ads, chat modes and writing in chat",
+  "type": "plugin",
+  "platforms": ["windows", "linux"],
+  "engine": ">=2.2.0",
+  "permissions": { "http": ["irc-ws.chat.twitch.tv", "api.twitch.tv", "id.twitch.tv"] }
+}

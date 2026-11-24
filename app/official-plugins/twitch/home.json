@@ -1,0 +1,3 @@
+{
+  "twitch": { "widget": "twitch", "label": "Twitch", "name": "Twitch", "icon": "chat", "description": "Chat dal vivo, spettatori e controlli della diretta", "w": 5, "h": 3, "minW": 2, "minH": 2 }
+}

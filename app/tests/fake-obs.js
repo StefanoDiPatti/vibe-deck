@@ -121,4 +121,4 @@ class FakeObs {
   }
 }
 
-module.exports = { FakeObs: FakeObs };
+module.exports = { FakeObs: FakeObs, frame: frame, readFrames: readFrames, GUID: GUID };

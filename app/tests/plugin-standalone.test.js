@@ -76,6 +76,7 @@ plugins.forEach(function (name) {
     jsonFiles(path.join(dir, 'pages')).forEach(function (f) {
       const p = json(f);
       (p.tiles || []).forEach(function (t) {
+        if (t.plugin && t.plugin !== name) return;
         const where = path.basename(f) + ' > ' + (t.label || t.id || t.widget);
         if (t.widget && widgets.indexOf(t.widget) < 0) bad.push(where + ': widget ' + t.widget);
         act(t.action, where);
@@ -117,7 +118,7 @@ test('the HOME catalog offers the same widgets as before the move to plugins', f
     Object.keys(h).forEach(function (id) { if (h[id] !== false && h[id].catalog !== false) offered.push(id); });
   });
   const core = require('../server/home').CATALOG.map(function (c) { return c.id; });
-  assert.deepStrictEqual(core.concat(offered).sort(), ['audio', 'claudeusage', 'clock', 'desks', 'discordmini', 'games', 'github', 'lol', 'mail', 'nowplaying', 'obs', 'ollama', 'system', 'todo', 'viber-projects', 'viber-tasks']);
+  assert.deepStrictEqual(core.concat(offered).sort(), ['audio', 'claudeusage', 'clock', 'desks', 'discordmini', 'games', 'github', 'lol', 'mail', 'nowplaying', 'obs', 'ollama', 'system', 'todo', 'twitch', 'viber-projects', 'viber-tasks']);
 });
 
 test('every widget of an official plugin is in its home.json, offered or turned off with false', function () {

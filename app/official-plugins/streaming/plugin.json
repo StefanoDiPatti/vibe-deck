@@ -3,10 +3,11 @@
   "name": "Streaming pack",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
-  "description": "For streamers: OBS Studio on the tablet",
+  "description": "For streamers: OBS Studio and Twitch on the tablet",
   "type": "pack",
   "includes": [
-    "obs"
+    "obs",
+    "twitch"
   ],
   "engine": ">=2.2.0"
 }

@@ -1,0 +1,11 @@
+{
+  "id": "twitch",
+  "title": "TWITCH",
+  "icon": "chat",
+  "description": "Twitch: chat dal vivo e controlli della diretta",
+  "tab": false,
+  "tiles": [
+    { "widget": "twitch", "w": 5, "h": 2 },
+    { "widget": "obs", "plugin": "obs", "w": 5, "h": 1 }
+  ]
+}
