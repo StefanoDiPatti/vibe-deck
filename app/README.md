@@ -462,6 +462,14 @@ Tap a repository to open it on the PC; tap the PR, ISSUE or CI badges to open th
 
 Ollama just needs to be running on the PC. The tablet never talks to Ollama directly: it always goes through the server.
 
+### OBS Studio
+
+In OBS (28 or later): **Tools > WebSocket Server Settings**, tick **Enable WebSocket server**, then **Show Connect Info** and copy
+the password into the **OBS Studio** card of the control panel (saved encrypted). Page **OBS** (streaming pack) and a HOME
+widget: go live and stop (**hold** to stop), record, virtual camera, replay buffer, mute audio sources, switch scenes, a
+preview of the program scene and the stats (fps, CPU, dropped frames). OBS is also a connector for JSON widgets: source
+`obs.state` and actions `obs.stream`, `obs.record`, `obs.scene`, `obs.mute`, `obs.virtualcam`, `obs.replay`.
+
 ## Linux
 
 Everything works except the parts that depend on Windows (Sticky Notes), replaced by standard tools. The SCREENS page on Linux needs KDE Plasma 6 and kdotool (see above).

@@ -1,0 +1,3 @@
+{
+  "obs": { "widget": "obs", "label": "OBS Studio", "name": "OBS Studio", "icon": "live", "description": "Diretta, registrazione, scene, audio e anteprima", "w": 4, "h": 3, "minW": 2, "minH": 1 }
+}

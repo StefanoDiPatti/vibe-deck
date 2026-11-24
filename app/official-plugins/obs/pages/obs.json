@@ -1,0 +1,8 @@
+{
+  "id": "obs",
+  "title": "OBS",
+  "icon": "live",
+  "description": "OBS Studio: diretta, registrazione, scene, audio e anteprima della scena in onda",
+  "tab": false,
+  "tiles": [ { "widget": "obs", "w": 5, "h": 3 } ]
+}
