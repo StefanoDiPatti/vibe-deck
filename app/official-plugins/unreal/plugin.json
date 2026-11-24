@@ -3,6 +3,7 @@
   "name": "Unreal Editor",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "unreal",
   "description": "Play, compile C++, tools and views for Unreal Editor",
   "type": "plugin",
   "platforms": [

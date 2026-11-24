@@ -3,7 +3,9 @@
   "name": "Streaming pack",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "tags": ["streaming"],
   "description": "For streamers: OBS Studio and Twitch on the tablet",
+  "icon": "live",
   "type": "pack",
   "includes": [
     "obs",

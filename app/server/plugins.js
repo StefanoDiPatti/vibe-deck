@@ -35,7 +35,7 @@ function appVersion() {
 function readManifest(name, dir, official) {
   const file = path.join(dir, 'plugin.json');
   const m = { id: name, name: name, version: '', description: '', author: '', type: 'plugin', platforms: PLATFORMS.slice(),
-    engine: '', includes: [], permissions: {}, official: official, hasManifest: false, problems: [] };
+    engine: '', icon: '', includes: [], permissions: {}, official: official, hasManifest: false, problems: [] };
   let data;
   try { data = require('./config').parseJson(fs.readFileSync(file, 'utf8')); } catch (e) {
     if (e.code !== 'ENOENT') m.problems.push('plugin.json non valido: ' + e.message);
@@ -48,6 +48,7 @@ function readManifest(name, dir, official) {
   if (typeof data.name === 'string' && data.name) m.name = data.name;
   if (typeof data.description === 'string') m.description = data.description;
   if (typeof data.author === 'string') m.author = data.author;
+  if (typeof data.icon === 'string' && /^[a-z0-9_-]{1,40}$/.test(data.icon)) m.icon = data.icon;
   if (VERSION_RE.test(data.version || '')) m.version = data.version;
   else m.problems.push('"version" deve essere nel formato 1.0.0');
   if (data.type !== undefined) {
@@ -87,8 +88,18 @@ function remembered(key, build) {
 function forget() { memo = null; catalog = null; }
 
 let catalog = null;
+function switchFile() { return path.join(process.env.DOCK_CONFIG_DIR || paths.CONFIG_DIR, 'plugins.json'); }
+
+function switchedOff() {
+  try {
+    const d = JSON.parse(fs.readFileSync(switchFile(), 'utf8'));
+    return Array.isArray(d && d.off) ? d.off.filter(function (n) { return typeof n === 'string' && NAME_RE.test(n); }) : [];
+  } catch (e) { return []; }
+}
+
 function scanStamp() {
   const parts = [];
+  try { parts.push('off:' + fs.statSync(switchFile()).mtimeMs); } catch (e) { parts.push('off:0'); }
   [officialDir(), baseDir()].forEach(function (root) {
     folders(root).sort().forEach(function (n) {
       let t = 0;
@@ -102,6 +113,7 @@ function scan() {
   const stamp = remembered('stamp', scanStamp);
   if (catalog && catalog.stamp === stamp) return catalog;
   catalog = { stamp: stamp, list: [], byName: {}, skipped: [] };
+  const off = switchedOff();
   const add = function (name, dir, official) {
     if (catalog.byName[name]) {
       catalog.skipped.push({ name: name, dir: dir, reason: 'esiste già un plugin ufficiale con questo nome' });
@@ -111,6 +123,7 @@ function scan() {
     const entry = { name: name, dir: dir, official: official, manifest: manifest, active: true, reason: '' };
     if (manifest.platforms.indexOf(currentPlatform()) < 0) { entry.active = false; entry.reason = 'non disponibile su questo sistema'; }
     else if (manifest.engine && !versionAtLeast(appVersion(), manifest.engine)) { entry.active = false; entry.reason = 'richiede Vibe Deck ' + manifest.engine + ' o successiva'; }
+    else if (official && manifest.type !== 'pack' && off.indexOf(name) >= 0) { entry.active = false; entry.reason = 'spento dal pannello'; entry.off = true; }
     catalog.byName[name] = entry;
     catalog.list.push(entry);
   };
@@ -132,6 +145,51 @@ function packProblems(entry, cat) {
   const missing = entry.manifest.includes.filter(function (n) { return !cat.byName[n] || cat.byName[n].manifest.type === 'pack'; });
   if (missing.length) out.push('plugin non trovati: ' + missing.join(', '));
   return out;
+}
+
+function hasCode(name) {
+  const e = scan().byName[name];
+  return !!e && fs.existsSync(path.join(e.dir, 'index.js'));
+}
+
+function switchTargets(id) {
+  const e = scan().byName[String(id || '')];
+  if (!e || !e.official) throw Object.assign(new Error('"' + id + '" non è un plugin o un pack ufficiale'), { code: 'NOT_FOUND' });
+  return e.manifest.type === 'pack' ? e.manifest.includes.slice() : [e.name];
+}
+
+function setSwitch(id, on) {
+  const targets = switchTargets(id);
+  const before = switchedOff();
+  const next = on ? before.filter(function (n) { return targets.indexOf(n) < 0; }) : before.concat(targets.filter(function (n) { return before.indexOf(n) < 0; }));
+  const changed = targets.filter(function (n) { return (before.indexOf(n) >= 0) !== (next.indexOf(n) >= 0); });
+  if (changed.length) {
+    const file = switchFile();
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify({ off: next.sort() }, null, 2) + '\n');
+    forget();
+    log.info('plugin', (on ? 'accesi: ' : 'spenti: ') + changed.join(', '));
+  }
+  const loadedNow = loaded || {};
+  const restart = changed.some(function (n) { return hasCode(n) && (on ? !(loadedNow[n] && loadedNow[n].module) : !!(loadedNow[n] && loadedNow[n].module)); });
+  return { id: id, on: !!on, changed: changed, restart: restart };
+}
+
+function officialSwitches() {
+  const cat = scan();
+  const off = switchedOff();
+  const official = cat.list.filter(function (e) { return e.official; });
+  const inPack = {};
+  const describe = function (e) {
+    return { id: e.name, name: e.manifest.name || e.name, description: e.manifest.description || '', icon: e.manifest.icon || '', on: off.indexOf(e.name) < 0, available: e.active || !!e.off, reason: e.off ? '' : e.reason, code: hasCode(e.name) };
+  };
+  const packs = official.filter(function (e) { return e.manifest.type === 'pack'; }).map(function (e) {
+    const items = e.manifest.includes.map(function (n) { inPack[n] = true; return cat.byName[n] ? describe(cat.byName[n]) : null; }).filter(Boolean);
+    const on = items.filter(function (i) { return i.on; }).length;
+    return { id: e.name, name: e.manifest.name || e.name, description: e.manifest.description || '', icon: e.manifest.icon || '', plugins: items, state: on === items.length ? 'on' : on ? 'partial' : 'off' };
+  });
+  const single = official.filter(function (e) { return e.manifest.type !== 'pack' && !inPack[e.name]; }).map(describe);
+  return { packs: packs, plugins: single };
 }
 
 function dirOf(name) {
@@ -516,6 +574,7 @@ function reset() {
 }
 
 module.exports = {
+  switchedOff: switchedOff, setSwitch: setSwitch, officialSwitches: officialSwitches, hasCode: hasCode,
   baseDir: baseDir, officialDir: officialDir, dirOf: dirOf, manifests: manifests, readManifest: readManifest, versionAtLeast: versionAtLeast, names: names, configDirs: configDirs, load: load,
   registerActions: registerActions, mountRoutes: mountRoutes, hook: hook,
   setControl: setControl, controlInfo: controlInfo, controlPrepare: controlPrepare, mountControl: mountControl, sourceTiles: sourceTiles,

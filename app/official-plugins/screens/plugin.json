@@ -3,6 +3,7 @@
   "name": "Screens and virtual desktops",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "layout",
   "description": "PC monitors, window layouts, the monitor apps open on, virtual desktops (switch, create, close, move windows) and their shortcut guide",
   "type": "plugin",
   "platforms": [

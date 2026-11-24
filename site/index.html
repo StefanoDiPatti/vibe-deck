@@ -8,13 +8,13 @@
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='6' height='6' rx='1.5' fill='%233d8bfd'/%3E%3Crect x='9' y='1' width='6' height='6' rx='1.5' fill='%233d8bfd'/%3E%3Crect x='1' y='9' width='6' height='6' rx='1.5' fill='%233d8bfd'/%3E%3Crect x='9' y='9' width='6' height='6' rx='1.5' fill='%2341d1ff'/%3E%3C/svg%3E">
 </head>
-<body>
+<body data-market="teaser">
   <header class="nav">
     <a class="brand" href="#top"><span class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Vibe Deck</a>
     <nav>
       <a href="#features">Features</a>
-      <a href="#create">Create a widget</a>
-      <a href="#market">Market</a>
+      <a href="create.html">Create a widget</a>
+      <a href="market.html">Market</a>
       <a class="gh" href="https://github.com/StefanoDiPatti/vibe-deck">GitHub</a>
     </nav>
   </header>
@@ -28,7 +28,7 @@
           your apps and shortcuts. Build your own widgets in a few clicks, or install them from the market.</p>
         <div class="cta">
           <a class="btn primary" href="https://github.com/StefanoDiPatti/vibe-deck#download">Get Vibe Deck</a>
-          <a class="btn" href="#market">Browse the market</a>
+          <a class="btn" href="market.html">Browse the market</a>
         </div>
         <p class="small">Works on Android 4+ tablets and on any phone, on the same Wi‑Fi as the PC.</p>
       </div>
@@ -43,7 +43,7 @@
         <article><h3>Pages for your tools</h3><p>Music, audio mixer, Discord, screens and virtual desktops, Claude Code sessions, GitHub, Ollama, games, Blender, DaVinci, Unreal.</p></article>
         <article><h3>Old tablets welcome</h3><p>The tablet only draws: the PC does the work. Made for Android 4 browsers, light on battery.</p></article>
         <article><h3>Your HOME</h3><p>Drag widgets on a grid from the control panel, resize them, pick a theme: Classic, Material, Neon, Neo‑brutalist.</p></article>
-        <article><h3>Widgets without code</h3><p>A shape, a data source, what to show, what a tap does. The editor in the control panel writes the JSON for you.</p></article>
+        <article><h3>Widgets without code</h3><p>A shape, a data source, what to show, what a tap does. The editor on this site writes the JSON for you.</p></article>
         <article><h3>Voice commands</h3><p>“Pause”, “volume up”, “lock the PC”: dictate on the tablet, the PC acts.</p></article>
         <article><h3>Safe by design</h3><p>The tablet only says “button N”: what runs is decided on the PC. Market plugins are JSON only, checked and fingerprinted.</p></article>
       </div>
@@ -59,15 +59,14 @@
         <h2>Make your own widget</h2>
         <ol class="steps">
           <li><b>What to show</b> — a big number, bars, on/off, text, buttons, voice commands, a list, a slider.</li>
-          <li><b>Where the data comes from</b> — your PC, an internet address without keys, a file, a command. Press <em>Try the source</em> and the data become buttons.</li>
+          <li><b>Where the data comes from</b> — your PC, an internet address without keys, a file, a command.</li>
           <li><b>What a tap does</b> — open an app, a shortcut, a link, music, volume…</li>
-          <li><b>Save</b> — it's on your tablet. Keep it for yourself, or <b>propose it to the market</b> for everybody.</li>
+          <li><b>Keep it or share it</b> — add it to your deck, or propose it to the market with your name as author.</li>
         </ol>
         <div class="cta">
-          <a class="btn primary" href="http://127.0.0.1:8787/control#editor-card">Open the editor on this PC</a>
-          <a class="btn" href="submit.html">Propose a widget</a>
+          <a class="btn primary" href="create.html">Open the widget editor</a>
         </div>
-        <p class="small">The editor is in the control panel of your deck: the button works on the PC where Vibe Deck is running.</p>
+        <p class="small">The editor runs here, in the browser, with a live preview drawn like on the tablet.</p>
       </div>
       <figure><img src="screenshots/pannello-neon.png" alt="The control panel of Vibe Deck" loading="lazy"></figure>
     </section>
@@ -75,32 +74,24 @@
     <section id="market" class="section market">
       <div class="market-head">
         <div>
-          <h2>Market</h2>
-          <p class="lead">Widgets and pages made by the community, checked before they go in: JSON only, no programs.
-            Press <b>Install</b> to open the market in your control panel.</p>
+          <h2>Ready-made packs</h2>
+          <p class="lead">Streaming, gaming, developer, creative, your PC: start from a pack, then add single plugins from the market.</p>
         </div>
-        <div class="filters">
-          <input id="q" type="search" placeholder="Search widgets…" aria-label="Search the market">
-          <div id="tags" class="tags" role="group" aria-label="Filter by tag"></div>
-        </div>
+        <div class="cta"><a class="btn primary" href="market.html">Open the market</a></div>
       </div>
-      <p id="market-state" class="small" role="status">Loading the market…</p>
-      <div id="cards" class="cards"></div>
-      <div class="propose">
-        <h3>Made something useful?</h3>
-        <p>Build it in the editor, then press <b>Proponi al market</b> next to your widget. You decide: send it, or keep it on your deck.</p>
-        <a class="btn" href="submit.html">How to propose a widget</a>
-      </div>
+      <div id="packs" class="cards packs"></div>
     </section>
   </main>
 
   <footer class="foot">
     <span>Vibe Deck · MIT license</span>
+    <span id="deck" class="deck"></span>
     <a href="https://github.com/StefanoDiPatti/vibe-deck">Source</a>
     <a href="https://github.com/StefanoDiPatti/vibe-deck-plugins">Market repository</a>
   </footer>
 
   <script src="js/icons.js"></script>
+  <script src="common.js"></script>
   <script src="market.js"></script>
 </body>
 </html>

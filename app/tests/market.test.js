@@ -124,3 +124,27 @@ test('bundle: a plugin folder becomes a package with allowed files only', functi
   fs.writeFileSync(path.join(dir, 'README.md'), '# x');
   assert.deepStrictEqual(Object.keys(bundle(dir).files).sort(), ['plugin.json', 'widgets/a.json']);
 });
+
+test('market packs: listed with the state of their plugins, installed together, bad packs skipped', async function () {
+  await ready;
+  publish('pa', '1.0.0', pkg('pa', '1.0.0'));
+  publish('pb', '1.0.0', pkg('pb', '1.0.0'));
+  index.packs = [
+    { id: 'pack-ab', name: 'Pack AB', description: 'A e B', author: 'test', includes: ['pa', 'pb'] },
+    { id: 'pack-rotto', name: 'Rotto', includes: ['pa', 'non-esiste'] },
+    { id: 'pa', name: 'Stesso id di un plugin', includes: ['pb'] }
+  ];
+  let l = await market.list(true);
+  assert.deepStrictEqual(l.packs.map(function (p) { return p.id + ':' + p.state; }), ['pack-ab:available']);
+  assert.deepStrictEqual(l.packs[0].plugins.map(function (p) { return p.id; }), ['pa', 'pb']);
+  await market.install('pa');
+  assert.strictEqual((await market.entry('pack-ab')).state, 'partial');
+  const r = await market.installAny('pack-ab');
+  assert.deepStrictEqual(r.installed.map(function (x) { return x.id; }), ['pb'], 'only what is missing');
+  assert.strictEqual((await market.entry('pack-ab')).state, 'installed');
+  assert.strictEqual((await market.entry('pb')).state, 'installed');
+  const mine = market.installedList().filter(function (p) { return p.id === 'pa' || p.id === 'pb'; });
+  assert.deepStrictEqual(mine.map(function (p) { return [p.id, p.version, p.widgets]; }), [['pa', '1.0.0', 1], ['pb', '1.0.0', 1]]);
+  await assert.rejects(market.entry('nessuno'), /non è nel market/);
+  delete index.packs;
+});

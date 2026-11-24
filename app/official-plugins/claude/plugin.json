@@ -3,6 +3,7 @@
   "name": "Claude",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "sparkle",
   "description": "Claude on the tablet: chats, Claude Code sessions of the desktop app, dictation and subscription usage",
   "type": "plugin",
   "platforms": [

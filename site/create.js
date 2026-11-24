@@ -1,7 +1,25 @@
 (function () {
   'use strict';
-  const { esc, icon, api, toast } = window.Panel;
+  const { esc, icon } = window.Site;
   const $ = (id) => document.getElementById(id);
+  const core = window.ShapesCore;
+  const DRAFT_KEY = 'vd-draft';
+  const AUTHOR_KEY = 'vd-author';
+  const REPO = 'https://github.com/StefanoDiPatti/vibe-deck-plugins';
+  const FAKE_PC = {
+    cpu: { usage: 37, temp: 54, cores: 8, model: 'Ryzen 7 5800X' }, ram: { usage: 48, usedGb: 7.7, totalGb: 16 },
+    gpu: { name: 'GeForce RTX 3070', usage: 21, temp: 47, memUsedGb: 2.1, memTotalGb: 8 },
+    net: { downMbps: 12.4, upMbps: 1.8, name: 'Wi-Fi' }, uptimeSeconds: 93784, hostname: 'MY-PC'
+  };
+
+  let toastTimer = null;
+  function toast(text, kind) {
+    const t = $('toast');
+    t.textContent = text;
+    t.className = 'show ' + (kind || '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = ''; }, 3200);
+  }
 
   const DEFAULT_PLUGIN = 'miei';
   const TYPE_NAMES = { number: 'numero', text: 'testo', boolean: 'sì / no', list: 'lista', columns: 'colonne', object: 'gruppo', empty: 'vuoto' };
@@ -68,24 +86,22 @@
       this.def = { name: '', shape: 'value', source: { type: 'pc' }, every: 5, show: { label: '', value: '' }, size: { w: 2, h: 1 } };
       this.plugin = DEFAULT_PLUGIN;
       this.id = '';
-      this.editing = false;
-      this.allowHost = false;
       this.fields = [];
       this.focus = null;
+      this.data = {};
     }
     on(fn) { this.listeners.push(fn); }
     emit(kind) { this.listeners.forEach((fn) => fn(kind)); }
     set(path, value, kind) {
       setAt(this.def, path, value);
-      if (path === 'name' && !this.editing) this.id = slug(value);
+      if (path === 'name') this.id = slug(value);
       this.emit(kind || 'value');
     }
-    load(def, plugin, id) {
+    load(def, id) {
       this.def = JSON.parse(JSON.stringify(def));
-      this.plugin = plugin;
-      this.id = id;
-      this.editing = true;
+      this.id = id || slug(def.name);
       this.fields = [];
+      this.data = {};
       this.emit('structure');
     }
     changeShape(shape) {
@@ -221,7 +237,7 @@
   }
 
   function sourcesFor() {
-    return catalog.sources.filter((s) => !s.plugin || s.plugin === state.plugin);
+    return catalog.sources.filter((s) => !s.plugin);
   }
 
   function chipsFor(fields, prefix) {
@@ -264,33 +280,62 @@
     const grid = h('div', { class: 'ed-grid' }, (info ? info.params : []).map((p) => field(p, 'source.' + p.name)));
     grid.appendChild(field({ name: 'every', label: 'Aggiorna ogni (secondi)', type: 'number', min: info ? info.minEvery : 1, help: info ? 'Minimo ' + info.minEvery + ' s' : '' }, 'every'));
     box.appendChild(grid);
-    if (src.type === 'http') {
-      box.appendChild(h('label', { class: 'ed-field check' }, [
-        h('input', { type: 'checkbox', checked: state.allowHost, onchange: (e) => { state.allowHost = e.target.checked; schedulePreview(); } }),
-        h('span', { text: 'Consenti a questo widget di leggere il sito dell\'indirizzo (lo aggiungo ai permessi del plugin)' })
-      ]));
-    }
+    if (src.type === 'http') box.appendChild(h('p', { class: 'ed-help', text: 'The deck asks you to allow this site when you add the widget. The address must answer in JSON, without keys or passwords.' }));
+    if (src.type === 'file' || src.type === 'command') box.appendChild(h('p', { class: 'ed-help warn', text: 'This reads your PC: the preview here uses empty data, and the widget can\'t go in the market as it is.' }));
     const known = info && info.fields && info.fields.length ? info.fields : state.fields;
     const tools = h('div', { class: 'ed-fields-head' }, [
       h('span', { class: 'ed-label', text: known.length ? 'Dati disponibili: tocca un campo di testo, poi un dato' : 'Dati disponibili' }),
-      info && info.sample ? h('button', { type: 'button', class: 'btn ghost small-btn', 'data-ed': 'sample', text: 'Prova la fonte', onclick: sample }) : null
+      h('button', { type: 'button', class: 'btn ghost small-btn', 'data-ed': 'sample', text: src.type === 'http' ? 'Try the address' : 'Show sample data', onclick: sample })
     ]);
     box.appendChild(tools);
-    box.appendChild(h('div', { class: 'ed-chips', id: 'ed-fields' }, known.length ? chipsFor(known) : [h('span', { class: 'ed-help', text: info && info.sample ? 'Premi "Prova la fonte" per vedere quali dati arrivano.' : 'Nessun dato.' })]));
+    box.appendChild(h('div', { class: 'ed-chips', id: 'ed-fields' }, known.length ? chipsFor(known) : [h('span', { class: 'ed-help', text: src.type === 'http' ? 'Press "Try the address" to see which data arrive.' : 'Press "Show sample data".' })]));
+  }
+
+  function fakeFrom(fields) {
+    const out = {};
+    fields.forEach((f) => {
+      const v = f.type === 'number' ? (f.unit === '%' ? 42 : 7) : f.type === 'boolean' ? true : f.type === 'list' ? [] : 'Sample';
+      setAt(out, f.path, v);
+    });
+    return out;
+  }
+
+  function dataFor(src) {
+    const info = catalog.sources.find((s) => s.type === src.type);
+    if (src.type === 'static') return src.data === undefined ? {} : src.data;
+    if (src.type === 'pc') return Object.assign(JSON.parse(JSON.stringify(FAKE_PC)), { apps: fakeFrom((info.fields || []).filter((f) => /^apps\./.test(f.path))).apps || {} });
+    if (src.type === 'http') return state.data[src.url] || {};
+    return info && info.fields && info.fields.length ? fakeFrom(info.fields) : {};
   }
 
   async function sample() {
     const btn = document.querySelector('[data-ed="sample"]');
+    const src = state.def.source || {};
+    if (src.type !== 'http') {
+      const data = dataFor(src);
+      state.fields = core.fields.fieldsOf(data);
+      $('ed-sample').textContent = JSON.stringify(data, null, 1).slice(0, 2000);
+      renderSource();
+      schedulePreview();
+      return;
+    }
+    if (!/^https?:\/\//.test(src.url || '')) { toast('Write the address first', 'err'); return; }
+    if (/\{\{/.test(src.url)) { toast('The address has {{fields}}: try it on your deck', 'err'); return; }
     if (btn) btn.disabled = true;
     try {
-      const src = state.def.source;
-      const r = await api('POST', '/api/control/shapes/sample', { plugin: state.plugin, source: src, allowHost: state.allowHost });
-      state.fields = r.fields;
-      $('ed-sample').textContent = r.preview;
+      const res = await fetch(src.url, { headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error('the site answered ' + res.status);
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch (e) { data = { text: text.trim(), lines: text.trim().split(/\r?\n/) }; }
+      state.data[src.url] = data;
+      state.fields = core.fields.fieldsOf(data);
+      $('ed-sample').textContent = JSON.stringify(data).slice(0, 2000);
       renderSource();
-      toast(r.fields.length + ' dati trovati', 'ok');
+      schedulePreview();
+      toast(state.fields.length + ' fields found', 'ok');
     } catch (e) {
-      toast(e.message, 'err');
+      toast(/Failed to fetch|NetworkError|Load failed/i.test(e.message) ? 'This site does not let a web page read it (CORS): the preview stays empty here, it works on your deck' : 'Could not read it: ' + e.message, 'err');
     } finally {
       if (btn) btn.disabled = false;
     }
@@ -338,12 +383,10 @@
       field({ name: 'description', label: 'Descrizione', type: 'text' }, 'description'),
       field({ name: 'icon', label: 'Icona nel catalogo', type: 'icon' }, 'icon'),
       h('label', { class: 'ed-field' }, [h('span', { class: 'ed-label', text: 'Larghezza (celle)' }), sel('w', 8)]),
-      h('label', { class: 'ed-field' }, [h('span', { class: 'ed-label', text: 'Altezza (celle)' }), sel('h', 6)]),
-      h('label', { class: 'ed-field' }, [h('span', { class: 'ed-label', text: 'Plugin dove salvarlo' }),
-        h('input', { type: 'text', value: state.plugin, 'data-ed': 'plugin', disabled: state.editing, oninput: (e) => { state.plugin = e.target.value.trim(); schedulePreview(); } })])
+      h('label', { class: 'ed-field' }, [h('span', { class: 'ed-label', text: 'Altezza (celle)' }), sel('h', 6)])
     ]));
-    $('ed-id').textContent = state.id ? state.plugin + '/' + state.id : '';
-    $('ed-title').textContent = state.editing ? 'Modifica: ' + (state.def.name || state.id) : 'Nuovo widget';
+    $('ed-id').textContent = state.id ? 'miei/' + state.id : '';
+    $('ed-title').textContent = state.def.name ? state.def.name : 'New widget';
   }
 
   function renderAll() {
@@ -377,20 +420,14 @@
       clearTimeout(this.timer);
       this.timer = setTimeout(() => this.run(), PREVIEW_DELAY);
     }
-    async run() {
-      const seq = ++this.seq;
-      let r;
-      try {
-        r = await api('POST', '/api/control/shapes/preview', { plugin: state.plugin || DEFAULT_PLUGIN, def: state.def, id: state.id || 'anteprima', allowHost: state.allowHost });
-      } catch (e) {
-        r = { problems: [e.message], view: null };
-      }
-      if (seq !== this.seq) return;
+    run() {
+      const r = compute();
       const box = $('ed-problems');
       box.innerHTML = r.problems.length ? r.problems.map((p) => '<li>' + esc(p) + '</li>').join('') : '';
-      $('ed-state').textContent = r.problems.length ? r.problems.length + (r.problems.length === 1 ? ' PROBLEMA' : ' PROBLEMI') : 'PRONTO';
+      $('ed-state').textContent = r.problems.length ? r.problems.length + (r.problems.length === 1 ? ' PROBLEM' : ' PROBLEMS') : 'READY';
       $('ed-state').className = 'pill ' + (r.problems.length ? 'warn' : 'ok');
-      $('ed-save').disabled = !!r.problems.length || !state.id;
+      finish.update(r.problems);
+      saveDraft();
       if (r.view) this.post(r.view);
     }
     post(view) {
@@ -403,94 +440,146 @@
       const height = Math.round(hh * CELL_H + (hh - 1) * GAP);
       this.frame.style.height = (height + 16) + 'px';
       if (!this.ready) return;
-      const theme = window.DockTheme ? window.DockTheme.get() : 'classic';
+      const theme = $('ed-theme') ? $('ed-theme').value : 'classic';
       this.frame.contentWindow.postMessage({ type: 'shape-preview', view: view, w: width, h: height, theme: theme }, location.origin);
     }
+  }
+
+  function compute() {
+    const def = state.def;
+    const problems = [];
+    if (typeof def.name !== 'string' || !def.name.trim()) problems.push('"name" mancante: dagli un nome (passo 5)');
+    const shape = core.shapes.shapes.get(def.shape);
+    if (!shape) return { problems: problems.concat(['forma sconosciuta "' + def.shape + '"']), view: null };
+    const src = def.source && typeof def.source === 'object' ? def.source : { type: 'static' };
+    const info = catalog.sources.find((x) => x.type === src.type);
+    if (!info) problems.push('fonte sconosciuta "' + src.type + '"');
+    if (src.type === 'http' && !/^https?:\/\/[^\s/]+/.test(src.url || '')) problems.push('scrivi l\'indirizzo da leggere (https://…)');
+    if (src.type === 'command' && !src.id) problems.push('scegli il comando');
+    if (src.type === 'file' && !src.path) problems.push('scrivi il file da leggere (dentro data/)');
+    problems.push.apply(problems, shape.validate(def));
+    let view = null;
+    try {
+      view = Object.assign(shape.view(Object.assign({}, def, { id: state.id || 'anteprima', source: src }), dataFor(src)), { every: Math.max(info ? info.minEvery : 1, parseInt(def.every, 10) || 5) });
+    } catch (e) {
+      view = { shape: def.shape, label: def.name || '', icon: def.icon || '', error: e.message };
+    }
+    return { problems: problems, view: view };
   }
 
   let preview = null;
   function schedulePreview() { if (preview) preview.schedule(); }
 
-  async function save() {
-    try {
-      const r = await api('POST', '/api/control/widgets', { plugin: state.plugin || DEFAULT_PLUGIN, id: state.id, def: state.def, allowHost: state.allowHost, overwrite: state.editing });
-      toast((r.created ? 'Widget creato: ' : 'Widget aggiornato: ') + (state.def.name || r.id) + '. Lo trovi in "Aggiungi un widget" della HOME', 'ok');
-      state.plugin = r.plugin;
-      state.editing = true;
-      await loadMine();
-      window.Panel.refresh();
-      renderMeta();
-    } catch (e) {
-      toast(e.message, 'err');
+  function saveDraft() { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(state.def)); } catch (e) { } }
+
+  function hostOf(url) { try { return new URL(url).host; } catch (e) { return ''; } }
+
+  function marketWarnings(def) {
+    const out = [];
+    const src = def.source || {};
+    if (src.type === 'file' || src.type === 'command') out.push('It reads a file or a command of your PC: other people don\'t have it.');
+    const acts = [];
+    if (def.tap) acts.push(def.tap);
+    if (def.set) acts.push(def.set);
+    (def.buttons || []).forEach((b) => b && b.action && acts.push(b.action));
+    ((def.voice || {}).commands || []).forEach((c) => c && c.action && acts.push(c.action));
+    if (acts.some((a) => a.type === 'command')) out.push('A tap runs a command of your PC: commands can\'t go in the market.');
+    if (acts.some((a) => a.type === 'launch' || a.type === 'focus')) out.push('A tap opens one of your apps: it works only for people with the same app.');
+    if (acts.some((a) => a.type === 'open_path')) out.push('A tap opens a file or folder of your PC.');
+    const text = JSON.stringify(def);
+    if (/[A-Za-z]:\\\\Users\\\\|\/home\/[a-z]/.test(text)) out.push('It contains a path of your PC: remove it before sharing.');
+    if (/(api[_-]?key|token|password|secret)=/i.test(text)) out.push('The address seems to contain a key or a password: never share it.');
+    return out;
+  }
+
+  class Finish {
+    constructor() {
+      this.problems = [];
+      $('fin-author').value = (function () { try { return localStorage.getItem(AUTHOR_KEY) || ''; } catch (e) { return ''; } })();
+      $('fin-author').addEventListener('input', () => { try { localStorage.setItem(AUTHOR_KEY, $('fin-author').value.trim()); } catch (e) { } this.update(this.problems); });
+      $('fin-local').addEventListener('click', () => this.local());
+      $('fin-market').addEventListener('click', () => this.market());
+    }
+    update(problems) {
+      this.problems = problems;
+      const ok = !problems.length && !!state.id;
+      $('fin-local').disabled = !ok;
+      $('fin-market').disabled = !ok || !$('fin-author').value.trim();
+      const warn = ok ? marketWarnings(state.def) : [];
+      $('fin-warn').innerHTML = warn.map((t) => '<p class="warn-box">' + esc(t) + '</p>').join('');
+      $('fin-hint').textContent = !ok ? 'Fix the problems shown next to the preview first.' : !$('fin-author').value.trim() ? 'Write your name (or nickname) to propose it to the market: it is shown as the author.' : '';
+    }
+    def() {
+      const author = $('fin-author').value.trim();
+      return Object.assign({}, state.def, author ? { author: author } : {});
+    }
+    local() {
+      const link = window.Site.panelLink('widget=' + window.Site.encode({ id: state.id, def: this.def() }));
+      window.open(link, '_blank', 'noopener');
+      toast('Opening your control panel: confirm there to add the widget', 'ok');
+    }
+    market() {
+      const def = this.def();
+      const q = new URLSearchParams({
+        template: 'widget.yml', title: 'Widget: ' + (def.name || state.id), name: def.name || state.id,
+        author: def.author || '', description: def.description || '', widget: JSON.stringify(def, null, 2)
+      });
+      window.open(REPO + '/issues/new?' + q.toString(), '_blank', 'noopener');
     }
   }
 
-  function propose(w) {
-    const json = JSON.stringify({ plugin: w.plugin, id: w.id, def: w.def });
-    const b64 = btoa(unescape(encodeURIComponent(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    const site = window.Market ? window.Market.site() : 'https://stefanodipatti.github.io/vibe-deck/';
-    window.open(site + 'submit.html#w=' + b64, '_blank', 'noopener');
-  }
-
-  async function loadMine() {
-    let list = [];
-    try { list = await api('GET', '/api/control/widgets'); } catch (e) { list = []; }
-    const box = $('ed-mine');
-    box.innerHTML = list.length ? '' : '<p class="hint small">Nessun widget creato finora.</p>';
-    list.forEach((w) => {
-      const def = w.def || {};
-      box.appendChild(h('div', { class: 'ed-mine-row', 'data-key': w.key }, [
-        h('span', { class: 'ed-mine-ico', html: icon(def.icon || (def.show && def.show.icon && def.show.icon.indexOf('{{') < 0 ? def.show.icon : '') || 'apps') }),
-        h('span', { class: 'txt' }, [h('span', { class: 'name', text: def.name || w.id }),
-          h('span', { class: 'desc' + (w.problems.length ? ' err' : ''), text: w.problems.length ? w.problems[0] : w.key })]),
-        h('button', { class: 'btn ghost small-btn', type: 'button', 'data-act': 'propose', text: 'Proponi al market', title: 'Apre la pagina del market con questo widget: decidi tu se proporlo o tenerlo solo per te', onclick: () => propose(w) }),
-        h('button', { class: 'btn ghost small-btn', type: 'button', 'data-act': 'edit', text: 'Modifica', onclick: () => { state.load(def, w.plugin, w.id); window.scrollTo({ top: $('editor-card').offsetTop - 10, behavior: 'smooth' }); } }),
-        h('button', {
-          class: 'ibtn rm', type: 'button', title: 'Elimina', html: icon('trash'),
-          onclick: async () => {
-            if (!window.confirm('Eliminare il widget "' + (def.name || w.id) + '"? Se è nella HOME, sparisce anche da lì.')) return;
-            try { await api('DELETE', '/api/control/widgets/' + encodeURIComponent(w.plugin) + '/' + encodeURIComponent(w.id)); toast('Widget eliminato', 'ok'); await loadMine(); window.Panel.refresh(); } catch (e) { toast(e.message, 'err'); }
-          }
-        })
-      ]));
-    });
-  }
+  let finish = null;
 
   function applyJson() {
     try {
       const def = JSON.parse($('ed-json').value);
-      if (!def || typeof def !== 'object' || Array.isArray(def)) throw new Error('Serve un oggetto JSON');
-      state.def = def;
-      if (!state.editing) state.id = slug(def.name);
-      state.emit('structure');
-      toast('JSON applicato', 'ok');
+      if (!def || typeof def !== 'object' || Array.isArray(def)) throw new Error('a JSON object is needed');
+      state.load(def, slug(def.name));
+      toast('JSON applied', 'ok');
     } catch (e) {
-      toast('JSON non valido: ' + e.message, 'err');
+      toast('Invalid JSON: ' + e.message, 'err');
     }
   }
 
-  async function start() {
-    const card = $('editor-card');
-    if (!card) return;
-    try { catalog = await api('GET', '/api/control/catalog'); } catch (e) { $('ed-shapes').innerHTML = '<p class="hint err">' + esc(e.message) + '</p>'; return; }
-    $('ed-icons').innerHTML = catalog.icons.map((i) => '<option value="' + esc(i.name) + '">' + (i.picture ? 'illustrazione' : 'icona') + '</option>').join('');
-    preview = new Preview($('ed-frame'));
-    $('ed-frame').src = '/shape-preview.html';
-    state.on((kind) => {
-      if (kind === 'structure') renderAll();
-      else { renderJson(false); $('ed-id').textContent = state.id ? state.plugin + '/' + state.id : ''; schedulePreview(); }
-    });
-    $('ed-save').addEventListener('click', save);
-    $('ed-new').addEventListener('click', () => { state.reset(); renderAll(); });
-    $('ed-json-apply').addEventListener('click', applyJson);
-    window.addEventListener('storage', schedulePreview);
-    const pick = $('theme-pick');
-    if (pick) pick.addEventListener('click', () => setTimeout(() => preview && preview.last && preview.post(preview.last), 50));
-    renderAll();
-    loadMine();
+  function fromHash() {
+    const m = /(?:^#|&)w=([A-Za-z0-9_-]+)/.exec(location.hash);
+    if (!m) return null;
+    const w = window.Site.decode(m[1]);
+    return w && w.def && typeof w.def === 'object' && !Array.isArray(w.def) ? w : null;
   }
 
-  window.WidgetEditor = { state: state, reload: start };
+  async function start() {
+    try {
+      const res = await fetch('data/catalog.json', { cache: 'no-cache' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      catalog = await res.json();
+    } catch (e) { $('ed-shapes').innerHTML = '<p class="small">The editor could not load (' + esc(e.message) + ').</p>'; return; }
+    $('ed-icons').innerHTML = catalog.icons.map((i) => '<option value="' + esc(i.name) + '">' + (i.picture ? 'illustration' : 'icon') + '</option>').join('');
+    preview = new Preview($('ed-frame'));
+    finish = new Finish();
+    $('ed-frame').src = 'preview/index.html';
+    state.on((kind) => {
+      if (kind === 'structure') renderAll();
+      else { renderJson(false); $('ed-id').textContent = state.id ? 'miei/' + state.id : ''; schedulePreview(); }
+    });
+    $('ed-new').addEventListener('click', () => { if (!window.confirm('Start a new widget? The current one is lost.')) return; state.reset(); renderAll(); });
+    $('ed-json-apply').addEventListener('click', applyJson);
+    $('ed-theme').addEventListener('change', () => { if (preview && preview.last) preview.post(preview.last); });
+    const shared = fromHash();
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { draft = null; }
+    window.addEventListener('hashchange', () => {
+      const w = fromHash();
+      if (!w) return;
+      state.load(w.def, w.id);
+      history.replaceState(null, '', location.pathname);
+    });
+    if (shared) { state.load(shared.def, shared.id); history.replaceState(null, '', location.pathname); }
+    else if (draft && typeof draft === 'object' && draft.shape) state.load(draft, slug(draft.name));
+    else renderAll();
+  }
+
+  window.WidgetEditor = { state: state, compute: () => compute() };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
 })();

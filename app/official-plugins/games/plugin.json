@@ -3,6 +3,7 @@
   "name": "Games",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "gamepad",
   "description": "Your games on the tablet: picked in the control panel with their icons, green dot when running, a tap brings them to the front",
   "type": "plugin",
   "platforms": [

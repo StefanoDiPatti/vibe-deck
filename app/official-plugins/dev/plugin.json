@@ -3,6 +3,7 @@
   "name": "Dev",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "code",
   "description": "VS Code, Claude Code, terminal, git status, OpenClaw and editor shortcuts",
   "type": "plugin",
   "platforms": [

@@ -3,6 +3,7 @@
   "name": "GitHub",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "github",
   "description": "Your repositories with CI, deploys, pull requests and issues",
   "type": "plugin",
   "platforms": [

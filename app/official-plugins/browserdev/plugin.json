@@ -3,6 +3,7 @@
   "name": "Browser dev",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "code",
   "description": "Browser developer shortcuts: hard reload, DevTools, console, inspect, device mode, clear data",
   "type": "plugin",
   "platforms": [

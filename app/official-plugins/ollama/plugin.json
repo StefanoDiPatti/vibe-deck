@@ -3,6 +3,7 @@
   "name": "Ollama",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "chat",
   "description": "Chat with the local Ollama models from the tablet",
   "type": "plugin",
   "platforms": [
