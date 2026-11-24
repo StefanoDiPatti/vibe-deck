@@ -30,10 +30,21 @@ function iconNames() {
       while ((m = re.exec(body))) names[m[1]] = true;
       const alias = /^\s*P\.([a-z_][a-z0-9_]*)\s*=/gim;
       while ((m = alias.exec(text))) names[m[1]] = true;
-      iconCache = { mtime: mtime, names: names };
+      const pictures = {};
+      const gStart = text.indexOf('var G = {');
+      if (gStart >= 0) {
+        const gBody = text.slice(gStart, text.indexOf('\n  };', gStart));
+        const pic = /^\s*([a-z_][a-z0-9_]*)\s*:\s*\[/gim;
+        while ((m = pic.exec(gBody))) { names[m[1]] = true; pictures[m[1]] = true; }
+      }
+      iconCache = { mtime: mtime, names: names, pictures: pictures };
     }
   } catch (e) { return null; }
   return Object.assign({}, iconCache.names, plugins.icons());
+}
+function pictureNames() {
+  iconNames();
+  return Object.keys(iconCache.pictures || {});
 }
 
 function widgetNames() { return WIDGETS.concat(Object.keys(plugins.widgets())); }
@@ -118,4 +129,4 @@ function run() {
   return out;
 }
 
-module.exports = { run: run, WIDGETS: WIDGETS, iconNames: iconNames, widgetNames: widgetNames };
+module.exports = { run: run, WIDGETS: WIDGETS, iconNames: iconNames, pictureNames: pictureNames, widgetNames: widgetNames };

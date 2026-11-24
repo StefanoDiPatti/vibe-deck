@@ -202,6 +202,9 @@ function load() {
   return loaded;
 }
 
+const actionInfo = {};
+function actionDescriptions() { return Object.assign({}, actionInfo); }
+
 function registerActions(HANDLERS) {
   const all = load();
   Object.keys(all).forEach(function (name) {
@@ -210,8 +213,10 @@ function registerActions(HANDLERS) {
     if (!acts || typeof acts !== 'object') return;
     const ctx = context(name);
     Object.keys(acts).forEach(function (key) {
-      if (typeof acts[key] !== 'function' || !NAME_RE.test(key)) {
-        log.warn('plugin', name + ': azione "' + key + '" ignorata (serve una funzione e un nome come "saluta")');
+      const entry = acts[key];
+      const run = typeof entry === 'function' ? entry : entry && typeof entry.run === 'function' ? entry.run : null;
+      if (!run || !NAME_RE.test(key)) {
+        log.warn('plugin', name + ': azione "' + key + '" ignorata (serve una funzione, o { run, label, params }, e un nome come "saluta")');
         return;
       }
       const type = key === name ? name : name + '.' + key;
@@ -220,10 +225,11 @@ function registerActions(HANDLERS) {
         return;
       }
       HANDLERS[type] = async function (a) {
-        const r = await acts[key](a, ctx);
+        const r = await run(a, ctx);
         return r && typeof r === 'object' ? r : { message: r === undefined || r === null ? null : String(r) };
       };
       p.actions.push(type);
+      actionInfo[type] = Object.assign({ plugin: name }, typeof entry === 'function' ? {} : { label: entry.label, description: entry.description, params: entry.params, info: true });
     });
   });
 }
@@ -499,5 +505,5 @@ module.exports = {
   registerActions: registerActions, mountRoutes: mountRoutes, hook: hook,
   setControl: setControl, controlInfo: controlInfo, controlPrepare: controlPrepare, mountControl: mountControl, sourceTiles: sourceTiles,
   controlScripts: controlScripts, controlStyles: controlStyles,
-  remembered: remembered, dictionary: dictionary, langScript: langScript, context: context, scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, widgetLabels: widgetLabels, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
+  actionDescriptions: actionDescriptions, remembered: remembered, dictionary: dictionary, langScript: langScript, context: context, scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, widgetLabels: widgetLabels, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
 };

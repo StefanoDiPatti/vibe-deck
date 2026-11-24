@@ -22,7 +22,18 @@ module.exports = {
   description: 'Outputs, microphones and per-app volume',
   sources: {
     mixer: {
+      label: 'Audio del PC',
+      description: 'Uscita e microfono predefiniti (nome, volume, muto) e le app che suonano',
       every: 2,
+      fields: [
+        { path: 'output.name', label: 'Uscita predefinita', type: 'text' },
+        { path: 'output.volume', label: 'Volume dell\'uscita', type: 'number', unit: '%' },
+        { path: 'output.mute', label: 'Uscita muta', type: 'boolean' },
+        { path: 'input.name', label: 'Microfono predefinito', type: 'text' },
+        { path: 'input.volume', label: 'Volume del microfono', type: 'number', unit: '%' },
+        { path: 'input.mute', label: 'Microfono muto', type: 'boolean' },
+        { path: 'apps', label: 'App che suonano', type: 'list' }
+      ],
       read: async function () {
         const state = await mixer.state();
         return Object.assign({}, state, defaults(state));
@@ -30,7 +41,15 @@ module.exports = {
     }
   },
   actions: {
-    volume: function (action) { return setDefaultVolume(action.flow, action.value); }
+    volume: {
+      label: 'Volume (uscita o microfono)',
+      description: 'Imposta il volume del dispositivo predefinito',
+      params: [
+        { name: 'value', label: 'Volume (0-100)', type: 'template', required: true, help: 'Con un cursore usa {{value}}' },
+        { name: 'flow', label: 'Dispositivo', type: 'select', options: [{ value: 'out', label: 'Uscita' }, { value: 'in', label: 'Microfono' }], default: 'out' }
+      ],
+      run: function (action) { return setDefaultVolume(action.flow, action.value); }
+    }
   },
   routes: function (router, ctx) {
     const r = ctx.route;

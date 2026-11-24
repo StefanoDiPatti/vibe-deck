@@ -428,9 +428,36 @@ or sends the slider value: what runs is decided on the PC. Optional `"platforms"
 **Translations** of a JSON-only plugin: `lang/en.json` with `{ "Italian text": "English text" }` and, for text with
 numbers, `"$rules": [["^vento (.+)$", "wind $1"]]`.
 
-**Connectors for developers:** a plugin with code can offer data to JSON widgets with
-`module.exports.sources = { name: { every: 2, read: async function (source, ctx) { return {...}; } } }` and actions with
-`module.exports.actions`. Example: `official-plugins/audio` (`audio.mixer` + `audio.volume`, used by the Volume and
+**Connectors for developers:** a plugin with code can offer data and actions to JSON widgets. Describe them, so the
+widget editor can show them in its menus (label, parameters, fields):
+
+```js
+module.exports = {
+  sources: {
+    state: {
+      label: 'Router status', description: 'Clients and traffic', every: 5,
+      params: [{ name: 'zone', label: 'Zone', type: 'text' }],
+      fields: [{ path: 'clients', label: 'Connected clients', type: 'number' }],
+      read: async function (source, ctx) { return { clients: 7 }; }
+    }
+  },
+  actions: {
+    reboot: {
+      label: 'Restart the router', params: [{ name: 'delay', label: 'Delay (s)', type: 'number' }],
+      run: async function (action, ctx) { return 'Restarting'; }
+    }
+  }
+};
+```
+
+Parameter types: `text`, `template` (accepts `{{...}}`), `number`, `boolean`, `select` (with `options`), `keys`, `key`, `app`,
+`command`, `actions`, `json`, `icon`, `url`, `path`. A plain function still works as an action (it shows up without a description).
+Without `fields`, the editor discovers the fields by reading the source once.
+
+The control panel (only on this PC) exposes `GET /api/control/catalog` (shapes, sources, actions, filters, icons, apps and
+commands, all described), `POST /api/control/shapes/sample` (`{ plugin, source }` → fields found with a sample, lists and
+parallel columns recognised) and `POST /api/control/shapes/preview` (`{ plugin, def }` → problems or the ready view of a
+widget that is not saved yet). Example: `official-plugins/audio` (`audio.mixer` + `audio.volume`, used by the Volume and
 Microphone sliders). Examples of JSON-only plugins: `official-plugins/pcinfo` and `official-plugins/meteo` (to change city,
 copy a widget and change `latitude`/`longitude` in the address).
 

@@ -255,6 +255,15 @@ app.get('/api/control/qr', controlOnly, route(async function (req) {
   return { link: link, svg: await pairing.svg(link) };
 }));
 app.get('/api/control/info', controlOnly, route(async function () { await plugins.controlPrepare(); return controlInfo(); }));
+app.get('/api/control/catalog', controlOnly, route(function () { return require('./shapes/catalog').catalog(); }));
+app.post('/api/control/shapes/sample', controlOnly, route(function (req) {
+  const b = req.body || {};
+  return shapes.sample(b.plugin, b.source);
+}));
+app.post('/api/control/shapes/preview', controlOnly, route(function (req) {
+  const b = req.body || {};
+  return shapes.preview(b.plugin, b.def, b.id);
+}));
 app.post('/api/control/layout', controlOnly, route(function (req) {
   const b = req.body || {};
   config.saveLayout(b.tabs, b.home, b.tiles);

@@ -28,8 +28,77 @@ function actionProblems(action, where) {
   return [];
 }
 
+const LABEL = { name: 'label', label: 'Titolo', type: 'template' };
+const ICON = { name: 'icon', label: 'Icona o illustrazione', type: 'icon', help: 'Fissa (es. sun) o dai dati: {{codice|map:icone}}' };
+const SUB = { name: 'sub', label: 'Sottotitolo', type: 'template' };
+const WARN = { name: 'warn', label: 'Giallo da', type: 'number' };
+const HOT = { name: 'hot', label: 'Rosso da', type: 'number' };
+
+const SHAPE_INFO = {
+  value: {
+    label: 'Numero grande',
+    description: 'Un valore in grande con unità, sottotitolo e una barra colorata (es. CPU, temperatura, follower)',
+    show: [LABEL, ICON, { name: 'value', label: 'Valore', type: 'template', required: true }, { name: 'unit', label: 'Unità', type: 'template' }, SUB,
+      { name: 'bar', label: 'Barra (0-100)', type: 'template' }, WARN, HOT],
+    actions: [{ name: 'tap', label: 'Al tocco' }]
+  },
+  bars: {
+    label: 'Barre',
+    description: 'Più righe "nome, barra, valore" (es. CPU, GPU e RAM insieme)',
+    show: [LABEL, { name: 'rows', label: 'Righe', type: 'rows', required: true, item: [{ name: 'label', label: 'Nome', type: 'template' }, { name: 'value', label: 'Valore', type: 'template' }, { name: 'bar', label: 'Barra (0-100)', type: 'template' }, WARN, HOT] }],
+    actions: [{ name: 'tap', label: 'Al tocco' }]
+  },
+  status: {
+    label: 'Acceso / spento',
+    description: 'Un pallino verde o grigio con un testo (es. app aperta, server raggiungibile, in diretta)',
+    show: [LABEL, ICON, { name: 'on', label: 'Acceso quando', type: 'template', required: true }, { name: 'onText', label: 'Testo se acceso', type: 'template' },
+      { name: 'offText', label: 'Testo se spento', type: 'template' }, SUB],
+    actions: [{ name: 'tap', label: 'Al tocco' }]
+  },
+  text: {
+    label: 'Testo',
+    description: 'Un testo che si aggiorna da solo (es. da quanto è acceso il PC, una nota)',
+    show: [LABEL, ICON, { name: 'text', label: 'Testo', type: 'template', required: true }, SUB],
+    actions: [{ name: 'tap', label: 'Al tocco' }]
+  },
+  buttons: {
+    label: 'Pulsanti',
+    description: 'Una griglia fino a 12 pulsanti, ognuno con la sua azione',
+    show: [LABEL],
+    actions: [{ name: 'buttons', label: 'Pulsanti', list: true, item: [{ name: 'label', label: 'Scritta', type: 'template', required: true }, { name: 'icon', label: 'Icona', type: 'icon' }, { name: 'color', label: 'Colore', type: 'text' }] }]
+  },
+  voice: {
+    label: 'Comandi vocali',
+    description: 'Microfono e testo: frasi collegate ad azioni, e un\'azione per tutto il resto con {{text}}',
+    show: [LABEL],
+    actions: [{ name: 'voice.commands', label: 'Comandi', list: true, item: [{ name: 'say', label: 'Frasi da dire', type: 'phrases', required: true }, { name: 'reply', label: 'Risposta', type: 'text' }] },
+      { name: 'voice.action', label: 'Per tutto il resto ({{text}} = quello che hai detto)' }]
+  },
+  list: {
+    label: 'Lista',
+    description: 'Righe prese da una lista nei dati (es. previsioni, dischi, notizie); scorre, ogni riga si può toccare',
+    show: [LABEL, { name: 'items', label: 'Lista', type: 'template', required: true, help: 'Es. {{risultati}}, oppure {{daily|zip}} per colonne parallele' },
+      { name: 'item', label: 'Ogni riga', type: 'row', required: true, item: [{ name: 'icon', label: 'Icona', type: 'icon' }, { name: 'title', label: 'Titolo', type: 'template' },
+        { name: 'sub', label: 'Sottotitolo', type: 'template' }, { name: 'right', label: 'A destra', type: 'template' }, { name: 'bar', label: 'Barra (0-100)', type: 'template' }, WARN, HOT] },
+      { name: 'max', label: 'Righe al massimo', type: 'number', min: 1, max: 50, default: 20 }, { name: 'empty', label: 'Testo se vuota', type: 'text' }],
+    actions: [{ name: 'tap', label: 'Al tocco di una riga ({{item.campo}})' }]
+  },
+  slider: {
+    label: 'Cursore',
+    description: 'Un valore da trascinare (es. volume): il PC riceve il numero scelto',
+    show: [LABEL, ICON, { name: 'value', label: 'Valore attuale', type: 'template', required: true }, { name: 'min', label: 'Minimo', type: 'number', required: true },
+      { name: 'max', label: 'Massimo', type: 'number', required: true }, { name: 'step', label: 'Passo', type: 'number', default: 1 }, { name: 'unit', label: 'Unità', type: 'template' }, SUB],
+    actions: [{ name: 'set', label: 'Quando cambia ({{value}} = valore scelto)', required: true }]
+  }
+};
+
 class Shape {
   constructor(name) { this.name = name; }
+
+  describe() {
+    const i = SHAPE_INFO[this.name] || {};
+    return { name: this.name, label: i.label || this.name, description: i.description || '', show: i.show || [], actions: i.actions || [] };
+  }
 
   validate(def) {
     const problems = [];
