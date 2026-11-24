@@ -280,7 +280,7 @@
       }
       flash(node, 'ok');
       if (a.type === 'launch') { clearTimeout(app.pollTimer); app.pollTimer = setTimeout(poll, 1800); }
-      if (r && r.viber) for (var i = 0; i < app.tiles.length; i++) if (app.tiles[i].widget && app.tiles[i].widget.viber) app.tiles[i].widget.viber(r.viber);
+      if (r && r.event) for (var i = 0; i < app.tiles.length; i++) if (app.tiles[i].widget && app.tiles[i].widget.event) app.tiles[i].widget.event(r.event.name, r.event.data);
       if (r && r.output !== undefined) showModal(tile.label || 'Output', r.output);
       else if (r && r.message) app.toast(r.message, 'ok');
     }, 125000);

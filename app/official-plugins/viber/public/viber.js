@@ -1,5 +1,16 @@
 (function () {
   'use strict';
+  I18n.add({
+    'Dividi': 'Split', 'Simulatore': 'Simulator', 'Agenti': 'Agents', 'Schede': 'Tabs',
+    'Progetti e task': 'Projects and tasks',
+    'Viber: pulsanti (pannelli, disposizioni, viste) personalizzabili dal pannello, a destra progetti e task': 'Viber: buttons (panels, layouts, views) customizable from the panel, projects and tasks on the right',
+    'browser + terminale': 'browser + terminal', 'git + file + terminale': 'git + files + terminal',
+    'pannello a schermo intero': 'full-screen panel', 'tutte le schede': 'all tabs', 'ti aspetta': 'waiting for you',
+    'nessun agente': 'no agents', 'Viber non è aperto': 'Viber is not open',
+    'Nessun progetto aperto in Viber': 'No project open in Viber',
+    'Nessuna task aperta in questo progetto': 'No open task in this project', 'collegamento…': 'connecting…',
+    '· collegamento…': '· connecting…'
+  });
   var VB_STATES = { question: 'ti aspetta', working: 'al lavoro', completed: 'pronto', idle: '' };
   Widgets.register('viber', function (root, tile, app) {
     D.addClass(root, 'w-viber');
@@ -100,8 +111,8 @@
     return {
       update: function () {},
       resize: function () {},
-      viber: function (d) {
-        if (!d) return;
+      event: function (name, d) {
+        if (name !== 'viber' || !d) return;
         if (d.projects) { renderProjects(d); lastTasks = ''; loadState(); loadTasks(); return; }
         if (d.online !== undefined) { st = d; renderState(); }
       },

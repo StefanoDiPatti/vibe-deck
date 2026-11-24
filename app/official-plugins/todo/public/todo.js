@@ -1,5 +1,10 @@
 (function () {
   'use strict';
+  I18n.add({
+    'Note e TODO': 'Notes and TODO', 'Nuova attività…': 'New task…', 'Nessuna attività': 'No tasks',
+    'Nessuna completata': 'None completed', 'completate rimosse': 'completed removed', 'da fare': 'to do',
+    'Attività non trovata': 'Task not found', 'TODO sincronizzati con GitHub': 'TODO synced with GitHub'
+  });
   var H = Widgets.helpers, el = H.el, header = H.header, setHtml = H.setHtml, smallBtn = H.smallBtn, level = H.level, dictation = H.dictation, guideHtml = H.guideHtml, setText = D.setText;
 
   Widgets.register('todo', function (root, tile, app) {

@@ -1,5 +1,23 @@
 (function () {
   'use strict';
+  I18n.add({
+    'Chat, sessioni di Claude Code, dettatura, scrittura sul PC': 'Chat, Claude Code sessions, dictation, typing on the PC',
+    'app sul PC': 'apps on the PC', 'Scrivi o detta a Claude…': 'Write or dictate to Claude…', 'Nuova chat': 'New chat',
+    'Nuova sessione': 'New session', 'Chat eliminata': 'Chat deleted', 'Scegli una chat': 'Choose a chat',
+    'Scegli una chat o premi NUOVA CHAT.': 'Choose a chat or press NEW CHAT.',
+    'Scegli prima una sessione': 'Choose a session first', 'Claude fermato': 'Claude stopped',
+    'Claude non stava lavorando': 'Claude was not working',
+    'Inviato alla sessione sul PC': 'Sent to the session on the PC',
+    'Sessione aperta sul PC': 'Session opened on the PC',
+    'Claude Code (il tuo abbonamento)': 'Claude Code (your subscription)',
+    'Claude sta lavorando…': 'Claude is working…', 'messaggio in coda': 'queued message',
+    '· messaggio in coda: parte quando Claude finisce': '· queued message: sent when Claude finishes',
+    'sta rispondendo…': 'is answering…', 'al lavoro…': 'working…', '(risposta troncata)': '(answer truncated)',
+    'Consumi': 'Usage', 'Sessione 5 ore': '5-hour session', 'Settimana': 'Week', '(settimana)': '(week)',
+    '(non aggiornati)': '(not updated)', 'Carico le sessioni…': 'Loading sessions…',
+    'App desktop di Claude non trovata su questo PC.': 'Claude desktop app not found on this PC.',
+    'Scrivi o detta un messaggio.': 'Write or dictate a message.', 'Non inviato:': 'Not sent:'
+  });
   var H = Widgets.helpers, el = H.el, header = H.header, setHtml = H.setHtml, dictation = H.dictation, setText = D.setText;
 
   function usageWhen(iso) {

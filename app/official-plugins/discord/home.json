@@ -1,4 +1,4 @@
 {
   "discordmini": { "widget": "discordmini", "label": "Discord", "icon": "headset", "description": "La stanza in cui sei, chi parla, mute e silenzia", "w": 2, "h": 2, "minW": 2, "minH": 2 },
-  "discord": false
+  "discord": { "label": "Discord", "catalog": false, "name": "Discord" }
 }

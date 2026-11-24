@@ -12,6 +12,7 @@ function load(lang) {
   ['i18n.js', 'lang-en.js'].forEach(function (f) {
     vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'public', 'js', f), 'utf8') + '\nwindow.I18n = I18n;', ctx, { filename: f });
   });
+  require('./i18n-audit').pluginDictionaries(path.join(__dirname, '..')).forEach(function (code) { vm.runInContext(code, ctx); });
   return ctx.window.I18n;
 }
 

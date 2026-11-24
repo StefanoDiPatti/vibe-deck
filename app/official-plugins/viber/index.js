@@ -11,7 +11,7 @@ module.exports = {
   description: 'Viber through its MCP server: panels, layouts, views, projects and tasks',
   actions: {
     viber: async function (a, ctx) {
-      return { message: null, viber: await get(ctx).action(a) };
+      return { message: null, event: { name: 'viber', data: await get(ctx).action(a) } };
     }
   },
   routes: function (router, ctx) {

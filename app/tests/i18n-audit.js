@@ -6,6 +6,7 @@ const ctx = { window: { localStorage: { getItem: function (k) { return store[k] 
 ctx.window.window = ctx.window;
 vm.createContext(ctx);
 ['i18n.js', 'lang-en.js'].forEach(function (f) { vm.runInContext(fs.readFileSync(path.join(APP, 'public', 'js', f), 'utf8') + '\nwindow.I18n = I18n;', ctx); });
+pluginDictionaries(APP).forEach(function (code) { vm.runInContext(code, ctx); });
 const I = ctx.window.I18n;
 
 const IT = /[àèéìòù]|\b(il|lo|la|gli|le|di|da|del|della|dei|delle|al|alla|sul|sulla|nel|nella|per|non|che|una|uno|sei|tocca|tieni|apri|chiudi|nessun[ao]?|niente|carico|scegli|scrivi|premi|aggiungi|torna|passa|mostra|uscita|ingresso|microfono|predefinit[oa]|finestr[ae]|stanza|canali|aperte?|collega\w*|sincronizz\w*|dettatura|modello|sessione|guida|zona|divisione|attiv[ao]|schermo|nuov[ao]|giorni|settimana|consumi|completat\w+|riproduzione|coda|brano|indietro|avanti|cartella|flusso|modifica|inizio|fine|tutt[eio]|metà|terzi|quarti|griglia|ricarica|errori|sistema|suoni|volume|esci|entra|ieri|ora|fa|libero|vuot[ao]|caric\w+|riprova|salva\w*|annulla|sposta\w*|chiud\w+|invia\w*|scarica|cerca|nascost\w+|mostrat\w+|disponibil\w+|selezion\w+|monitor del|su|in corso|vicino|ancora|sempre|prima|dopo|subito|solo|anche|oppure|questo|questa|quello|quella|tuo|tua|tuoi)\b/i;
@@ -22,6 +23,7 @@ function check(s, where) {
   const src = fs.readFileSync(file, 'utf8');
   (function walk(n) {
     if (!n || typeof n !== 'object') return;
+    if (n.type === 'CallExpression' && n.callee.type === 'MemberExpression' && n.callee.object.name === 'I18n') return;
     if (n.type === 'Literal' && typeof n.value === 'string' && !SKIP.test(n.value.trim())) {
       n.value.split(/<[^>]*>/).forEach(function (part) { check(part, f); });
     }
@@ -54,4 +56,18 @@ function pluginScripts(APP) {
   });
   return [].concat.apply([], lists);
 }
+function pluginDictionaries(APP) {
+  const acorn = require('acorn');
+  const out = [];
+  pluginScripts(APP).forEach(function (file) {
+    const src = fs.readFileSync(file, 'utf8');
+    (function walk(n) {
+      if (!n || typeof n.type !== 'string') return;
+      if (n.type === 'CallExpression' && n.callee.type === 'MemberExpression' && n.callee.object.name === 'I18n') { out.push('I18n.' + n.callee.property.name + '(' + src.slice(n.arguments[0].start, n.arguments[0].end) + ');'); return; }
+      for (const k in n) { const v = n[k]; if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v.type === 'string') walk(v); }
+    })(acorn.parse(src, { ecmaVersion: 5 }));
+  });
+  return out;
+}
 module.exports.pageFiles = pageFiles;
+module.exports.pluginDictionaries = pluginDictionaries;

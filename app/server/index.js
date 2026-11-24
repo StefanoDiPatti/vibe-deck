@@ -175,11 +175,12 @@ app.get('/plugins/:name/control/:file', localPage, function (req, res) {
 });
 app.use('/control', localPage, express.static(paths.CONTROL_DIR, { index: false, setHeaders: function (res) { res.setHeader('Cache-Control', 'no-cache'); } }));
 
-const WIDGET_NAMES = { mail: 'email', system: 'stato PC', nowplaying: 'musica', queue: 'coda', github: 'GitHub', todo: 'TODO', clock: 'orologio', claude: 'Claude', chat: 'chat', discord: 'Discord', screens: 'schermi e finestre', audio: 'audio' };
+const WIDGET_NAMES = { system: 'stato PC', nowplaying: 'musica', queue: 'coda', clock: 'orologio' };
 function pageSummary(p) {
   const widgets = [], buttons = [];
+  const labels = plugins.widgetLabels();
   p.tiles.forEach(function (t) {
-    if (t.widget) widgets.push(t.widget === 'chat' && t.provider ? t.provider : (WIDGET_NAMES[t.widget] || t.widget));
+    if (t.widget) widgets.push(WIDGET_NAMES[t.widget] || labels[t.widget] || t.widget);
     else if (t.label) buttons.push(t.label);
   });
   let auto = '';

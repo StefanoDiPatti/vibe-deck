@@ -1,5 +1,16 @@
 (function () {
   'use strict';
+  I18n.add({
+    'Apri sul PC': 'Open on PC',
+    'Posta in arrivo di Gmail, Outlook, iCloud e altri (account scelti dal pannello)': 'Inbox from Gmail, Outlook, iCloud and more (accounts chosen in the panel)',
+    '(nessun testo)': '(no text)', 'tutto letto': 'all read', 'da leggere': 'unread', 'in arrivo': 'incoming',
+    '(senza oggetto)': '(no subject)', '(sconosciuto)': '(unknown)',
+    'La posta in arrivo è vuota.': 'The inbox is empty.', 'Nessun account email.': 'No email accounts.',
+    'La posta arriva da Thunderbird sul PC:': 'Mail comes from Thunderbird on the PC:',
+    'pannello di controllo, sezione Email.': 'control panel, Email section.',
+    'Messaggio lungo: il resto è sul PC (APRI SUL PC).': 'Long message: the rest is on the PC (OPEN ON PC).',
+    'Thunderbird aperto sul PC': 'Thunderbird opened on the PC'
+  });
   var H = Widgets.helpers, el = H.el, header = H.header, setHtml = H.setHtml, smallBtn = H.smallBtn, level = H.level, dictation = H.dictation, guideHtml = H.guideHtml, setText = D.setText;
 
   var ML = { acc: D.store.get('ml:acc', '') };

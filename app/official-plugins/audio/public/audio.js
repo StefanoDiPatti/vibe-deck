@@ -1,5 +1,9 @@
 (function () {
   'use strict';
+  I18n.add({
+    'Uscite e microfoni (predefinito, volume, mute) e volume di ogni app': 'Outputs and microphones (default, volume, mute) and per-app volume',
+    'Ingresso': 'Input', 'Nessun dispositivo': 'No devices'
+  });
   var H = Widgets.helpers, el = H.el, header = H.header, setHtml = H.setHtml, smallBtn = H.smallBtn, level = H.level, dictation = H.dictation, guideHtml = H.guideHtml, setText = D.setText;
 
   Widgets.register('audio', function (root, tile, app) {

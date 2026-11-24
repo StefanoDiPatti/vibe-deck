@@ -72,8 +72,7 @@
       const li = document.createElement('li');
       li.className = 'item';
       li.dataset.id = p.id;
-      const tags = (on && p.id === home ? '<span class="tag">INIZIALE</span>' : '') +
-        (!on && p.id === 'discord' ? '<span class="tag new">NUOVA</span>' : '');
+      const tags = on && p.id === home ? '<span class="tag">INIZIALE</span>' : '';
       li.innerHTML =
         '<span class="grip" aria-hidden="true">' + icon('drag') + '</span>' +
         '<span class="ico">' + icon(p.icon) + '</span>' +

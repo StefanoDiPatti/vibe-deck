@@ -1,5 +1,10 @@
 (function () {
   'use strict';
+  I18n.add({
+    'Chat con i modelli locali di Ollama': 'Chat with local Ollama models', 'Scrivi al modello…': 'Write to the model…',
+    'Scegli un modello e scrivi. Ollama gira sul PC, il tablet mostra solo la risposta.': 'Choose a model and write. Ollama runs on the PC, the tablet only shows the answer.',
+    'Nessun modello Ollama disponibile': 'No Ollama model available', 'Ollama non attivo': 'Ollama not running'
+  });
   var STATE = null;
   var KEY = 'chat:ollama';
 

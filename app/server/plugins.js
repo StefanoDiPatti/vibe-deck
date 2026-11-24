@@ -326,8 +326,12 @@ function registered(kind) {
 }
 function widgets() { return registered('Widgets'); }
 
+let homeNames = {};
+function widgetLabels() { homeWidgets(); return homeNames; }
+
 function homeWidgets() {
   const out = [];
+  const labels = {};
   const reg = widgets();
   const parse = require('./config').parseJson;
   const int = function (v, min, max, def) { const n = parseInt(v, 10); return isNaN(n) ? def : Math.max(min, Math.min(max, n)); };
@@ -340,7 +344,11 @@ function homeWidgets() {
     const declared = {};
     if (data && typeof data === 'object' && !Array.isArray(data)) {
       Object.keys(data).forEach(function (id) {
-        if (data[id] === false) { declared[id] = true; return; }
+        if (data[id] === false || (data[id] && data[id].catalog === false)) {
+          declared[data[id] && data[id].widget || id] = true;
+          if (data[id] && typeof (data[id].name || data[id].label) === 'string') labels[data[id].widget || id] = data[id].name || data[id].label;
+          return;
+        }
         const d = data[id] || {};
         const widget = typeof d.widget === 'string' && d.widget ? d.widget : id;
         if (!NAME_RE.test(id) || reg[widget] !== name) {
@@ -348,6 +356,7 @@ function homeWidgets() {
           return;
         }
         declared[widget] = true;
+        if (!labels[widget]) labels[widget] = typeof d.name === 'string' ? d.name : typeof d.label === 'string' ? d.label : widget;
         const minW = int(d.minW, 1, 8, 1), minH = int(d.minH, 1, 6, 1);
         out.push({
           id: id, widget: widget, plugin: name, page: 'PLUGIN ' + name.toUpperCase(),
@@ -365,6 +374,7 @@ function homeWidgets() {
         description: 'Widget del plugin ' + name + ' (nome e misure: plugins/' + name + '/home.json)', w: 2, h: 2, minW: 1, minH: 1, props: null });
     });
   });
+  homeNames = labels;
   return out;
 }
 function icons() { return registered('Icons'); }
@@ -430,5 +440,5 @@ module.exports = {
   registerActions: registerActions, mountRoutes: mountRoutes, hook: hook,
   setControl: setControl, controlInfo: controlInfo, controlPrepare: controlPrepare, mountControl: mountControl, sourceTiles: sourceTiles,
   controlScripts: controlScripts, controlStyles: controlStyles,
-  scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
+  scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, widgetLabels: widgetLabels, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
 };

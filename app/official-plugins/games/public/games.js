@@ -1,5 +1,11 @@
 (function () {
   'use strict';
+  I18n.add({
+    'Giochi': 'Games',
+    'I tuoi giochi, aggiunti dal pannello di controllo (pallino verde se aperti)': 'Your games, added from the control panel (green dot when open)',
+    'Aggiungi i giochi dal pannello di controllo sul PC': 'Add your games from the control panel on the PC',
+    'Aggiungi i giochi': 'Add your games'
+  });
   var H = Widgets.helpers, el = H.el, header = H.header, setHtml = H.setHtml, smallBtn = H.smallBtn, level = H.level, dictation = H.dictation, guideHtml = H.guideHtml, setText = D.setText;
 
   Widgets.register('games', function (root, tile, app) {

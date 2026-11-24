@@ -1,5 +1,30 @@
 (function () {
   'use strict';
+  I18n.add({
+    'Silenzia': 'Deafen', 'Silenziato': 'Deafened', 'Togli il muto': 'Unmute', 'Muta per me': 'Mute for me',
+    'Canali vocali': 'Voice channels', 'Comandi rapidi': 'Quick commands', 'Sei in live': 'You are live',
+    'Non sei in una stanza': 'You are not in a room',
+    'Server, canali vocali, chi c\'è in stanza, mute e audio': 'Servers, voice channels, who is in the room, mute and audio',
+    'Collega Discord dal pannello sul PC': 'Connect Discord from the panel on the PC',
+    'Discord non collegato': 'Discord not connected', 'Discord da collegare': 'Discord to connect',
+    'Discord è chiuso': 'Discord is closed', 'Collegamento a Discord…': 'Connecting to Discord…',
+    'Apri Discord sul PC: la dock si collega da sola.': 'Open Discord on the PC: the dock connects by itself.',
+    'Apri il pannello di controllo sul PC e premi "Autorizza su Discord".': 'Open the control panel on the PC and press "Authorize on Discord".',
+    'Sul PC fai doppio clic su Vibe Deck e segui la sezione Discord del pannello: serve una volta sola.': 'On the PC double-click Vibe Deck and follow the Discord section of the panel: needed only once.',
+    'Entra prima in un canale vocale': 'Join a voice channel first', 'Sei uscito dalla stanza': 'You left the room',
+    'Tieni premuto ESCI per uscire dalla stanza': 'Hold LEAVE to leave the room', 'Esci': 'Leave',
+    'Mutato per te': 'Muted for you', 'Di nuovo udibile': 'Audible again',
+    'con le scorciatoie di Discord': 'with Discord shortcuts',
+    'Per webcam e Go Live: pannello di controllo sul PC > Discord > Riautorizza': 'For webcam and Go Live: control panel on the PC > Discord > Reauthorize',
+    'Per webcam e Go Live collega Discord dal pannello di controllo sul PC': 'For webcam and Go Live connect Discord from the control panel on the PC',
+    'Webcam accesa': 'Webcam on', 'Webcam spenta': 'Webcam off', 'Condivisione fermata': 'Sharing stopped',
+    'Comando non valido': 'Invalid command', 'Canale non valido': 'Invalid channel',
+    'Server non valido': 'Invalid server', 'Utente non valido': 'Invalid user', 'Nessun server': 'No servers',
+    'Nessun canale vocale': 'No voice channels', 'Tocca un canale vocale per entrare.': 'Tap a voice channel to join.',
+    'Volume per te': 'Volume for you',
+    'Vale solo per te, gli altri non lo vedono.': 'Only for you, the others do not see it.',
+    'muto per te': 'muted for you'
+  });
   var H = Widgets.helpers, el = H.el, header = H.header, setHtml = H.setHtml, smallBtn = H.smallBtn, level = H.level, dictation = H.dictation, guideHtml = H.guideHtml, setText = D.setText;
 
   var DC = { guild: D.store.get('dc:guild', '') };

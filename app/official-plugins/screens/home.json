@@ -1,5 +1,5 @@
 {
   "desks": { "widget": "desks", "label": "Desktop virtuali", "icon": "desktop", "description": "Tocco = passa a quel desktop, + = nuovo", "w": 2, "h": 2, "minW": 2, "minH": 1 },
-  "screens": false,
-  "vdesk": false
+  "screens": { "label": "schermi e finestre", "catalog": false, "name": "schermi e finestre" },
+  "vdesk": { "label": "guida desktop virtuali", "catalog": false, "name": "guida desktop virtuali" }
 }
