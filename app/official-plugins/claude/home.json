@@ -1,3 +1,4 @@
 {
-  "claudeusage": { "widget": "claudeusage", "label": "Consumi di Claude", "icon": "sparkle", "description": "Sessione di 5 ore e settimana", "w": 2, "h": 2, "minW": 2, "minH": 1 }
+  "claudeusage": { "widget": "claudeusage", "label": "Consumi di Claude", "icon": "sparkle", "description": "Sessione di 5 ore e settimana", "w": 2, "h": 2, "minW": 2, "minH": 1 },
+  "claude": false
 }

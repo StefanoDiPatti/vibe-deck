@@ -5,8 +5,8 @@ process.env.DOCK_TOKEN = 'TESTCODE';
 process.env.DOCK_DATA_DIR = require('fs').mkdtempSync(require('path').join(require('os').tmpdir(), 'dock-test-'));
 process.env.LOG_LEVEL = 'error';
 const config = require('../server/config');
-const discord = require('../server/services/discord');
-const { DiscordIpc, encode, OP } = require('../server/services/discord-ipc');
+const discord = require('../official-plugins/discord/lib/discord');
+const { DiscordIpc, encode, OP } = require('../official-plugins/discord/lib/discord-ipc');
 const { app } = require('../server/index.js');
 
 const RAW = {
@@ -32,8 +32,9 @@ test('layout vuoto o assente: valgono i "tab" di dock.json', function () {
   assert.strictEqual(e.pages.filter(function (p) { return p.tab; }).length, 3);
 });
 
-test('i default comprendono la pagina Discord, fuori dalla barra', function () {
-  const d = config.normalizeDock(config.defaultDock(), {});
+test('il plugin discord porta la pagina Discord, fuori dalla barra', function () {
+  const page = config.parseJson(require('fs').readFileSync(require('path').join(__dirname, '..', 'official-plugins', 'discord', 'pages', 'discord.json'), 'utf8'));
+  const d = config.normalizeDock({ pages: [Object.assign({}, page, { tab: page.tab === true })] }, {});
   const p = d.pages.filter(function (x) { return x.id === 'discord'; })[0];
   assert.ok(p, 'pagina discord');
   assert.strictEqual(p.tab, false);
@@ -85,9 +86,9 @@ test('pannello: elenco pagine e layout non valido rifiutato', async function () 
 });
 
 test('discord: le API del tablet chiedono il token', async function () {
-  const r = await call('GET', '/api/discord/state');
+  const r = await call('GET', '/api/plugins/discord/state');
   assert.strictEqual(r.status, 401);
-  const ok = await call('GET', '/api/discord/state', null, { 'X-Dock-Token': 'TESTCODE' });
+  const ok = await call('GET', '/api/plugins/discord/state', null, { 'X-Dock-Token': 'TESTCODE' });
   assert.strictEqual(ok.status, 200);
 });
 
@@ -97,7 +98,7 @@ test('discord: membri della stanza e immagini solo dal CDN di Discord', function
   assert.strictEqual(m.mute, true);
   assert.strictEqual(m.deaf, false);
   assert.strictEqual(m.localMute, true);
-  assert.strictEqual(m.avatar, '/api/discord/img?p=' + encodeURIComponent('/avatars/80351110224678912/abc123.png'));
+  assert.strictEqual(m.avatar, '/api/plugins/discord/img?p=' + encodeURIComponent('/avatars/80351110224678912/abc123.png'));
   assert.strictEqual(discord._img('https://evil.example/x.png'), null);
   return discord.image('/../../etc/passwd.png').then(function () { assert.fail('doveva rifiutare'); }, function (e) { assert.strictEqual(e.code, 'BAD_REQUEST'); });
 });
@@ -123,7 +124,7 @@ test('discord: messaggi RPC spezzati in più pezzi vengono ricomposti', async fu
 });
 
 test('Discord: il volume di una persona arriva intero (Discord lo manda con i decimali)', function () {
-  const discord = require('../server/services/discord');
+  const discord = require('../official-plugins/discord/lib/discord');
   const m = discord._member({ nick: 'Pippo', volume: 99.99999237060547, user: { id: '1', username: 'pippo' }, voice_state: {} });
   assert.strictEqual(m.volume, 100);
   assert.strictEqual(discord._member({ volume: 149.6, user: { id: '2', username: 'b' }, voice_state: {} }).volume, 150);

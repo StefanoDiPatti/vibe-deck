@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const paths = require('../paths');
-const log = require('../log');
-const secrets = require('../secrets');
+const paths = require('../../../server/paths');
+const log = require('../../../server/log');
+const secrets = require('../../../server/secrets');
 const { DiscordIpc } = require('./discord-ipc');
 
 const FILE = path.join(paths.DATA_DIR, 'discord.json');
@@ -63,7 +63,7 @@ async function tokenRequest(params) {
 
 function img(url) {
   const m = /^https:\/\/cdn\.discordapp\.com(\/(?:avatars|icons|embed\/avatars)\/[0-9A-Za-z_\/.-]+)/.exec(String(url || ''));
-  return m ? '/api/discord/img?p=' + encodeURIComponent(m[1]) : null;
+  return m ? '/api/plugins/discord/img?p=' + encodeURIComponent(m[1]) : null;
 }
 function avatar(user) {
   if (!user) return null;

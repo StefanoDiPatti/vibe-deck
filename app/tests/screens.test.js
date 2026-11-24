@@ -69,7 +69,7 @@ test('API schermi e Discord richiedono il token', async function () {
       const r = await fetch(base + p);
       assert.strictEqual(r.status, 401, p);
     }
-    const r = await fetch(base + '/api/discord/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Dock-Token': 'TESTCODE' }, body: JSON.stringify({ what: 'rm -rf' }) });
+    const r = await fetch(base + '/api/plugins/discord/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Dock-Token': 'TESTCODE' }, body: JSON.stringify({ what: 'rm -rf' }) });
     assert.strictEqual(r.status, 400);
     const z = await fetch(base + '/api/screens/place', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Dock-Token': 'TESTCODE' }, body: JSON.stringify({ window: '1', monitor: 'x', layout: 'nope', zone: 9 }) });
     assert.ok(z.status >= 400, 'posizionamento non valido rifiutato');

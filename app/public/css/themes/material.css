@@ -113,58 +113,11 @@ svg.ic { fill: #e9e9ee; }
 .q-row.pressed { background: #2c3a4f; }
 .q-artist { color: #c4c6cf; }
 .msg .tool { color: #8e9099; background: #111318; }
-.dc-guilds { background: #1d2024; border-right: 1px solid #26292e; }
-.dc-guild.on { background: #33416b; }
-.dc-guild.pressed { background: #2c3a4f; }
-.dc-ctitle { color: #8e9099; }
-.dc-chan { background: #1d2024; }
-.dc-chan.pressed, .dc-chan.joining { background: #2c3a4f; }
-.dc-chan.here { background: #1a3326; -webkit-box-shadow: inset 4px 0 0 #7fd99a; box-shadow: inset 4px 0 0 #7fd99a; }
-.dc-cname svg.ic { fill: #8e9099; }
-.dc-cname b { background: #32353a; }
-.dc-cmem { color: #c4c6cf; }
-.dc-room { background: #1d2024; border-left: 1px solid #26292e; }
-.dc-rtitle svg.ic { fill: #7fd99a; }
-.dc-rsub { color: #8e9099; }
-.dc-mem.pressed { background: #2c3a4f; }
-.dc-mem i { color: #8e9099; }
-.dc-mem.speaking .dc-av { border-color: #7fd99a; -webkit-box-shadow: 0 0 0 2px rgba(127, 217, 154, 0.35); box-shadow: 0 0 0 2px rgba(127, 217, 154, 0.35); }
-.dc-mem.lmuted .dc-name { color: #74777f; }
 .noav { color: #e9e9ee; }
-svg.ic.dc-flag { fill: #ffb4ab; }
-.dc-btn { background: #32353a; }
-.dc-btn.on { background: #1f5135; }
-.dc-live.on { background: #93000a; }
-.dc-onair { background: #93000a; color: #e9e9ee; }
-.dc-livebadge { background: #93000a; color: #e9e9ee; }
-svg.ic.dc-camflag { fill: #7fd99a; }
-.dc-btn.off { background: #93000a; }
-.dc-leave { background: #5c1a1b; }
-.dc-leave.holding { background: #93000a; }
-.dc-pop { background: #1d2024; }
-.dc-pclose { background: #32353a; }
-.dc-pclose.pressed, .dc-pb.pressed, .dc-ppre.pressed, .dc-pmute.pressed { background: #1f5a96; }
-.dc-plabel { color: #8e9099; }
-.dc-plabel b { color: #e9e9ee; }
-.dc-pb { background: #32353a; }
-.dc-pbar { background: #111318; }
-.dc-pvol.muted .dc-pbar i { background: #5b5e66; }
-.dc-ppre { background: #272a2f; }
-.dc-ppre.on { background: #33416b; }
-.dc-pmute { background: #5c1a1b; }
-.dc-pmute.on { background: #1f5135; }
-.dc-pnote { color: #74777f; }
-.dc-setup { color: #8e9099; }
-.dc-setup b { color: #e9e9ee; }
 .todo-sync { background: #1d2024; color: #8e9099; }
 .todo-sync.ok { color: #7fd99a; }
 .todo-sync.err { color: #ffb4ab; background: #3b1c1c; }
 .todo-sync.pressed { background: #2c3a4f; }
-.dm-p { background: #1d2024; color: #c4c6cf; }
-.dm-p.talk { border-color: #7fd99a; color: #e9e9ee; }
-.dm-btn { background: #32353a; }
-.dm-btn.on { background: #93000a; }
-.dm-btn.pressed { background: #1f5a96; }
 .gg-sec { color: #a8c7fa; }
 .gg-note { color: #8e9099; }
 .gg-row { background: #272a2f; border-left: 4px solid #a8c7fa; }

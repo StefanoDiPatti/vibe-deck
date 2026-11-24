@@ -16,7 +16,6 @@ const todosync = require('./services/todosync');
 const bridge = require('./services/bridge');
 const voice = require('./services/voice');
 const appsState = require('./services/apps');
-const discord = require('./services/discord');
 const pairing = require('./services/pairing');
 const configCheck = require('./check');
 const plugins = require('./plugins');
@@ -233,7 +232,6 @@ function controlInfo() {
     homeEditor: homeEditor(d),
     home: d.home,
     custom: !!(config.get('layout') || {}).tabs,
-    discord: discord.panelInfo(),
     tablet: urls,
     pairing: pairing.links(PORT),
     checks: safeCheck(),
@@ -249,7 +247,7 @@ app.get('/api/control/qr', controlOnly, route(async function (req) {
   if (!ok) throw Object.assign(new Error('Link sconosciuto'), { code: 'BAD_REQUEST' });
   return { link: link, svg: await pairing.svg(link) };
 }));
-app.get('/api/control/info', controlOnly, route(async function () { await discord.ensure(); await plugins.controlPrepare(); return controlInfo(); }));
+app.get('/api/control/info', controlOnly, route(async function () { await plugins.controlPrepare(); return controlInfo(); }));
 app.post('/api/control/layout', controlOnly, route(function (req) {
   const b = req.body || {};
   config.saveLayout(b.tabs, b.home, b.tiles);
@@ -263,44 +261,11 @@ app.post('/api/control/home', controlOnly, route(function (req) {
   return controlInfo();
 }));
 app.post('/api/control/home/reset', controlOnly, route(function () { config.saveHome(null); return controlInfo(); }));
-app.post('/api/control/discord', controlOnly, route(async function (req) {
-  const b = req.body || {};
-  await discord.setup(b.clientId, b.clientSecret);
-  return controlInfo();
-}));
-app.post('/api/control/discord/authorize', controlOnly, route(async function () { await discord.authorize(); return controlInfo(); }));
-app.post('/api/control/discord/logout', controlOnly, route(function () { discord.logout(); return controlInfo(); }));
-
 
 plugins.setControl({ only: controlOnly, info: controlInfo });
 plugins.mountControl(app, express, localPage);
 
 app.use('/api', auth.requireToken);
-
-
-
-app.get('/api/discord/state', route(async function () { await discord.ensure(); return discord.state(); }));
-app.get('/api/discord/guilds', route(function (req) { return discord.guilds(req.query.refresh === '1'); }));
-app.get('/api/discord/channels', route(function (req) { return discord.channels(String(req.query.guild || '')); }));
-app.post('/api/discord/toggle', route(function (req) {
-  const what = String((req.body || {}).what || '');
-  if (['mute', 'deaf', 'video', 'stream'].indexOf(what) < 0) throw badRequest('Comando non valido');
-  return actions.execute({ type: 'discord', command: what });
-}));
-app.post('/api/discord/join', route(function (req) {
-  const c = (req.body || {}).channel;
-  return discord.join(c === null || c === undefined || c === '' ? null : String(c));
-}));
-app.post('/api/discord/user', route(function (req) {
-  const b = req.body || {};
-  return discord.userVoice(String(b.user || ''), { mute: typeof b.mute === 'boolean' ? b.mute : undefined, volume: typeof b.volume === 'number' ? b.volume : undefined });
-}));
-app.get('/api/discord/img', function (req, res) {
-  discord.image(String(req.query.p || '')).then(function (im) {
-    res.setHeader('Cache-Control', 'max-age=86400');
-    res.type(im.type).send(im.body);
-  }).catch(function () { res.status(404).end(); });
-});
 
 function tabletPower() {
   const t = (config.get('services') || {}).tablet || {};

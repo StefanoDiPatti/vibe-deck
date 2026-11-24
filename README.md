@@ -553,6 +553,13 @@ A **pack** groups plugins and contains nothing but its `plugin.json`:
 - **Actions**: `actions.<name>` in `index.js` becomes the type `"<plugin>.<name>"`; an action named like the plugin is just `"<plugin>"` (the `viber` plugin keeps `{ "type": "viber", ... }`).
 - **Hooks**: `hooks.launch({ app, processes })` in `index.js` runs before an app is started from the tablet and may return a
   function called right after it starts (the `screens` plugin uses it to move the new window to the chosen monitor).
+- **HOME**: every widget of a plugin is listed in its `home.json`, either offered in the HOME catalog or turned off with
+  `"<widget>": false` (for widgets that only make sense on their own page).
+- **Control panel**: `control: { info, prepare, routes }` in `index.js` adds the plugin's data to the panel (under its name)
+  and routes under `/api/control/<plugin>/` (local only, guard them with `ctx.controlOnly`); `control/*.js` and `*.css`
+  add its card through `window.Panel` (`card`, `register`, `api`, `toast`, `update`). Without the plugin the card is gone.
+- **Generated pages and apps**: `sources.<name>` fills the tiles of pages with `"source": "<name>"`, `hooks.apps` adds apps,
+  `hooks.stamp` tells the tablet to reload when the plugin's data changes, `hooks.start` runs when the server starts.
 - **Tabs**: a plugin page joins the bar by default only when its file says `"tab": true` (per-system variants work too);
   otherwise it is among the available pages.
 - **Themes**: the CSS in `public/` is recolored for Material, Neon and Neo-brutalist by the server (`/plugins-theme/<theme>.css`) with the same rules as `dock.css`: no generated files for plugins.

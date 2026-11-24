@@ -340,6 +340,7 @@ function homeWidgets() {
     const declared = {};
     if (data && typeof data === 'object' && !Array.isArray(data)) {
       Object.keys(data).forEach(function (id) {
+        if (data[id] === false) { declared[id] = true; return; }
         const d = data[id] || {};
         const widget = typeof d.widget === 'string' && d.widget ? d.widget : id;
         if (!NAME_RE.test(id) || reg[widget] !== name) {

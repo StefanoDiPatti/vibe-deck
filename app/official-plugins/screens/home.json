@@ -1,3 +1,5 @@
 {
-  "desks": { "widget": "desks", "label": "Desktop virtuali", "icon": "desktop", "description": "Tocco = passa a quel desktop, + = nuovo", "w": 2, "h": 2, "minW": 2, "minH": 1 }
+  "desks": { "widget": "desks", "label": "Desktop virtuali", "icon": "desktop", "description": "Tocco = passa a quel desktop, + = nuovo", "w": 2, "h": 2, "minW": 2, "minH": 1 },
+  "screens": false,
+  "vdesk": false
 }

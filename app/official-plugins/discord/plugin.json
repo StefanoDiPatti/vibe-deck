@@ -1,0 +1,21 @@
+{
+  "id": "discord",
+  "name": "Discord",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Servers, voice channels with who is inside and who is talking, mute/deafen, webcam, Go Live, per-person volume and mute just for you",
+  "type": "plugin",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.1.1",
+  "permissions": {
+    "local": [
+      "discord-ipc"
+    ],
+    "http": [
+      "discord.com"
+    ]
+  }
+}

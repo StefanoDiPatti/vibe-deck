@@ -23,23 +23,6 @@ function appLabel(id, app) { return (app && app.label) || id; }
 
 const forPlatform = common.forPlatform;
 
-async function runningGame() {
-  if (typeof platform.windowList !== 'function') return null;
-  const all = config.apps();
-  const games = Object.keys(all).map(function (id) { return { id: id, app: forPlatform(all[id]) }; })
-    .filter(function (g) { return g.app && g.app.game; });
-  if (!games.length) return null;
-  const wins = await platform.windowList().catch(function () { return []; });
-  wins.sort(function (x, y) { return (y.active ? 1 : 0) - (x.active ? 1 : 0); });
-  for (let i = 0; i < wins.length; i++) {
-    if (wins[i].state === 'min') continue;
-    for (let j = 0; j < games.length; j++) {
-      if (appsState.processNames(games[j].app).indexOf(wins[i].process) >= 0) return { pid: wins[i].pid, label: appLabel(games[j].id, games[j].app) };
-    }
-  }
-  return null;
-}
-
 function pickPath(p) {
   if (!Array.isArray(p)) return p;
   for (let i = 0; i < p.length; i++) if (common.available(String(p[i]))) return p[i];
@@ -171,26 +154,6 @@ const HANDLERS = {
   command: async function (a) {
     return runCommand(a.id || a.commandId);
   },
-
-  discord: async function (a) {
-    const discord = require('../services/discord');
-    const what = String(a.command || '');
-    if (['mute', 'deaf', 'video', 'stream'].indexOf(what) < 0) throw fail('Comando Discord sconosciuto: ' + what, 'BAD_CONFIG');
-    await discord.ensure();
-    if (discord.state().status !== 'ready') {
-      if (what === 'video' || what === 'stream') throw fail('Per webcam e Go Live collega Discord dal pannello di controllo sul PC', 'UNAVAILABLE');
-      await HANDLERS.hotkey({ keys: ['CTRL', 'SHIFT', what === 'mute' ? 'M' : 'D'], focus: 'discord' });
-      return Object.assign(discord.state(), { message: (what === 'mute' ? 'Mute' : 'Silenzia') + ' inviato a Discord (scorciatoia)' });
-    }
-    if (what === 'mute' || what === 'deaf') return Object.assign(await discord.toggle(what), { message: null });
-    const was = discord.state().voice[what];
-    const game = what === 'stream' && !was ? await runningGame() : null;
-    const st = await discord.toggleMedia(what, game ? game.pid : null);
-    const message = what === 'video' ? (was ? 'Webcam spenta' : 'Webcam accesa') :
-      was ? 'Condivisione fermata' : 'Go Live' + (game ? ': ' + game.label : ' avviato');
-    return Object.assign(st, { message: message });
-  },
-
 
   wait: async function (a) {
     const ms = Math.max(0, Math.min(parseInt(a.ms, 10) || 0, MAX_WAIT_MS));

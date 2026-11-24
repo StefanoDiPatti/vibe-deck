@@ -199,15 +199,15 @@ demo.get('/api/plugins/screens/desktops', function (req, res) {
     desktops: [{ id: 'd1', n: 1, name: 'Lavoro', current: true, windows: WINDOWS.slice(0, 2) }, { id: 'd2', n: 2, name: 'Svago', current: false, windows: [WINDOWS[2]] }] });
 });
 
-demo.get('/api/discord/state', function (req, res) {
+demo.get('/api/plugins/discord/state', function (req, res) {
   ok(res, { status: 'ready', message: '', configured: true, user: { id: 'u1', name: 'Mario' }, voice: { mute: false, deaf: false, video: false, stream: false }, media: true,
     channel: { id: 'c1', name: 'Salotto', guild_id: 'g1', guild: 'Amici', members: [
       { id: 'u1', name: 'Mario', me: true, speaking: true, mute: false, deaf: false },
       { id: 'u2', name: 'Laura', speaking: false, mute: false, deaf: false },
       { id: 'u3', name: 'Marco', speaking: false, mute: true, deaf: false }] } });
 });
-demo.get('/api/discord/guilds', function (req, res) { ok(res, [{ id: 'g1', name: 'Amici', icon: null }, { id: 'g2', name: 'Studio', icon: null }]); });
-demo.get('/api/discord/channels', function (req, res) {
+demo.get('/api/plugins/discord/guilds', function (req, res) { ok(res, [{ id: 'g1', name: 'Amici', icon: null }, { id: 'g2', name: 'Studio', icon: null }]); });
+demo.get('/api/plugins/discord/channels', function (req, res) {
   ok(res, [{ id: 'c1', name: 'Salotto', type: 'voice', members: 3 }, { id: 'c2', name: 'Giochi', type: 'voice', members: 0 }]);
 });
 

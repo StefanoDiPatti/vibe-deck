@@ -106,3 +106,25 @@ test('every official plugin is in at most one pack, and packs only suggest plugi
     });
   });
 });
+
+test('the HOME catalog offers the same widgets as before the move to plugins', function () {
+  const offered = [];
+  plugins.forEach(function (name) {
+    const home = path.join(OFFICIAL, name, 'home.json');
+    if (!fs.existsSync(home)) return;
+    const h = json(home);
+    Object.keys(h).forEach(function (id) { if (h[id] !== false) offered.push(id); });
+  });
+  const core = require('../server/home').CATALOG.map(function (c) { return c.id; });
+  assert.deepStrictEqual(core.concat(offered).sort(), ['audio', 'claudeusage', 'clock', 'desks', 'discordmini', 'games', 'github', 'mail', 'nowplaying', 'ollama', 'system', 'todo', 'viber-projects', 'viber-tasks']);
+});
+
+test('every widget of an official plugin is in its home.json, offered or turned off with false', function () {
+  plugins.forEach(function (name) {
+    const dir = path.join(OFFICIAL, name);
+    const home = fs.existsSync(path.join(dir, 'home.json')) ? json(path.join(dir, 'home.json')) : {};
+    const listed = {};
+    Object.keys(home).forEach(function (id) { listed[home[id] === false ? id : (home[id].widget || id)] = true; });
+    registered(dir, 'Widgets').forEach(function (w) { assert.ok(listed[w], name + ': widget ' + w + ' missing from home.json'); });
+  });
+});
