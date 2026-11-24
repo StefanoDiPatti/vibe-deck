@@ -26,6 +26,27 @@ function findBrowser() {
   return list.filter(function (p) { return fs.existsSync(p); })[0];
 }
 
+class Finger {
+  constructor(cdp) { this.cdp = cdp; }
+  touch(type, x, y) {
+    return this.cdp.send('Input.dispatchTouchEvent', { type: type, touchPoints: type === 'touchEnd' ? [] : [{ x: x, y: y, id: 1 }] });
+  }
+  async tap(x, y) {
+    await this.touch('touchStart', x, y);
+    await sleep(60);
+    await this.touch('touchEnd', x, y);
+  }
+  async drag(x1, y1, x2, y2, steps) {
+    const n = steps || 12;
+    await this.touch('touchStart', x1, y1);
+    for (let i = 1; i <= n; i++) {
+      await sleep(25);
+      await this.touch('touchMove', x1 + (x2 - x1) * i / n, y1 + (y2 - y1) * i / n);
+    }
+    await sleep(40);
+    await this.touch('touchEnd', x2, y2);
+  }
+}
 class Cdp {
   constructor(url) {
     this.ws = new WebSocket(url);
@@ -90,7 +111,7 @@ class Session {
   async start() {
     const browser = findBrowser();
     if (!browser) throw new Error('Nessun browser trovato (Edge o Chrome): BROWSER=percorso');
-    this.demo = spawn(process.execPath, [path.join(__dirname, 'demo.js')], { env: Object.assign({}, process.env, this.env, { DEMO_PORT: String(this.port) }), stdio: 'ignore' });
+    this.demo = spawn(process.execPath, [path.join(__dirname, 'demo.js')], { env: Object.assign({ DEMO_DRY: '1' }, process.env, this.env, { DEMO_PORT: String(this.port) }), stdio: 'ignore' });
     this.profile = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-e2e-profile-'));
     const self = this;
     await waitFor(async function () { return (await fetch(self.base + '/api/health')).ok; }, 20000, 'demo');
@@ -185,4 +206,4 @@ function serveStatic(dir, port) {
   return new Promise(function (resolve) { server.listen(port, '127.0.0.1', function () { resolve(server); }); });
 }
 
-module.exports = { Hand: Hand, serveStatic: serveStatic, sleep: sleep, waitFor: waitFor, findBrowser: findBrowser, Cdp: Cdp, Session: Session, Report: Report };
+module.exports = { Finger: Finger, Hand: Hand, serveStatic: serveStatic, sleep: sleep, waitFor: waitFor, findBrowser: findBrowser, Cdp: Cdp, Session: Session, Report: Report };

@@ -299,7 +299,22 @@ function mountRoutes(app, express) {
   const all = load();
   Object.keys(all).forEach(function (name) {
     const p = all[name];
-    if (!p.module || typeof p.module.routes !== 'function') return;
+    if (!p.module) return;
+    if (typeof p.module.publicRoutes === 'function') {
+      const open = express.Router();
+      open.use(function (req, res, next) {
+        if (req.method === 'GET' || req.method === 'HEAD') return next();
+        res.status(405).end();
+      });
+      try {
+        p.module.publicRoutes(open, context(name));
+        app.use('/plugins-public/' + name, open);
+      } catch (e) {
+        p.error = 'rotte pubbliche non registrate: ' + e.message;
+        log.error('plugin', name + ': ' + p.error);
+      }
+    }
+    if (typeof p.module.routes !== 'function') return;
     const router = express.Router();
     try {
       p.module.routes(router, context(name));

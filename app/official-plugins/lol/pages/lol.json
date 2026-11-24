@@ -1,0 +1,8 @@
+{
+  "id": "lol",
+  "title": "LOL",
+  "icon": "sword",
+  "description": "League of Legends: cerca un campione o scegli il ruolo, guarda le abilità, apri la build su u.gg sul PC",
+  "tab": false,
+  "tiles": [ { "widget": "lol", "w": 5, "h": 3 } ]
+}

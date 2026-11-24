@@ -1,0 +1,13 @@
+{
+  "id": "lol",
+  "name": "League of Legends",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Pick a champion by name or role from icons, see passive and abilities, open its build (skill order, runes, items) on u.gg on the PC. Data: Riot Data Dragon and Meraki Analytics",
+  "type": "plugin",
+  "platforms": ["windows", "linux"],
+  "engine": ">=2.2.0",
+  "permissions": {
+    "http": ["ddragon.leagueoflegends.com", "cdn.merakianalytics.com"]
+  }
+}
