@@ -470,6 +470,16 @@ widget: go live and stop (**hold** to stop), record, virtual camera, replay buff
 preview of the program scene and the stats (fps, CPU, dropped frames). OBS is also a connector for JSON widgets: source
 `obs.state` and actions `obs.stream`, `obs.record`, `obs.scene`, `obs.mute`, `obs.virtualcam`, `obs.replay`.
 
+### Twitch
+
+In the **Twitch** card of the control panel, type a channel name to read its chat (any channel, no login). To control your
+own stream, register a free app at [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) (redirect `http://localhost`,
+category Broadcaster Suite, client type **Public**), paste its **Client ID** and press **Collega Twitch**: the panel shows a
+code to enter at twitch.tv/activate (no secret, tokens saved encrypted). Page **TWITCH** (streaming pack, with OBS below it
+when the OBS plugin is installed) and a HOME widget: live chat with colours, subs and moderation, viewers and uptime,
+title and category, marker, clip, ads (**hold**), chat modes (slow, emote, subs, followers) and writing in chat (also by
+voice). Connector `twitch.state` and actions `twitch.marker`, `twitch.clip`, `twitch.ad`, `twitch.mode`, `twitch.say`.
+
 ## Linux
 
 Everything works except the parts that depend on Windows (Sticky Notes), replaced by standard tools. The SCREENS page on Linux needs KDE Plasma 6 and kdotool (see above).

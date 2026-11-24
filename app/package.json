@@ -16,6 +16,7 @@
     "e2e:touch": "node scripts/e2e-touch.js",
     "e2e:editor": "node scripts/e2e-editor.js",
     "e2e:obs": "node scripts/e2e-obs.js",
+    "e2e:twitch": "node scripts/e2e-twitch.js",
     "e2e:market": "node scripts/e2e-market.js",
     "site": "node scripts/build-site.js",
     "themes": "node scripts/build-themes.js",

@@ -1,0 +1,12 @@
+.tw-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; margin-top: 12px; }
+.tw-row label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.tw-row input { height: 40px; padding: 0 10px; border-radius: var(--r-ctl); border: 1px solid var(--line); background: var(--field); color: var(--text); font: inherit; font-size: 14px; text-transform: none; }
+.tw-sub { margin: 18px 0 6px; font-size: 15px; }
+.tw-guide { margin: 6px 0; color: var(--text-2); font-size: 14px; }
+.tw-guide summary { cursor: pointer; color: var(--accent-2); }
+.tw-guide ol { margin: 8px 0; padding-left: 20px; }
+.tw-code { margin-top: 16px; padding: 16px; border-radius: var(--r-ctl); background: var(--sunken); }
+.tw-big { font-size: 34px; font-weight: 800; letter-spacing: 6px; margin: 8px 0; color: var(--strong); font-family: Consolas, monospace; }
+#twitch-card .me { display: flex; gap: 12px; align-items: center; margin-top: 16px; }
+#twitch-card .me img { width: 48px; height: 48px; border-radius: 50%; }
+#twitch-card .who { font-weight: 700; }
