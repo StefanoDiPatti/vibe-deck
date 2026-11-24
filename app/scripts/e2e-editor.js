@@ -2,47 +2,10 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { sleep, waitFor, Session, Report } = require('./e2e-lib');
+const { sleep, waitFor, Session, Report, Hand } = require('./e2e-lib');
 
 const OUT = process.env.E2E_OUT || path.join(os.tmpdir(), 'vibe-e2e');
 const PLUGINS = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-e2e-plugins-'));
-
-class Hand {
-  constructor(cdp) { this.cdp = cdp; }
-
-  async point(selector) {
-    const r = await this.cdp.eval('(function(){var n=document.querySelector(' + JSON.stringify(selector) + ');if(!n)return null;n.scrollIntoView({block:"center"});var b=n.getBoundingClientRect();return {x:b.left+b.width/2,y:b.top+b.height/2,w:b.width};})()');
-    if (!r) throw new Error('Non trovo ' + selector);
-    return r;
-  }
-
-  async click(selector) {
-    const p = await this.point(selector);
-    await sleep(80);
-    for (const type of ['mouseMoved', 'mousePressed', 'mouseReleased']) {
-      await this.cdp.send('Input.dispatchMouseEvent', { type: type, x: p.x, y: p.y, button: 'left', clickCount: 1 });
-    }
-    await sleep(120);
-  }
-
-  async type(text) {
-    await this.cdp.send('Input.insertText', { text: text });
-    await sleep(120);
-  }
-
-  async fill(selector, text) {
-    await this.click(selector);
-    await this.cdp.eval('(function(){var n=document.querySelector(' + JSON.stringify(selector) + ');n.select&&n.select();})()');
-    await this.type(text);
-  }
-
-  async choose(selector, value) {
-    await this.point(selector);
-    const ok = await this.cdp.eval('(function(){var n=document.querySelector(' + JSON.stringify(selector) + ');if(!n)return false;n.value=' + JSON.stringify(value) + ';n.dispatchEvent(new Event("change",{bubbles:true}));return n.value===' + JSON.stringify(value) + ';})()');
-    if (!ok) throw new Error('Opzione ' + value + ' non trovata in ' + selector);
-    await sleep(200);
-  }
-}
 
 const field = (p) => '#editor-card [data-path="' + p + '"] input, #editor-card [data-path="' + p + '"] textarea';
 
@@ -133,7 +96,7 @@ async function main() {
     await hand.fill(field('name'), 'Senza permesso');
     const warn = await waitFor(function () { return cdp.eval('/permissions/.test(document.getElementById("ed-problems").textContent)&&document.getElementById("ed-save").disabled'); }, 6000, 'problema').catch(function () { return false; });
     report.check('sito non consentito: problema mostrato e Salva bloccato', warn);
-    await hand.click('#ed-mine [data-key="miei/mia-cpu"] .btn');
+    await hand.click('#ed-mine [data-key="miei/mia-cpu"] [data-act="edit"]');
     const loaded = await waitFor(function () { return cdp.eval('document.getElementById("ed-title").textContent.indexOf("Mia CPU")>=0&&document.querySelector(' + JSON.stringify(field('show.label')) + ').value==="PROCESSORE"'); }, 4000, 'modifica').catch(function () { return false; });
     report.check('"Modifica" ricarica il widget nell\'editor', loaded);
     await hand.click('#theme-pick button[data-theme="neon"]');

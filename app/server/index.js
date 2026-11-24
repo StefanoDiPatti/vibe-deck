@@ -264,6 +264,10 @@ app.post('/api/control/shapes/preview', controlOnly, route(function (req) {
   const b = req.body || {};
   return shapes.preview(b.plugin, b.def, b.id, { allowHost: b.allowHost === true });
 }));
+const market = require('./market').market;
+app.get('/api/control/market', controlOnly, route(function (req) { return market.list(req.query.refresh === '1'); }));
+app.post('/api/control/market/install', controlOnly, route(function (req) { return market.install((req.body || {}).id); }));
+app.post('/api/control/market/remove', controlOnly, route(function (req) { return market.remove((req.body || {}).id); }));
 const widgetStore = require('./shapes/store').store;
 app.get('/api/control/widgets', controlOnly, route(function () { return widgetStore.list(); }));
 app.post('/api/control/widgets', controlOnly, route(function (req) {

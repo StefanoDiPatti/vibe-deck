@@ -425,6 +425,13 @@
     }
   }
 
+  function propose(w) {
+    const json = JSON.stringify({ plugin: w.plugin, id: w.id, def: w.def });
+    const b64 = btoa(unescape(encodeURIComponent(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const site = window.Market ? window.Market.site() : 'https://stefanodipatti.github.io/vibe-deck/';
+    window.open(site + 'submit.html#w=' + b64, '_blank', 'noopener');
+  }
+
   async function loadMine() {
     let list = [];
     try { list = await api('GET', '/api/control/widgets'); } catch (e) { list = []; }
@@ -436,7 +443,8 @@
         h('span', { class: 'ed-mine-ico', html: icon(def.icon || (def.show && def.show.icon && def.show.icon.indexOf('{{') < 0 ? def.show.icon : '') || 'apps') }),
         h('span', { class: 'txt' }, [h('span', { class: 'name', text: def.name || w.id }),
           h('span', { class: 'desc' + (w.problems.length ? ' err' : ''), text: w.problems.length ? w.problems[0] : w.key })]),
-        h('button', { class: 'btn ghost small-btn', type: 'button', text: 'Modifica', onclick: () => { state.load(def, w.plugin, w.id); window.scrollTo({ top: $('editor-card').offsetTop - 10, behavior: 'smooth' }); } }),
+        h('button', { class: 'btn ghost small-btn', type: 'button', 'data-act': 'propose', text: 'Proponi al market', title: 'Apre la pagina del market con questo widget: decidi tu se proporlo o tenerlo solo per te', onclick: () => propose(w) }),
+        h('button', { class: 'btn ghost small-btn', type: 'button', 'data-act': 'edit', text: 'Modifica', onclick: () => { state.load(def, w.plugin, w.id); window.scrollTo({ top: $('editor-card').offsetTop - 10, behavior: 'smooth' }); } }),
         h('button', {
           class: 'ibtn rm', type: 'button', title: 'Elimina', html: icon('trash'),
           onclick: async () => {
