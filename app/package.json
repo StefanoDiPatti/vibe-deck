@@ -17,6 +17,7 @@
     "e2e:editor": "node scripts/e2e-editor.js",
     "e2e:obs": "node scripts/e2e-obs.js",
     "e2e:market": "node scripts/e2e-market.js",
+    "e2e:lol": "node scripts/e2e-lol.js",
     "site": "node scripts/build-site.js",
     "themes": "node scripts/build-themes.js",
     "demo": "node scripts/demo.js",

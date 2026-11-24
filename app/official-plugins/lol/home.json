@@ -1,0 +1,3 @@
+{
+  "lol": { "widget": "lol", "label": "League of Legends", "name": "League of Legends", "icon": "sword", "description": "Campioni per nome o ruolo, abilità e build su u.gg", "w": 4, "h": 3, "minW": 3, "minH": 2 }
+}

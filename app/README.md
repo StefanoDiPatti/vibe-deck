@@ -470,6 +470,14 @@ widget: go live and stop (**hold** to stop), record, virtual camera, replay buff
 preview of the program scene and the stats (fps, CPU, dropped frames). OBS is also a connector for JSON widgets: source
 `obs.state` and actions `obs.stream`, `obs.record`, `obs.scene`, `obs.mute`, `obs.virtualcam`, `obs.replay`.
 
+### League of Legends
+
+Page **LOL** (gaming pack, add it to the bar from the control panel) and a HOME widget: search a champion (or dictate the
+name), filter by role, tap an icon to see passive and abilities, then **Build su u.gg** opens the build of that role
+(skill order, runes, items) on the PC. Champions, icons and abilities come from Riot Data Dragon (in Italian), roles from
+Meraki Analytics; the PC downloads them, keeps them in `data/plugins/lol/` and serves the icons to the tablet (old
+browsers can't always open the Riot site). u.gg has no public API, so the build opens on u.gg itself.
+
 ## Linux
 
 Everything works except the parts that depend on Windows (Sticky Notes), replaced by standard tools. The SCREENS page on Linux needs KDE Plasma 6 and kdotool (see above).

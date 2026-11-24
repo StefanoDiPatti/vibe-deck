@@ -15,6 +15,7 @@ const STAMP = path.join(ROOT, 'node_modules', '.dock-install-stamp');
 const SERVICE = ARGS.indexOf('--service') >= 0;
 const PREPARE = ARGS.indexOf('--prepare') >= 0 || ARGS.indexOf('--no-server') >= 0;
 const HIDDEN_LAUNCHER = path.join(ROOT, 'scripts', 'windows', 'start-hidden.vbs');
+const APP_ICON = path.join(ROOT, 'scripts', 'windows', 'vibe-deck.ico');
 const EXIT_PORT_IN_USE = 3;
 
 function say(msg) { console.log('  ' + msg); }
@@ -134,7 +135,7 @@ const windowsSetup = {
       '$s.TargetPath = ' + psQuote(path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'wscript.exe')),
       '$s.Arguments = ' + psQuote('"' + HIDDEN_LAUNCHER + '"' + (panel ? ' /panel' : '')),
       '$s.WorkingDirectory = ' + psQuote(ROOT),
-      '$s.IconLocation = ' + psQuote(path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'shell32.dll') + ',15'),
+      '$s.IconLocation = ' + psQuote(APP_ICON + ',0'),
       '$s.Description = "Vibe Deck"',
       '$s.WindowStyle = ' + (minimized ? 7 : 1),
       '$s.Save()'
@@ -147,6 +148,10 @@ const windowsSetup = {
   },
   startupDir: function () {
     return path.join(process.env.APPDATA || '', 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup');
+  },
+  refreshIcons: function () {
+    const done = require('./windows/shortcut-icon').refresh([windowsSetup.desktopDir(), windowsSetup.startupDir()], APP_ICON);
+    if (done.length) say('Icona del collegamento "Vibe Deck" aggiornata.');
   }
 };
 
@@ -256,6 +261,9 @@ async function main() {
   const fresh = ensureEnv();
   ensureConfig();
   await firstRunSetup(ARGS.indexOf('--setup') >= 0 || (fresh && !fs.existsSync(SETUP_FILE)));
+  if (process.platform === 'win32' && fs.existsSync(APP_ICON)) {
+    try { windowsSetup.refreshIcons(); } catch (e) { }
+  }
   if (PREPARE) { say('Pronto.'); return; }
   runServer();
 }

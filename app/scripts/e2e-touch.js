@@ -3,6 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
+const { Finger } = require('./e2e-lib');
 
 const PORT = parseInt(process.env.E2E_PORT, 10) || 8792;
 const CDP_PORT = parseInt(process.env.E2E_CDP_PORT, 10) || 9333;
@@ -92,28 +93,6 @@ class Cdp {
   close() { try { this.ws.close(); } catch (e) { } }
 }
 
-class Finger {
-  constructor(cdp) { this.cdp = cdp; }
-  touch(type, x, y) {
-    return this.cdp.send('Input.dispatchTouchEvent', { type: type, touchPoints: type === 'touchEnd' ? [] : [{ x: x, y: y, id: 1 }] });
-  }
-  async tap(x, y) {
-    await this.touch('touchStart', x, y);
-    await sleep(60);
-    await this.touch('touchEnd', x, y);
-  }
-  async drag(x1, y1, x2, y2, steps) {
-    const n = steps || 12;
-    await this.touch('touchStart', x1, y1);
-    for (let i = 1; i <= n; i++) {
-      await sleep(25);
-      await this.touch('touchMove', x1 + (x2 - x1) * i / n, y1 + (y2 - y1) * i / n);
-    }
-    await sleep(40);
-    await this.touch('touchEnd', x2, y2);
-  }
-}
-
 function tileExpr(label, inner) {
   return '(function(){var t=[].slice.call(document.querySelectorAll(".w-shape")).filter(function(n){var h=n.querySelector(".w-title");return h&&h.textContent.trim().toUpperCase()==="' + label + '";})[0];if(!t)return null;' + inner + '})()';
 }
@@ -193,7 +172,7 @@ async function main() {
   const browser = findBrowser();
   if (!browser) { console.error('Nessun browser trovato (Edge o Chrome): BROWSER=percorso npm run e2e'); process.exit(1); }
   fs.mkdirSync(OUT, { recursive: true });
-  const demo = spawn(process.execPath, [path.join(__dirname, 'demo.js')], { env: Object.assign({}, process.env, { DEMO_PORT: String(PORT) }), stdio: 'ignore' });
+  const demo = spawn(process.execPath, [path.join(__dirname, 'demo.js')], { env: Object.assign({ DEMO_DRY: '1' }, process.env, { DEMO_PORT: String(PORT) }), stdio: 'ignore' });
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-e2e-profile-'));
   let edge = null, cdp = null, failed = 0;
   try {
