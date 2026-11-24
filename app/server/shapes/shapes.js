@@ -4,6 +4,7 @@ const template = require('./template');
 const shapes = new Registry('shape');
 const MAX_ITEMS = 12;
 const MAX_COMMANDS = 50;
+const LEVELS = ['ok', 'warn', 'hot'];
 
 function isObject(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
 
@@ -52,7 +53,8 @@ const SHAPE_INFO = {
     label: 'Acceso / spento',
     description: 'Un pallino verde o grigio con un testo (es. app aperta, server raggiungibile, in diretta)',
     show: [LABEL, ICON, { name: 'on', label: 'Acceso quando', type: 'template', required: true }, { name: 'onText', label: 'Testo se acceso', type: 'template' },
-      { name: 'offText', label: 'Testo se spento', type: 'template' }, SUB],
+      { name: 'offText', label: 'Testo se spento', type: 'template' }, SUB,
+      { name: 'level', label: 'Colore (ok, warn, hot)', type: 'template', help: 'Es. {{stato|map:colori}}: verde, arancione o rosso' }],
     actions: [{ name: 'tap', label: 'Al tocco' }]
   },
   text: {
@@ -250,7 +252,8 @@ class StatusShape extends Shape {
   fields(def, v, show) {
     const on = !!v.value(show.on);
     const words = on ? show.onText : show.offText;
-    return { on: on, text: v.text(words !== undefined ? words : show.text), sub: v.text(show.sub) };
+    const lvl = show.level !== undefined ? v.text(show.level) : '';
+    return { on: on, text: v.text(words !== undefined ? words : show.text), sub: v.text(show.sub), level: LEVELS.indexOf(lvl) >= 0 ? lvl : '' };
   }
 }
 
