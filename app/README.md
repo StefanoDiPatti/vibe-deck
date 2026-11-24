@@ -479,6 +479,13 @@ code to enter at twitch.tv/activate (no secret, tokens saved encrypted). Page **
 when the OBS plugin is installed) and a HOME widget: live chat with colours, subs and moderation, viewers and uptime,
 title and category, marker, clip, ads (**hold**), chat modes (slow, emote, subs, followers) and writing in chat (also by
 voice). Connector `twitch.state` and actions `twitch.marker`, `twitch.clip`, `twitch.ad`, `twitch.mode`, `twitch.say`.
+### League of Legends
+
+Page **LOL** (gaming pack, add it to the bar from the control panel) and a HOME widget: search a champion (or dictate the
+name), filter by role, tap an icon to see passive and abilities, then **Build su u.gg** opens the build of that role
+(skill order, runes, items) on the PC. Champions, icons and abilities come from Riot Data Dragon (in Italian), roles from
+Meraki Analytics; the PC downloads them, keeps them in `data/plugins/lol/` and serves the icons to the tablet (old
+browsers can't always open the Riot site). u.gg has no public API, so the build opens on u.gg itself.
 
 ## Linux
 

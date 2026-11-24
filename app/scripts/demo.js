@@ -181,6 +181,16 @@ shapesRunner.execute = async function (action) {
   return { message: 'Demo: ' + action.type };
 };
 demo.get('/api/demo/actions', function (req, res) { ok(res, demoActions); });
+if (process.env.DEMO_DRY === '1') {
+  const handlers = require('../server/actions').HANDLERS;
+  Object.keys(handlers).forEach(function (type) {
+    if (/^audio\./.test(type)) return;
+    handlers[type] = async function (action) {
+      demoActions.push(Object.assign({ type: type }, action));
+      return { message: 'Demo: ' + type };
+    };
+  });
+}
 const demoMixer = require('../official-plugins/audio/lib/mixer');
 demoMixer.state = async function () { return AUDIO; };
 demoMixer.device = async function (id, body) {
