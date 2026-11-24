@@ -127,7 +127,7 @@ app.get('/plugins-lang/:file', function (req, res) {
   const m = /^([a-z]{2})\.js$/.exec(req.params.file);
   if (!m) return res.status(404).end();
   res.setHeader('Cache-Control', 'no-cache');
-  res.type('application/javascript').send('I18n.add(' + JSON.stringify(plugins.dictionary(m[1])) + ');\n');
+  res.type('application/javascript').send(plugins.langScript(plugins.dictionary(m[1])));
 });
 
 app.get('/plugins/:name/:file', function (req, res) {
@@ -306,6 +306,9 @@ app.get('/api/shapes/:plugin/:id', route(function (req) {
 }));
 app.post('/api/shapes/:plugin/:id/tap', route(function (req) {
   return shapes.tap(req.params.plugin, req.params.id, (req.body || {}).index);
+}));
+app.post('/api/shapes/:plugin/:id/set', route(function (req) {
+  return shapes.set(req.params.plugin, req.params.id, (req.body || {}).value);
 }));
 app.post('/api/shapes/:plugin/:id/voice', route(function (req) {
   return shapes.voice(req.params.plugin, req.params.id, (req.body || {}).text);

@@ -280,6 +280,27 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .sh-said.err { color: #ff9c94; }
 .sh-hints { position: absolute; left: 12px; right: 12px; bottom: 10px; font-size: 13px; color: #6e7f91; overflow: hidden; max-height: 3em; line-height: 1.5em; }
 
+.sh-list { top: 48px; }
+.sh-row { padding: 8px 12px; border-radius: 8px; margin-bottom: 4px; background: #1d2835; }
+.sh-row.tap.pressed { background: #26354a; }
+.sh-row.ok { -webkit-box-shadow: inset 4px 0 0 #3fb950; box-shadow: inset 4px 0 0 #3fb950; }
+.sh-row.err { -webkit-box-shadow: inset 4px 0 0 #e5534b; box-shadow: inset 4px 0 0 #e5534b; }
+.sh-rtop { white-space: nowrap; overflow: hidden; }
+.sh-rtitle { display: block; font-weight: bold; font-size: 15px; overflow: hidden; text-overflow: ellipsis; }
+.sh-rright { float: right; margin-left: 10px; font-weight: bold; font-size: 15px; color: #c9d6e3; }
+.sh-rsub { font-size: 13px; color: #9fb3c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.sh-rbar { height: 6px; margin-top: 6px; background: #0b0f14; border-radius: 3px; overflow: hidden; }
+.sh-rbar i { display: block; height: 100%; background: #3d8bfd; }
+.sh-rbar.ok i { background: #3fb950; }
+.sh-rbar.warn i { background: #d29922; }
+.sh-rbar.hot i { background: #e5534b; }
+.sh-sval { position: absolute; right: 12px; top: 10px; font-weight: bold; line-height: 34px; height: 34px; font-size: 20px; }
+.sh-track { position: absolute; left: 24px; right: 24px; top: 58px; height: 36px; margin-top: -4px; }
+.sh-track:before { content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 10px; border-radius: 5px; background: #0b0f14; }
+.sh-tfill { position: absolute; left: 0; top: 13px; height: 10px; width: 0; border-radius: 5px; background: #3d8bfd; }
+.sh-knob { position: absolute; top: 2px; width: 32px; height: 32px; margin-left: -16px; border-radius: 50%; background: #e6edf3; -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); }
+.sh-track.on .sh-knob { background: #3d8bfd; }
+
 .w-np { padding: 0 !important; }
 .np-art { position: absolute; border-radius: 10px; overflow: hidden; background: #0b0f14; }
 .np-art img { display: none; width: 100%; height: 100%; }

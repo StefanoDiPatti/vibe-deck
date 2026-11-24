@@ -1,0 +1,32 @@
+{
+  "name": "Meteo adesso",
+  "description": "Temperatura, cielo e vento adesso (Open-Meteo, senza chiavi). Città: cambia latitude e longitude nell'indirizzo",
+  "icon": "cloud",
+  "shape": "value",
+  "source": {
+    "type": "http",
+    "url": "https://api.open-meteo.com/v1/forecast?latitude=41.89&longitude=12.49&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto"
+  },
+  "every": 900,
+  "show": {
+    "label": "METEO",
+    "value": "{{current.temperature_2m|round}}",
+    "unit": "°C",
+    "sub": "{{current.weather_code|map:wmo}} · percepita {{current.apparent_temperature|round}}° · vento {{current.wind_speed_10m|round}} km/h"
+  },
+  "maps": {
+    "wmo": {
+      "0": "Sereno", "1": "Poco nuvoloso", "2": "Parzialmente nuvoloso", "3": "Coperto",
+      "45": "Nebbia", "48": "Nebbia con brina",
+      "51": "Pioviggine leggera", "53": "Pioviggine", "55": "Pioviggine forte",
+      "61": "Pioggia leggera", "63": "Pioggia", "65": "Pioggia forte",
+      "66": "Pioggia gelata", "67": "Pioggia gelata forte",
+      "71": "Neve leggera", "73": "Neve", "75": "Neve forte", "77": "Granelli di neve",
+      "80": "Rovesci leggeri", "81": "Rovesci", "82": "Rovesci violenti",
+      "85": "Rovesci di neve", "86": "Rovesci di neve forti",
+      "95": "Temporale", "96": "Temporale con grandine", "99": "Temporale con grandine forte",
+      "*": "–"
+    }
+  },
+  "size": { "w": 3, "h": 1, "minW": 2, "minH": 1 }
+}

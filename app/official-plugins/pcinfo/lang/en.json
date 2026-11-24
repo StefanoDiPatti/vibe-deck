@@ -10,5 +10,9 @@
   "Chiuso": "Closed",
   "SCORCIATOIE": "SHORTCUTS",
   "ATTIVITÀ": "TASKS",
-  "IMPOSTAZIONI": "SETTINGS"
+  "IMPOSTAZIONI": "SETTINGS",
+  "DISCHI": "DISKS",
+  "$rules": [
+    ["^(.+) GB liberi$", "$1 GB free"]
+  ]
 }

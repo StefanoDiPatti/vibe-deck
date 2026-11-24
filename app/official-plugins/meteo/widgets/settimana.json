@@ -1,0 +1,36 @@
+{
+  "name": "Meteo 7 giorni",
+  "description": "Previsioni dei prossimi 7 giorni: cielo, massima e minima (Open-Meteo, senza chiavi)",
+  "icon": "cloud",
+  "shape": "list",
+  "source": {
+    "type": "http",
+    "url": "https://api.open-meteo.com/v1/forecast?latitude=41.89&longitude=12.49&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=7&timezone=auto"
+  },
+  "every": 1800,
+  "show": {
+    "label": "PROSSIMI GIORNI",
+    "items": "{{daily|zip}}",
+    "max": 7,
+    "item": {
+      "title": "{{item.time|date:day}} · {{item.weather_code|map:wmo}}",
+      "sub": "pioggia {{item.precipitation_probability_max|default:0}}%",
+      "right": "{{item.temperature_2m_max|round}}° / {{item.temperature_2m_min|round}}°"
+    }
+  },
+  "maps": {
+    "wmo": {
+      "0": "Sereno", "1": "Poco nuvoloso", "2": "Parzialmente nuvoloso", "3": "Coperto",
+      "45": "Nebbia", "48": "Nebbia con brina",
+      "51": "Pioviggine leggera", "53": "Pioviggine", "55": "Pioviggine forte",
+      "61": "Pioggia leggera", "63": "Pioggia", "65": "Pioggia forte",
+      "66": "Pioggia gelata", "67": "Pioggia gelata forte",
+      "71": "Neve leggera", "73": "Neve", "75": "Neve forte", "77": "Granelli di neve",
+      "80": "Rovesci leggeri", "81": "Rovesci", "82": "Rovesci violenti",
+      "85": "Rovesci di neve", "86": "Rovesci di neve forti",
+      "95": "Temporale", "96": "Temporale con grandine", "99": "Temporale con grandine forte",
+      "*": "–"
+    }
+  },
+  "size": { "w": 3, "h": 3, "minW": 2, "minH": 2 }
+}

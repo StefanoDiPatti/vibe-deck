@@ -1,0 +1,13 @@
+{
+  "id": "meteo",
+  "name": "Meteo",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "JSON-only weather widgets from Open-Meteo (free, no API key): now and the next 7 days",
+  "type": "plugin",
+  "platforms": ["windows", "linux"],
+  "engine": ">=2.2.0",
+  "permissions": {
+    "http": ["api.open-meteo.com"]
+  }
+}

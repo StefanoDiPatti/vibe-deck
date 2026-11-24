@@ -74,6 +74,18 @@ svg.ic { fill: #e9e9ee; }
 .sh-vsend { background: #174a7e; }
 .sh-said { color: #c4c6cf; }
 .sh-said.err { color: #ffb4ab; }
+.sh-row { background: #272a2f; }
+.sh-row.tap.pressed { background: #2c3a4f; }
+.sh-row.ok { -webkit-box-shadow: inset 4px 0 0 #7fd99a; box-shadow: inset 4px 0 0 #7fd99a; }
+.sh-row.err { -webkit-box-shadow: inset 4px 0 0 #ffb4ab; box-shadow: inset 4px 0 0 #ffb4ab; }
+.sh-rsub { color: #c4c6cf; }
+.sh-rbar { background: #111318; }
+.sh-rbar i { background: #1f5a96; }
+.sh-rbar.ok i { background: #7fd99a; }
+.sh-rbar.hot i { background: #ffb4ab; }
+.sh-track:before { background: #111318; }
+.sh-tfill { background: #1f5a96; }
+.sh-track.on .sh-knob { background: #1f5a96; }
 .np-art { background: #111318; }
 .np-src { color: #8e9099; }
 .np-artist { color: #c4c6cf; }

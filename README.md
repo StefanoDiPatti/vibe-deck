@@ -400,17 +400,39 @@ The widget shows up by itself in the HOME catalog of the control panel (`<plugin
 | `text` | free text that updates | `show.text`, `sub` |
 | `buttons` | grid of up to 12 buttons | `buttons: [{ label, icon, color, action }]` |
 | `voice` | voice commands and dictation (browser microphone or transcription on the PC) | `voice.commands: [{ say: [...], action, reply }]`, `voice.action` with `{{text}}` when nothing matches |
+| `list` | rows from a list in the data (scrolls), each row can be tapped | `show.items` (e.g. `{{results}}`), `show.item: { title, sub, right, bar }` with `{{item.field}}`, `max`, `empty` |
+| `slider` | a value to drag (volume, brightness…) | `show.value`, `min`, `max`, `step`, `unit`; `set` = action with the chosen `{{value}}` |
 
-**Sources:** `pc` (`cpu`, `gpu`, `ram`, `net`, `uptimeSeconds`, `hostname`, `apps.<id>` = app open) and `static`
-(the `"data"` written in the file). `"every"` sets the seconds between updates; the PC reads each source only once per period.
+**Sources:**
+
+| Source | Data | Limits |
+|---|---|---|
+| `pc` | `cpu`, `gpu`, `ram`, `net`, `uptimeSeconds`, `hostname`, `apps.<id>` (app open) | — |
+| `static` | the `"data"` written in the file | — |
+| `http` | JSON from a public address (`"url"`), **no API keys** | only sites listed in `permissions.http` of `plugin.json`; 8 s, 512 KB, no redirects, every 30 s at most |
+| `file` | a JSON or text file (`"path"`) | only inside `data/` |
+| `command` | the output of a command (`"id"`) | only commands in `commands.json` |
+| `<plugin>.<name>` | a **connector** written in code by a plugin (e.g. `audio.mixer`) | only the widgets of that same plugin |
+
+Text that is not JSON becomes `{ text, lines }`. `"every"` sets the seconds between updates; the PC reads each source only
+once per period and shares it between tablets.
 
 **Placeholders:** `{{field.sub}}` with filters `round[:digits]`, `percent`, `bytes`, `duration`, `ago`, `upper`, `lower`,
-`default:x`, `yesno:yes:no`, `url`, `count`. No code inside the JSON.
+`default:x`, `yesno:yes:no`, `url`, `count`, `first`, `join:sep`, `zip` (parallel lists → rows, e.g. Open-Meteo `daily`),
+`date` / `date:day` / `date:weekday` / `date:time`, `map:table` with tables in `"maps": { "table": { "0": "Clear", "*": "other" } }`.
+No code inside the JSON.
 
-**Actions** (`tap`, buttons, voice) are the same as the page buttons. The tablet only says "widget X, button N": what runs is
-decided on the PC. Optional `"platforms": ["windows"]` hides a widget on the other system.
+**Actions** (`tap`, buttons, slider `set`, voice) are the same as the page buttons. The tablet only says "widget X, row/button N"
+or sends the slider value: what runs is decided on the PC. Optional `"platforms": ["windows"]` hides a widget on the other system.
 
-**Translations** of a JSON-only plugin: `lang/en.json` with `{ "Italian text": "English text" }`.
+**Translations** of a JSON-only plugin: `lang/en.json` with `{ "Italian text": "English text" }` and, for text with
+numbers, `"$rules": [["^vento (.+)$", "wind $1"]]`.
+
+**Connectors for developers:** a plugin with code can offer data to JSON widgets with
+`module.exports.sources = { name: { every: 2, read: async function (source, ctx) { return {...}; } } }` and actions with
+`module.exports.actions`. Example: `official-plugins/audio` (`audio.mixer` + `audio.volume`, used by the Volume and
+Microphone sliders). Examples of JSON-only plugins: `official-plugins/pcinfo` and `official-plugins/meteo` (to change city,
+copy a widget and change `latitude`/`longitude` in the address).
 
 ## Plugins: new widgets and actions
 

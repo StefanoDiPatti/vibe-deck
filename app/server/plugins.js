@@ -400,21 +400,42 @@ function readHomeWidgets() {
 }
 function icons() { return registered('Icons'); }
 
+function validRules(list, where) {
+  if (!Array.isArray(list)) return [];
+  return list.filter(function (r) {
+    if (!Array.isArray(r) || r.length !== 2 || typeof r[0] !== 'string' || typeof r[1] !== 'string') {
+      log.warn('plugin', where + ': ogni regola in "$rules" è [ "espressione", "sostituzione" ]');
+      return false;
+    }
+    try { new RegExp(r[0]); return true; } catch (e) {
+      log.warn('plugin', where + ': regola non valida ' + r[0] + ': ' + e.message);
+      return false;
+    }
+  });
+}
+
 function dictionary(lang) {
   return remembered('lang:' + lang, function () {
-    const out = {};
+    const out = { words: {}, rules: [] };
     const parse = require('./config').parseJson;
     names().forEach(function (name) {
+      const where = name + '/lang/' + lang + '.json';
       let data = null;
       try { data = parse(fs.readFileSync(path.join(dirOf(name), 'lang', lang + '.json'), 'utf8')); } catch (e) {
-        if (e.code !== 'ENOENT') log.warn('plugin', name + '/lang/' + lang + '.json non valido: ' + e.message);
+        if (e.code !== 'ENOENT') log.warn('plugin', where + ' non valido: ' + e.message);
         return;
       }
       if (!data || typeof data !== 'object' || Array.isArray(data)) return;
-      Object.keys(data).forEach(function (k) { if (typeof data[k] === 'string') out[k] = data[k]; });
+      Object.keys(data).forEach(function (k) { if (k !== '$rules' && typeof data[k] === 'string') out.words[k] = data[k]; });
+      out.rules = out.rules.concat(validRules(data.$rules, where));
     });
     return out;
   });
+}
+
+function langScript(dict) {
+  const rules = dict.rules.map(function (r) { return '[new RegExp(' + JSON.stringify(r[0]) + '), ' + JSON.stringify(r[1]) + ']'; });
+  return 'I18n.add(' + JSON.stringify(dict.words) + ');\n' + (rules.length ? 'I18n.rules([' + rules.join(', ') + ']);\n' : '');
 }
 
 function info() {
@@ -478,5 +499,5 @@ module.exports = {
   registerActions: registerActions, mountRoutes: mountRoutes, hook: hook,
   setControl: setControl, controlInfo: controlInfo, controlPrepare: controlPrepare, mountControl: mountControl, sourceTiles: sourceTiles,
   controlScripts: controlScripts, controlStyles: controlStyles,
-  remembered: remembered, dictionary: dictionary, scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, widgetLabels: widgetLabels, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
+  remembered: remembered, dictionary: dictionary, langScript: langScript, context: context, scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, widgetLabels: widgetLabels, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
 };

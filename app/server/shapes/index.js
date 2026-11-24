@@ -3,16 +3,16 @@ const path = require('path');
 const plugins = require('../plugins');
 const template = require('./template');
 const { shapes } = require('./shapes');
-const { sources, SourceCache } = require('./sources');
+const { sources, resolve, SourceCache } = require('./sources');
 
 const FILE_RE = /^[a-z0-9][a-z0-9_-]*$/;
 const PLATFORMS = ['windows', 'linux'];
-function currentPlatform() { return process.platform === 'win32' ? 'windows' : 'linux'; }
 const MAX_VOICE_TEXT = 500;
-const ICONS = { value: 'cpu', bars: 'cpu', status: 'target', text: 'info', buttons: 'apps', voice: 'mic' };
+const ICONS = { value: 'cpu', bars: 'cpu', status: 'target', text: 'info', buttons: 'apps', voice: 'mic', list: 'layout', slider: 'volup' };
 const cache = new SourceCache();
 const runner = { execute: function (action) { return require('../actions').execute(action); } };
 
+function currentPlatform() { return process.platform === 'win32' ? 'windows' : 'linux'; }
 function fail(message, code) { return Object.assign(new Error(message), { code: code }); }
 function isObject(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
 function clamp(v, min, max, def) {
@@ -22,7 +22,24 @@ function clamp(v, min, max, def) {
 
 function sourceOf(def) { return isObject(def.source) ? def.source : { type: 'static' }; }
 
-function validate(def, id) {
+function pluginContext(plugin) {
+  const m = plugins.manifests().filter(function (x) { return x.id === plugin; })[0];
+  return { plugin: plugin, permissions: (m && m.permissions) || {} };
+}
+
+function sourceProblems(src, ctx) {
+  const source = resolve(src.type);
+  if (!source) {
+    return ['fonte sconosciuta "' + src.type + '" (valide: ' + sources.names().join(', ') + ', oppure "<plugin>.<fonte>" di un plugin con codice)'];
+  }
+  const owner = String(src.type).split('.');
+  if (owner.length === 2 && ctx && owner[0] !== ctx.plugin) {
+    return ['la fonte "' + src.type + '" è di un altro plugin: un plugin deve funzionare da solo'];
+  }
+  return source.validate(src, ctx);
+}
+
+function validate(def, id, ctx) {
   if (!isObject(def)) return ['il widget deve essere un oggetto JSON'];
   const problems = [];
   if (!FILE_RE.test(id)) problems.push('nome del file non valido: usa minuscole, numeri, - e _');
@@ -31,10 +48,7 @@ function validate(def, id) {
   if (def.source !== undefined && !isObject(def.source)) problems.push('"source" deve essere un oggetto');
   const shape = shapes.get(def.shape);
   if (!shape) problems.push('forma sconosciuta "' + def.shape + '" (valide: ' + shapes.names().join(', ') + ')');
-  const src = sourceOf(def);
-  const source = sources.get(src.type);
-  if (!source) problems.push('fonte sconosciuta "' + src.type + '" (valide: ' + sources.names().join(', ') + ')');
-  else problems.push.apply(problems, source.validate(src));
+  problems.push.apply(problems, sourceProblems(sourceOf(def), ctx));
   if (def.size !== undefined && !isObject(def.size)) problems.push('"size" deve essere un oggetto { "w", "h", "minW", "minH" }');
   if (def.platforms !== undefined && (!Array.isArray(def.platforms) || !def.platforms.length || def.platforms.some(function (p) { return PLATFORMS.indexOf(p) < 0; }))) {
     problems.push('"platforms" deve elencare "windows" e/o "linux"');
@@ -45,13 +59,14 @@ function validate(def, id) {
 
 function readOne(plugin, dir, file) {
   const id = file.replace(/\.json$/i, '');
-  const entry = { plugin: plugin, id: id, key: plugin + '/' + id, file: path.join(dir, file), def: null, problems: [] };
+  const ctx = pluginContext(plugin);
+  const entry = { plugin: plugin, id: id, key: plugin + '/' + id, file: path.join(dir, file), def: null, ctx: ctx, problems: [] };
   let def;
   try { def = require('../config').parseJson(fs.readFileSync(entry.file, 'utf8')); } catch (e) {
     entry.problems.push('JSON non valido: ' + e.message);
     return entry;
   }
-  entry.problems = validate(def, id);
+  entry.problems = validate(def, id, ctx);
   if (!entry.problems.length) entry.def = Object.assign({}, def, { id: id, source: sourceOf(def) });
   return entry;
 }
@@ -77,14 +92,22 @@ function find(plugin, id) {
 }
 
 function readData(e) {
-  return cache.read(e.key, sources.get(e.def.source.type), e.def);
+  return cache.read(e.key, resolve(e.def.source.type), e.def, e.ctx);
+}
+
+async function safeData(e) {
+  try { return await readData(e); } catch (err) { return {}; }
+}
+
+async function run(e, action, scope) {
+  if (!action) throw fail('Questo widget non ha un\'azione', 'BAD_CONFIG');
+  return runner.execute(template.deep(action, scope, { maps: e.def.maps || {} }));
 }
 
 async function view(plugin, id) {
   const e = find(plugin, id);
   const def = e.def;
-  const source = sources.get(def.source.type);
-  const extra = { every: source.every(def) };
+  const extra = { every: resolve(def.source.type).every(def) };
   if (def.shape === 'voice') extra.voiceServer = require('../services/voice').available();
   let data;
   try { data = await readData(e); } catch (err) {
@@ -95,11 +118,22 @@ async function view(plugin, id) {
 
 async function tap(plugin, id, index) {
   const e = find(plugin, id);
-  const action = shapes.get(e.def.shape).action(e.def, parseInt(index, 10) || 0);
-  if (!action) throw fail('Questo widget non ha un\'azione', 'BAD_CONFIG');
-  let data = {};
-  try { data = await readData(e); } catch (err) { data = {}; }
-  return runner.execute(template.deep(action, data));
+  const shape = shapes.get(e.def.shape);
+  const i = Math.max(0, parseInt(index, 10) || 0);
+  const scope = shape.scope(e.def, await safeData(e), i);
+  if (e.def.shape === 'list' && (!scope || scope.item === undefined)) throw fail('Riga non trovata (la lista è cambiata?)', 'CONFIG_CHANGED');
+  return run(e, shape.action(e.def, i), scope);
+}
+
+async function set(plugin, id, value) {
+  const e = find(plugin, id);
+  if (e.def.shape !== 'slider') throw fail('Questo widget non è uno slider', 'BAD_REQUEST');
+  const shape = shapes.get('slider');
+  const v = shape.clamp(e.def, value);
+  if (v === null) throw fail('Valore non valido', 'BAD_REQUEST');
+  const result = await run(e, shape.action(e.def), shape.scope(e.def, await safeData(e), v));
+  cache.forget(e.key);
+  return Object.assign({}, result, { value: v });
 }
 
 async function voice(plugin, id, said) {
@@ -138,10 +172,12 @@ function catalog() {
 function actionsOf(def) {
   const out = [];
   if (def.tap) out.push({ where: 'tocco', action: def.tap });
+  if (def.set) out.push({ where: 'slider', action: def.set });
   (def.buttons || []).forEach(function (b, i) { out.push({ where: 'pulsante ' + (i + 1), action: b.action }); });
   const v = def.voice || {};
   (v.commands || []).forEach(function (c, i) { out.push({ where: 'comando vocale ' + (i + 1), action: c.action }); });
   if (v.action) out.push({ where: 'voce', action: v.action });
+  if (def.source && def.source.type === 'command') out.push({ where: 'fonte', action: { type: 'command', id: def.source.id } });
   return out;
 }
 
@@ -153,4 +189,4 @@ function report() {
 
 function keys() { return all().filter(function (e) { return e.def; }).map(function (e) { return e.key; }); }
 
-module.exports = { all: all, view: view, tap: tap, voice: voice, catalog: catalog, report: report, keys: keys, validate: validate, cache: cache, runner: runner };
+module.exports = { all: all, view: view, tap: tap, set: set, voice: voice, catalog: catalog, report: report, keys: keys, validate: validate, cache: cache, runner: runner };

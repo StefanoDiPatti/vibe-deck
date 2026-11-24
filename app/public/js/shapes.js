@@ -202,6 +202,127 @@ var Shapes = (function () {
     };
   });
 
+  register('list', function (ctx) {
+    var title = header(ctx.root, '');
+    var list = el('div', 'w-list sh-list');
+    ctx.root.appendChild(list);
+    var view = null;
+    function row(item, index, tap) {
+      var r = el('div', 'sh-row' + (tap ? ' tap' : ''));
+      r.innerHTML = '<div class="sh-rtop"><span class="sh-rright">' + D.esc(item.right) + '</span><span class="sh-rtitle">' + D.esc(item.title) + '</span></div>' +
+        (item.sub ? '<div class="sh-rsub">' + D.esc(item.sub) + '</div>' : '') +
+        (item.bar !== null ? '<div class="sh-rbar ' + (item.level || '') + '"><i style="width:' + clampNum(item.bar, 2, 100) + '%"></i></div>' : '');
+      if (tap) D.bindTap(r, { onTap: function () { ctx.tap(index, r); } });
+      return r;
+    }
+    return {
+      paint: function (v) {
+        view = v;
+        setText(title, v.label);
+        var sig = (v.rowTap ? 't' : '') + JSON.stringify(v.items);
+        if (list.__sig === sig) return;
+        list.__sig = sig;
+        list.innerHTML = '';
+        if (!v.items.length) { list.appendChild(el('div', 'empty', v.empty)); return; }
+        for (var i = 0; i < v.items.length; i++) list.appendChild(row(v.items[i], i, v.rowTap));
+      },
+      resize: function () { if (view) { list.__sig = ''; this.paint(view); } }
+    };
+  });
+
+  register('slider', function (ctx) {
+    var title = header(ctx.root, '');
+    var num = el('div', 'sh-sval');
+    var track = el('div', 'sh-track');
+    var fill = el('i', 'sh-tfill');
+    var knob = el('b', 'sh-knob');
+    track.appendChild(fill); track.appendChild(knob);
+    var sub = el('div', 'sh-sub');
+    ctx.root.appendChild(num); ctx.root.appendChild(track); ctx.root.appendChild(sub);
+    var view = null, dragging = false, local = null, lastSent = 0, sendTimer = null, holdUntil = 0;
+    var SEND_EVERY_MS = 350;
+
+    function show(value) {
+      if (!view) return;
+      var pct = view.max > view.min ? (value - view.min) / (view.max - view.min) * 100 : 0;
+      pct = clampNum(pct, 0, 100);
+      fill.style.width = pct + '%';
+      knob.style.left = pct + '%';
+      setText(num, value === null ? '—' : value + (view.unit ? ' ' + view.unit : ''));
+    }
+    function valueAt(clientX) {
+      var r = track.getBoundingClientRect();
+      var ratio = r.width ? clampNum((clientX - r.left) / r.width, 0, 1) : 0;
+      var raw = view.min + ratio * (view.max - view.min);
+      var step = view.step || 1;
+      return clampNum(Math.round((raw - view.min) / step) * step + view.min, view.min, view.max);
+    }
+    function send(final) {
+      clearTimeout(sendTimer);
+      var now = new Date().getTime();
+      if (!final && now - lastSent < SEND_EVERY_MS) {
+        sendTimer = setTimeout(function () { send(false); }, SEND_EVERY_MS - (now - lastSent));
+        return;
+      }
+      lastSent = now;
+      holdUntil = now + 2500;
+      ctx.set(local, function (err) { if (err) ctx.app.toast(err.message, 'err'); });
+    }
+    function point(e) {
+      var t = e.touches && e.touches.length ? e.touches[0] : e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : e;
+      return t.clientX;
+    }
+    function start(e) {
+      if (!view) return;
+      dragging = true;
+      D.addClass(track, 'on');
+      local = valueAt(point(e));
+      show(local);
+      send(false);
+      if (e.preventDefault) e.preventDefault();
+    }
+    function move(e) {
+      if (!dragging) return;
+      local = valueAt(point(e));
+      show(local);
+      send(false);
+      if (e.preventDefault) e.preventDefault();
+    }
+    function end() {
+      if (!dragging) return;
+      dragging = false;
+      D.removeClass(track, 'on');
+      send(true);
+    }
+    track.addEventListener('touchstart', start, false);
+    track.addEventListener('touchmove', move, false);
+    track.addEventListener('touchend', end, false);
+    track.addEventListener('touchcancel', end, false);
+    track.addEventListener('mousedown', start, false);
+    document.addEventListener('mousemove', move, false);
+    document.addEventListener('mouseup', end, false);
+
+    return {
+      paint: function (v) {
+        view = v;
+        setText(title, v.label);
+        setText(sub, v.sub);
+        if (dragging || new Date().getTime() < holdUntil) return;
+        local = v.value;
+        show(v.value);
+      },
+      resize: function (w, h) {
+        num.style.fontSize = clampNum(Math.round((h - 34) * 0.3), 16, 40) + 'px';
+        sub.style.display = h > 150 ? '' : 'none';
+      },
+      destroy: function () {
+        clearTimeout(sendTimer);
+        document.removeEventListener('mousemove', move, false);
+        document.removeEventListener('mouseup', end, false);
+      }
+    };
+  });
+
   register('voice', function (ctx) {
     var title = header(ctx.root, '');
     var form = el('div', 'sh-vform');
@@ -272,12 +393,14 @@ var Shapes = (function () {
       root: self.body,
       app: self.app,
       tap: function (index, node) { self.tap(index, node); },
+      set: function (value, done) { D.api.post(self.url + '/set', { value: value }, done, 30000); },
       say: function (text, done) { D.api.post(self.url + '/voice', { text: text }, done, 30000); }
     };
   };
 
   Controller.prototype.build = function (shape) {
     var factory = renderers[shape];
+    if (this.painter && this.painter.destroy) this.painter.destroy();
     if (this.body) this.root.removeChild(this.body);
     this.body = el('div', 'sh-body');
     this.root.appendChild(this.body);
@@ -350,6 +473,7 @@ var Shapes = (function () {
   Controller.prototype.destroy = function () {
     this.dead = true;
     clearTimeout(this.timer);
+    if (this.painter && this.painter.destroy) this.painter.destroy();
   };
 
   function create(root, tile, app) {
