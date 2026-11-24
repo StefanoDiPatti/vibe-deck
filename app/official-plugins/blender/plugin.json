@@ -3,6 +3,7 @@
   "name": "Blender",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "cube",
   "description": "Shortcut page for Blender",
   "type": "plugin",
   "platforms": [

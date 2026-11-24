@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "author": "StefanoDiPatti",
   "description": "Blender, DaVinci Resolve and Unreal Editor shortcut pages",
+  "icon": "palette",
   "type": "pack",
   "includes": [
     "blender",

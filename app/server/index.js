@@ -266,7 +266,8 @@ app.post('/api/control/shapes/preview', controlOnly, route(function (req) {
 }));
 const market = require('./market').market;
 app.get('/api/control/market', controlOnly, route(function (req) { return market.list(req.query.refresh === '1'); }));
-app.post('/api/control/market/install', controlOnly, route(function (req) { return market.install((req.body || {}).id); }));
+app.get('/api/control/market/entry', controlOnly, route(function (req) { return market.entry(String(req.query.id || '')); }));
+app.post('/api/control/market/install', controlOnly, route(function (req) { return market.installAny(String((req.body || {}).id || '')); }));
 app.post('/api/control/market/remove', controlOnly, route(function (req) { return market.remove((req.body || {}).id); }));
 const widgetStore = require('./shapes/store').store;
 app.get('/api/control/widgets', controlOnly, route(function () { return widgetStore.list(); }));
@@ -274,6 +275,26 @@ app.post('/api/control/widgets', controlOnly, route(function (req) {
   const b = req.body || {};
   return widgetStore.save(b.plugin, b.id, b.def, { allowHost: b.allowHost === true, overwrite: b.overwrite === true });
 }));
+app.get('/api/control/installed', controlOnly, route(function () {
+  return Object.assign(plugins.officialSwitches(), {
+    market: market.installedList(),
+    mine: widgetStore.list().filter(function (w) { return !market.installed.get(w.plugin); }).map(function (w) {
+      return { key: w.key, plugin: w.plugin, id: w.id, name: (w.def && w.def.name) || w.id, icon: (w.def && w.def.icon) || '', author: (w.def && w.def.author) || '', problems: w.problems };
+    }),
+    site: require('./market').SITE,
+    canRestart: process.env.DOCK_SUPERVISED === '1'
+  });
+}));
+app.post('/api/control/plugins/switch', controlOnly, route(function (req) {
+  const b = req.body || {};
+  return plugins.setSwitch(String(b.id || ''), b.on === true);
+}));
+app.post('/api/control/restart', controlOnly, function (req, res) {
+  if (process.env.DOCK_SUPERVISED !== '1') return res.json({ ok: true, data: { restarting: false } });
+  log.info('control', 'riavvio chiesto dal pannello');
+  res.json({ ok: true, data: { restarting: true } });
+  setTimeout(function () { shutdown(EXIT_RESTART); }, 300);
+});
 app.delete('/api/control/widgets/:plugin/:id', controlOnly, route(function (req) {
   return widgetStore.remove(req.params.plugin, req.params.id);
 }));
@@ -428,6 +449,7 @@ function banner() {
 }
 
 const EXIT_PORT_IN_USE = 3;
+const EXIT_RESTART = 75;
 
 function start() {
   return platform.init().catch(function (e) {
@@ -450,11 +472,11 @@ function start() {
   });
 }
 
-function shutdown() {
+function shutdown(code) {
   system.stop();
   plugins.hook('stop');
   platform.shutdown();
-  process.exit(0);
+  process.exit(typeof code === 'number' ? code : 0);
 }
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);

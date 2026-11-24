@@ -3,6 +3,7 @@
   "name": "Twitch",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "chat",
   "description": "Twitch on the tablet: live chat of any channel without login; with your account also viewers, uptime, title and category, markers, clips, ads, chat modes and writing in chat",
   "type": "plugin",
   "platforms": ["windows", "linux"],

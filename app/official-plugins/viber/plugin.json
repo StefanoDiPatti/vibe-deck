@@ -3,6 +3,7 @@
   "name": "Viber",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "code",
   "description": "Viber through its MCP server: panels, layouts and views of the window in front, open projects with their agents, tasks of the project on screen",
   "type": "plugin",
   "platforms": [

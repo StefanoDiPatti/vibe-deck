@@ -3,6 +3,7 @@
   "name": "Android",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "android",
   "description": "adb and logcat: devices, errors and crashes, screenshot, phone screen with scrcpy, React Native",
   "type": "plugin",
   "platforms": [

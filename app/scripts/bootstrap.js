@@ -17,6 +17,7 @@ const PREPARE = ARGS.indexOf('--prepare') >= 0 || ARGS.indexOf('--no-server') >=
 const HIDDEN_LAUNCHER = path.join(ROOT, 'scripts', 'windows', 'start-hidden.vbs');
 const APP_ICON = path.join(ROOT, 'scripts', 'windows', 'vibe-deck.ico');
 const EXIT_PORT_IN_USE = 3;
+const EXIT_RESTART = 75;
 
 function say(msg) { console.log('  ' + msg); }
 function title(msg) { console.log('\n== ' + msg); }
@@ -228,11 +229,12 @@ function runServer() {
   let child = null;
 
   function start() {
-    const env = Object.assign({}, process.env, SERVICE ? { DOCK_SERVICE: '1' } : {});
+    const env = Object.assign({}, process.env, { DOCK_SUPERVISED: '1' }, SERVICE ? { DOCK_SERVICE: '1' } : {});
     child = spawn(process.execPath, [path.join(ROOT, 'server', 'index.js')], { cwd: ROOT, stdio: 'inherit', env: env });
     child.on('exit', function (code, signal) {
       if (stopping || signal === 'SIGINT' || code === 0 || code === 130) process.exit(code || 0);
       if (code === EXIT_PORT_IN_USE) process.exit(EXIT_PORT_IN_USE);
+      if (code === EXIT_RESTART) { console.log('\nRiavvio chiesto dal pannello...'); setTimeout(start, 300); return; }
       const now = Date.now();
       restarts = restarts.filter(function (t) { return now - t < 60000; });
       restarts.push(now);

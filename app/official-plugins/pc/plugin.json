@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "author": "StefanoDiPatti",
   "description": "Manage the PC from the tablet: screens and virtual desktops, audio, email and TODO",
+  "icon": "desktop",
   "type": "pack",
   "includes": [
     "screens",

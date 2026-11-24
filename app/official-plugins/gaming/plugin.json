@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "author": "StefanoDiPatti",
   "description": "Discord voice, your games and League of Legends on the tablet",
+  "icon": "gamepad",
   "type": "pack",
   "includes": [
     "discord",

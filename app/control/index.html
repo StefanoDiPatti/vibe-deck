@@ -18,6 +18,8 @@
       </div>
     </div>
     <div class="top-right">
+      <a id="site-create" class="site-link" href="https://stefanodipatti.github.io/vibe-deck/create.html" target="_blank" rel="noopener">Vuoi creare un tuo widget? <b>Crealo sul sito</b></a>
+      <a id="site-market" class="site-link" href="https://stefanodipatti.github.io/vibe-deck/market.html" target="_blank" rel="noopener"><b>Market</b></a>
       <div id="theme-pick" class="theme-pick" role="group" aria-label="Tema del pannello"></div>
       <div id="tablet" class="tablet-url"></div>
     </div>
@@ -96,60 +98,24 @@
       </div>
     </section>
 
-    <section class="card wide" id="editor-card">
+    <section class="card wide" id="installed-card">
       <div class="card-head">
         <div>
-          <h2>Crea un widget</h2>
-          <p class="hint">Scegli la <b>forma</b>, da dove prende i <b>dati</b>, cosa <b>mostra</b> e cosa fa il <b>tocco</b>: l'anteprima a destra è disegnata come sul tablet. Salvato, lo trovi in <b>Aggiungi un widget</b> della HOME.</p>
+          <h2>Installati</h2>
+          <p class="hint">I pack ufficiali (già dentro Vibe Deck: accendi solo quelli che usi), i plugin presi dal market e i tuoi widget. Per installarne altri o crearne uno nuovo vai sul sito: <b>Installa</b> riapre questo pannello per la conferma.</p>
         </div>
-        <span id="ed-state" class="pill"></span>
+        <span id="in-count" class="pill"></span>
       </div>
-      <div class="ed-layout">
-        <div class="ed-main">
-          <div class="ed-titlebar"><h3 id="ed-title">Nuovo widget</h3><code id="ed-id"></code></div>
-          <div class="ed-step"><div class="ed-num">1</div><div class="ed-body"><h3>Che cosa vuoi mostrare?</h3><div id="ed-shapes" class="ed-shapes"></div></div></div>
-          <div class="ed-step"><div class="ed-num">2</div><div class="ed-body"><h3>Da dove prende i dati?</h3><div id="ed-source"></div></div></div>
-          <div class="ed-step"><div class="ed-num">3</div><div class="ed-body"><h3>Cosa mostra</h3><div id="ed-show" class="ed-grid"></div></div></div>
-          <div class="ed-step"><div class="ed-num">4</div><div class="ed-body"><h3>Cosa succede quando lo usi</h3><div id="ed-actions"></div></div></div>
-          <div class="ed-step"><div class="ed-num">5</div><div class="ed-body"><h3>Nome e misura</h3><div id="ed-meta"></div></div></div>
-          <div class="row-actions">
-            <button id="ed-save" class="btn primary" type="button" disabled>Salva widget</button>
-            <button id="ed-new" class="btn ghost" type="button">Nuovo widget</button>
-          </div>
-        </div>
-        <aside class="ed-side">
-          <div class="preview-label">Anteprima sul tablet</div>
-          <iframe id="ed-frame" class="ed-frame" title="Anteprima del widget"></iframe>
-          <ul id="ed-problems" class="ed-problems"></ul>
-          <details class="ed-details">
-            <summary>Dati di prova</summary>
-            <pre id="ed-sample" class="ed-pre"></pre>
-          </details>
-          <details class="ed-details">
-            <summary>JSON (per chi vuole scriverlo a mano)</summary>
-            <textarea id="ed-json" class="ed-json" spellcheck="false"></textarea>
-            <button id="ed-json-apply" class="btn ghost small-btn" type="button">Applica il JSON</button>
-          </details>
-          <h3 class="ed-mine-title">I tuoi widget</h3>
-          <div id="ed-mine"></div>
-        </aside>
+      <div id="in-restart" class="in-restart" hidden>
+        <span>Riavvia la dock per finire di accendere o spegnere i plugin con codice.</span>
+        <button id="in-restart-btn" class="btn primary small-btn" type="button">Riavvia ora</button>
       </div>
-      <datalist id="ed-icons"></datalist>
-    </section>
-
-    <section class="card wide" id="market-card">
-      <div class="card-head">
-        <div>
-          <h2>Market</h2>
-          <p class="hint">Widget e pagine fatti da altri, controllati prima di entrare: solo JSON, niente programmi. Installa con un tocco, poi aggiungi i widget dalla <b>HOME</b>. Hai creato un widget? In <b>I tuoi widget</b> puoi proporlo al market, oppure tenerlo solo per te.</p>
-        </div>
-        <span id="mk-count" class="pill"></span>
-      </div>
-      <div class="row-actions mk-actions">
-        <button id="mk-refresh" class="btn ghost small-btn" type="button">Aggiorna l'elenco</button>
-        <a id="mk-site" class="btn ghost small-btn" href="https://stefanodipatti.github.io/vibe-deck/#market" target="_blank" rel="noopener">Sfoglia sul sito</a>
-      </div>
-      <div id="mk-list" class="mk-list"></div>
+      <h3 class="in-head">Pack ufficiali</h3>
+      <div id="in-packs" class="mk-list"></div>
+      <h3 class="in-head">Dal market</h3>
+      <div id="in-market" class="mk-list"></div>
+      <h3 class="in-head">I tuoi widget</h3>
+      <div id="in-mine" class="mk-list"></div>
     </section>
 
     <section class="card wide" id="buttons-card" hidden>
@@ -203,9 +169,17 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
 
+  <dialog id="confirm-dlg" class="confirm-dlg">
+    <h2 id="cd-title"></h2>
+    <div id="cd-body"></div>
+    <div class="row-actions">
+      <button id="cd-ok" class="btn primary" type="button"></button>
+      <button id="cd-cancel" class="btn ghost" type="button">Annulla</button>
+    </div>
+  </dialog>
+
   <script src="/js/icons.js"></script>
   <script src="/control/control.js"></script>
-  <script src="/control/editor.js"></script>
-  <script src="/control/market.js"></script>
+  <script src="/control/installed.js"></script>
 </body>
 </html>

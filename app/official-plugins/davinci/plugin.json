@@ -3,6 +3,7 @@
   "name": "DaVinci Resolve",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "icon": "film",
   "description": "Shortcut page for DaVinci Resolve",
   "type": "plugin",
   "platforms": [

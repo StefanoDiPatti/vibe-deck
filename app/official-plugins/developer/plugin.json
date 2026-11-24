@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "author": "StefanoDiPatti",
   "description": "Dev, Claude, Ollama, DeepSeek, GitHub, Android and browser developer pages for programmers",
+  "icon": "code",
   "type": "pack",
   "includes": [
     "dev",
