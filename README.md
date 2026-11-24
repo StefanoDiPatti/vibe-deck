@@ -371,37 +371,47 @@ The tablet cannot run arbitrary commands: only allowed ones. Create `config/comm
 
 Then the button: `{ "label": "IP", "icon": "link", "action": { "type": "command", "id": "ip_addresses" } }`: the output shows up on the tablet.
 
-## Create a widget from the control panel
+## Create a widget
 
-No files to write: open the control panel on the PC (`/control`), card **Crea un widget**:
+No files to write: open the **[widget editor](https://stefanodipatti.github.io/vibe-deck/create.html)** on the site (the
+control panel links it at the top: *Vuoi creare un tuo widget?*):
 
 1. **What to show**: pick a shape (big number, bars, on/off, text, buttons, voice commands, list, slider).
-2. **Where the data comes from**: the PC, data written by hand, an internet address without keys (tick "allow this site"),
-   a file in `data/`, an allowed command. Press **Prova la fonte**: the data found become buttons; tap a text field, then a
-   data button, and `{{field}}` is written for you.
+2. **Where the data comes from**: the PC, data written by hand, an internet address without keys, a file in `data/`, an
+   allowed command. **Try the address** reads an internet source from the browser (when the site allows it), **Show sample
+   data** shows example values for the PC; tap a text field, then a data button, and `{{field}}` is written for you.
 3. **What it shows**: title, value, icon or weather picture, rows of a list…
-4. **What a tap does**: pick an action from the menu (apps and commands come from your setup).
-5. **Name and size**, then **Salva widget**.
+4. **What a tap does**: pick an action from the menu.
+5. **Name and size**.
 
-The preview on the right is drawn with the tablet's own code, in the panel theme. Saved widgets go to
-`plugins/miei/widgets/` (your files, not in git), show up at once in **Aggiungi un widget** of the HOME card, and can be
-edited or deleted from **I tuoi widget**. The JSON is there too, for whoever prefers writing it.
+The preview is drawn with the tablet's own code and themes, right in the browser. The draft is kept in the browser. At the end:
+
+- **Add to my deck** opens the control panel of your deck (the PC running Vibe Deck; the address can be changed at the
+  bottom of the site) with a **confirmation**: name, author, what it reads, problems if any. The widget goes to
+  `plugins/miei/widgets/` (your files, not in git) and shows up in **Aggiungi un widget** of the HOME card.
+- **Propose it to the market**: write your name or nickname (it is saved in the widget as `author` and shown in the market),
+  then a ready-made proposal opens on GitHub. The site warns if the widget uses something only your PC has.
+
+A link `create.html#w=<widget>` opens a widget in the editor (old `submit.html` links still work).
 
 ## Market
 
-Widgets and pages made by others, from the [vibe-deck-plugins](https://github.com/StefanoDiPatti/vibe-deck-plugins)
-repository: browse them on the **[site](https://stefanodipatti.github.io/vibe-deck/#market)** or in the **Market** card of
-the control panel, and install with one tap (then add the widgets from the HOME card).
+The **[market](https://stefanodipatti.github.io/vibe-deck/market.html)** is on the site: **ready-made packs** first, then
+every plugin, with a search box (name, description, author, category) and **categories** to filter.
 
-- **JSON only**: no code, no commands, no apps. Before installing, the panel says which internet sites a plugin reads.
-- Every package has a **sha256 fingerprint** in the index: the deck refuses a package that doesn't match, a file outside
-  `widgets/`, `pages/`, `lang/`, `home.json`, `plugin.json`, a name already used by an official or local plugin, or a plugin
-  that needs a newer Vibe Deck.
-- Market plugins go to `plugins/<id>/`; **Togli** removes only what the market installed (`data/market.json`).
-- **Propose your widget**: in **I tuoi widget** press **Proponi al market**. The site opens with your widget, warns if it
-  uses something only your PC has (a file, a command, a local app), and lets you choose: send it as a GitHub proposal, or keep
-  it just for you.
-- Another index (your own market, a test): `services.json` → `"market": { "index": "https://…/index.json" }`.
+- **Official packs** (Streaming, Gaming, Developer, Creative, PC) are already inside Vibe Deck: **Turn on** opens the control
+  panel to switch them on. **Market packs** group JSON plugins of the market: **Install pack** installs the missing ones.
+- **Install** opens the control panel of your deck with a **confirmation** (what it installs, which internet sites it reads);
+  the deck downloads the package from GitHub and checks it. Nothing is installed without pressing the button in the panel.
+- Market plugins are **JSON only**: no code, no commands, no apps. Every package has a **sha256 fingerprint** in the index:
+  the deck refuses a package that doesn't match, a file outside `widgets/`, `pages/`, `lang/`, `home.json`, `plugin.json`, a
+  name already used by an official or local plugin, or a plugin that needs a newer Vibe Deck.
+- The **Installati** card of the control panel lists official packs and plugins (switch them on and off, also one plugin of a
+  pack at a time; plugins with code need a restart, the **Riavvia ora** button does it when the deck runs from `start`, the
+  tray or the desktop icon), the plugins from the market and your widgets, each with **Togli**. Switched-off official plugins
+  are saved in `config/plugins.json` (`{ "off": [...] }`).
+- Another index (your own market, a test): `services.json` → `"market": { "index": "https://…/index.json" }`, and
+  `market.html?index=https://…/index.json` on the site.
 
 ## JSON widgets: no code needed
 
@@ -662,6 +672,8 @@ A **pack** groups plugins and contains nothing but its `plugin.json`:
   "name": "Creative pack",
   "version": "1.0.0",
   "description": "Blender, DaVinci Resolve and Unreal Editor shortcut pages",
+  "icon": "palette",
+  "tags": ["creative"],
   "type": "pack",
   "includes": ["blender", "davinci", "unreal"]
 }
@@ -672,6 +684,8 @@ A **pack** groups plugins and contains nothing but its `plugin.json`:
 - `type: "pack"` with `includes: [...]`: a bundle of existing plugins; the control panel reports packs with other files or unknown plugins.
   Packs are only ready-made suggestions: **every plugin installs and works on its own**, using only the core and its own files.
 - `permissions` lists what the plugin uses (sites, apps, commands, local resources): it will be shown before installing from the market.
+- `icon` (an icon name) and `tags` (categories, e.g. `streaming`, `gaming`, `developer`) are shown in the market of the site;
+  a plugin without `tags` takes the ones of its pack.
 - **Actions**: `actions.<name>` in `index.js` becomes the type `"<plugin>.<name>"`; an action named like the plugin is just `"<plugin>"` (the `viber` plugin keeps `{ "type": "viber", ... }`).
 - **Hooks**: `hooks.launch({ app, processes })` in `index.js` runs before an app is started from the tablet and may return a
   function called right after it starts (the `screens` plugin uses it to move the new window to the chosen monitor).

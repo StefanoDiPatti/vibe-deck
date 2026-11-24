@@ -3,6 +3,7 @@
   "name": "Gaming pack",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "tags": ["gaming"],
   "description": "Discord voice, your games and League of Legends on the tablet",
   "icon": "gamepad",
   "type": "pack",

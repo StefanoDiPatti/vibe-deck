@@ -3,6 +3,7 @@
   "name": "Creative pack",
   "version": "1.0.0",
   "author": "StefanoDiPatti",
+  "tags": ["creative"],
   "description": "Blender, DaVinci Resolve and Unreal Editor shortcut pages",
   "icon": "palette",
   "type": "pack",

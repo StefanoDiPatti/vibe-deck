@@ -97,16 +97,24 @@ Everything new must be **described** for the editor: a shape in `SHAPE_INFO` (`s
 `FILTER_INFO` (`template.js`), a built-in action in `server/actions/descriptors.js`, a source through its `info`, a plugin
 action as `{ label, description, params, run }`. `tests/catalog.test.js` fails when something is not described.
 The catalog is built by `CatalogBuilder` (`server/shapes/catalog.js`); `fields.js` (`FieldWalker`) turns sampled data into fields.
-The widget editor is `control/editor.js` (`EditorState` observer, `Controls` factory per param type, `ActionEditor`,
-`Preview` through `public/shape-preview.html` with the tablet renderers); saving goes through `WidgetStore`
-(`server/shapes/store.js`, user plugins only, default `plugins/miei`). Try UI changes with `npm run e2e` (touch on tablet and
-phone, and the editor with mouse and keyboard): it starts the demo and a headless Edge/Chrome and saves screenshots.
+The widget editor lives on the site: `site/create.js` (`EditorState` observer, `Controls` factory per param type,
+`ActionEditor`, `Preview` through `preview/index.html` = `public/shape-preview.html` with the tablet renderers, `Finish`).
+It has no server: `app/scripts/build-site.js` writes the catalog to `data/catalog.json` and bundles the pure modules
+`server/shapes/{registry,template,shapes,fields}.js` into `js/shapes-core.js` (keep them free of `fs`, `process` and other
+Node-only code), so the preview is computed in the browser with the dock's own code. "Add to my deck" opens
+`/control#widget=<base64url {id, def}>`; the panel (`control/installed.js`, `Dialog`) asks for confirmation and saves through
+`WidgetStore` (`server/shapes/store.js`, `plugins/miei`). Try UI changes with `npm run e2e` (touch on tablet and phone, the
+site editor and the site market with the panel confirmations): it starts the demo and a headless Edge/Chrome/Brave
+(`BROWSER=path`) and saves screenshots.
 
 Plugins can expose read-only public routes with `module.exports.publicRoutes(router, ctx)`, mounted at
 `/plugins-public/<name>/` (GET and HEAD only, no access code): use them only for public assets such as images that an
 `<img>` must load (example: `official-plugins/lol`). Everything with data or actions stays in `routes` under `/api`.
 
-Market: `server/market.js` (`Market`, `PackageChecker`, `Installed` in `data/market.json`), panel card `control/market.js`,
+Market: `server/market.js` (`Market`, `PackageChecker`, `Installed` in `data/market.json`; index `packs` group market
+plugins and install together through `installAny`); the list is only on the site (`site/market.js`), the panel only confirms
+links `/control#install=<id>` (market plugin or pack) and `/control#pack=<id>` (official pack or plugin, switched on through
+`plugins.setSwitch`, saved in `config/plugins.json`), and shows the **Installati** card (`GET /api/control/installed`).
 registry in the separate repo `vibe-deck-plugins` (`scripts/build.js --dock ../vibe-deck/app` validates every widget with
 this repo's validator and writes `index.json` + `packages/*.vdp.json`). The site is `site/` (built by
 `app/scripts/build-site.js`, deployed by `.github/workflows/pages.yml`). `npm run e2e:market` expects `vibe-deck-plugins`

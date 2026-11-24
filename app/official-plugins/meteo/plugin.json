@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "author": "StefanoDiPatti",
   "icon": "cloud",
+  "tags": ["weather"],
   "description": "JSON-only weather widgets from Open-Meteo (free, no API key): now and the next 7 days",
   "type": "plugin",
   "platforms": ["windows", "linux"],

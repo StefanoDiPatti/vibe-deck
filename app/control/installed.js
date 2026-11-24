@@ -110,7 +110,7 @@
   }
 
   async function askPack(id) {
-    if (!data) await load();
+    await load();
     const p = officialPack(id);
     if (!p) { dialog.open({ title: 'Non trovato', html: '<p class="hint err">"' + esc(id) + '" non è un pack ufficiale di questa dock.</p>' }); return; }
     const items = p.plugins || [p];
@@ -198,7 +198,7 @@
     const singles = data.plugins.filter((p) => p.available).map((p) => '<div class="mk-row"><span class="mk-ico">' + icon(p.icon || 'apps') + '</span>' +
       '<span class="txt"><span class="name">' + esc(p.name) + '</span><span class="desc">' + esc(p.description) + '</span></span>' +
       '<span class="pill ' + (p.on ? 'ok' : '') + '">' + (p.on ? 'ACCESO' : 'SPENTO') + '</span>' + switchBtn(p.id, p.on) + '</div>').join('');
-    const market = data.market.map((p) => '<div class="mk-row"><span class="mk-ico">' + icon('apps') + '</span>' +
+    const market = data.market.map((p) => '<div class="mk-row"><span class="mk-ico">' + icon(p.icon || 'apps') + '</span>' +
       '<span class="txt"><span class="name">' + esc(p.name) + ' <small>' + esc(p.version) + (p.author ? ' · di ' + esc(p.author) : '') + '</small></span><span class="desc">' + esc(p.description) + '</span>' +
       '<span class="mk-tags">' + (p.widgets ? '<span class="mk-tag">' + p.widgets + ' widget</span>' : '') + ((p.permissions && p.permissions.http) || []).map((h) => '<span class="mk-tag net">legge da ' + esc(h) + '</span>').join('') + '</span></span>' +
       '<button class="btn ghost small-btn" type="button" data-rm-market="' + esc(p.id) + '">Togli</button></div>').join('');

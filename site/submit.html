@@ -2,69 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Propose a widget · Vibe Deck</title>
-  <link rel="stylesheet" href="style.css">
+  <script>location.replace('create.html' + location.hash);</script>
+  <meta http-equiv="refresh" content="0; url=create.html">
 </head>
-<body>
-  <header class="nav">
-    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Vibe Deck</a>
-    <nav>
-      <a href="index.html#create">Create a widget</a>
-      <a href="index.html#market">Market</a>
-      <a class="gh" href="https://github.com/StefanoDiPatti/vibe-deck">GitHub</a>
-    </nav>
-  </header>
-
-  <main class="submit">
-    <h1>Propose a widget</h1>
-    <p class="lead" id="intro">Share a widget you made with the editor of your deck, or keep it just for you: it's your choice.</p>
-
-    <div id="empty" hidden>
-      <div class="panel">
-        <h3>How it works</h3>
-        <ol class="steps">
-          <li>Open the control panel of your deck and make a widget in <b>Crea un widget</b>.</li>
-          <li>In <b>I tuoi widget</b>, press <b>Proponi al market</b> next to it: this page opens with your widget.</li>
-          <li>Choose: send it to the market, or keep it on your deck.</li>
-        </ol>
-        <div class="cta"><a class="btn primary" href="http://127.0.0.1:8787/control#editor-card">Open the editor on this PC</a></div>
-      </div>
-    </div>
-
-    <div id="found" hidden>
-      <div class="panel">
-        <div class="card-top"><span class="card-ico" id="w-ico"></span><div><h3 id="w-name"></h3><div class="meta" id="w-key"></div></div></div>
-        <dl>
-          <dt>What it is</dt><dd id="w-shape"></dd>
-          <dt>Data from</dt><dd id="w-source"></dd>
-          <dt>Description</dt><dd id="w-desc"></dd>
-        </dl>
-      </div>
-      <div id="w-warn"></div>
-      <div class="choice">
-        <div class="panel">
-          <h3>Propose it to the market</h3>
-          <p class="small">Opens a ready-made proposal on GitHub (you need a free GitHub account). It's checked and, if approved, everybody can install it.</p>
-          <a id="w-send" class="btn primary" href="#" target="_blank" rel="noopener">Propose on GitHub</a>
-        </div>
-        <div class="panel">
-          <h3>Keep it just for me</h3>
-          <p class="small">Nothing is sent anywhere: the widget stays on your deck, in <code>plugins/miei/</code>.</p>
-          <button id="w-keep" class="btn" type="button">Keep it local</button>
-        </div>
-      </div>
-      <p id="w-kept" class="note" hidden>Done: your widget stays only on your deck. You can propose it later from the same button.</p>
-      <details class="panel"><summary>Widget JSON</summary><pre class="json" id="w-json"></pre></details>
-    </div>
-  </main>
-
-  <footer class="foot">
-    <span>Vibe Deck · MIT license</span>
-    <a href="https://github.com/StefanoDiPatti/vibe-deck-plugins">Market repository</a>
-  </footer>
-
-  <script src="js/icons.js"></script>
-  <script src="submit.js"></script>
-</body>
+<body><p><a href="create.html">The widget editor moved here.</a></p></body>
 </html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create a widget · Vibe Deck</title>
+  <meta name="description" content="Create a widget for Vibe Deck without code: pick a shape, a data source and what a tap does, with a live preview.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="create.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='6' height='6' rx='1.5' fill='%233d8bfd'/%3E%3Crect x='9' y='1' width='6' height='6' rx='1.5' fill='%233d8bfd'/%3E%3Crect x='1' y='9' width='6' height='6' rx='1.5' fill='%233d8bfd'/%3E%3Crect x='9' y='9' width='6' height='6' rx='1.5' fill='%2341d1ff'/%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Vibe Deck</a>
+    <nav>
+      <a href="index.html#features">Features</a>
+      <a href="create.html" aria-current="page">Create a widget</a>
+      <a href="market.html">Market</a>
+      <a class="gh" href="https://github.com/StefanoDiPatti/vibe-deck">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="editor-page">
+    <div class="editor-head">
+      <div>
+        <h1>Create a widget</h1>
+        <p class="lead">Pick the <b>shape</b>, where the <b>data</b> come from, what it <b>shows</b> and what a <b>tap</b> does. The preview is drawn like on the tablet. At the end, keep it on your deck or propose it to the market.</p>
+      </div>
+      <span id="ed-state" class="pill"></span>
+    </div>
+
+    <section class="ed-card" id="editor-card">
+      <div class="ed-layout">
+        <div class="ed-main">
+          <div class="ed-titlebar"><h3 id="ed-title">New widget</h3><code id="ed-id"></code></div>
+          <div class="ed-step"><div class="ed-num">1</div><div class="ed-body"><h3>What do you want to show?</h3><div id="ed-shapes" class="ed-shapes"></div></div></div>
+          <div class="ed-step"><div class="ed-num">2</div><div class="ed-body"><h3>Where do the data come from?</h3><div id="ed-source"></div></div></div>
+          <div class="ed-step"><div class="ed-num">3</div><div class="ed-body"><h3>What it shows</h3><div id="ed-show" class="ed-grid"></div></div></div>
+          <div class="ed-step"><div class="ed-num">4</div><div class="ed-body"><h3>What happens when you use it</h3><div id="ed-actions"></div></div></div>
+          <div class="ed-step"><div class="ed-num">5</div><div class="ed-body"><h3>Name and size</h3><div id="ed-meta"></div></div></div>
+
+          <div class="finish" id="finish">
+            <h3>Done? Choose where it goes</h3>
+            <div id="fin-warn"></div>
+            <p id="fin-hint" class="small"></p>
+            <div class="choice">
+              <div class="panel">
+                <h3>Keep it on my deck</h3>
+                <p class="small">Opens the control panel of your deck (on this PC) to confirm. Nothing is sent anywhere.</p>
+                <button id="fin-local" class="btn primary" type="button" disabled>Add to my deck</button>
+              </div>
+              <div class="panel">
+                <h3>Propose it to the market</h3>
+                <label class="author">Your name (shown as the author) <input id="fin-author" type="text" maxlength="40" placeholder="e.g. Stefano or a nickname"></label>
+                <p class="small">Opens a ready-made proposal on GitHub (free account). It is checked and, if approved, everybody can install it.</p>
+                <button id="fin-market" class="btn" type="button" disabled>Propose on GitHub</button>
+              </div>
+            </div>
+            <div class="row-actions"><button id="ed-new" class="btn ghost small-btn" type="button">Start a new widget</button></div>
+          </div>
+        </div>
+        <aside class="ed-side">
+          <div class="preview-label">Preview on the tablet
+            <select id="ed-theme" aria-label="Theme of the preview">
+              <option value="classic">Classic</option><option value="material">Material</option><option value="neon">Neon</option><option value="brutal">Neo-brutalist</option>
+            </select>
+          </div>
+          <iframe id="ed-frame" class="ed-frame" title="Widget preview"></iframe>
+          <ul id="ed-problems" class="ed-problems"></ul>
+          <details class="ed-details">
+            <summary>Sample data</summary>
+            <pre id="ed-sample" class="ed-pre"></pre>
+          </details>
+          <details class="ed-details">
+            <summary>JSON (to write it by hand)</summary>
+            <textarea id="ed-json" class="ed-json" spellcheck="false"></textarea>
+            <button id="ed-json-apply" class="btn ghost small-btn" type="button">Apply the JSON</button>
+          </details>
+        </aside>
+      </div>
+      <datalist id="ed-icons"></datalist>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Vibe Deck · MIT license</span>
+    <span id="deck" class="deck"></span>
+    <a href="https://github.com/StefanoDiPatti/vibe-deck">Source</a>
+    <a href="https://github.com/StefanoDiPatti/vibe-deck-plugins">Market repository</a>
+  </footer>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/shapes-core.js"></script>
+  <script src="common.js"></script>
+  <script src="create.js"></script>
+  <script>window.Site.deckSetting(document.getElementById('deck'));</script>
+</body>
+</html>

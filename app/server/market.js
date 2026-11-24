@@ -189,7 +189,7 @@ class Market {
       const m = self.localManifest(id) || {};
       let widgets = 0;
       try { widgets = fs.readdirSync(path.join(self.root(), id, 'widgets')).filter(function (f) { return /\.json$/.test(f); }).length; } catch (e) { widgets = 0; }
-      return { id: id, name: m.name || id, description: m.description || '', author: m.author || '', version: d[id].version, widgets: widgets, permissions: m.permissions || {} };
+      return { id: id, name: m.name || id, description: m.description || '', author: m.author || '', icon: typeof m.icon === 'string' ? m.icon : '', version: d[id].version, widgets: widgets, permissions: m.permissions || {} };
     });
   }
 

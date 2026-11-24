@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market · Vibe Deck</title>
+  <meta name="description" content="Ready-made packs, plugins and widgets for Vibe Deck: search, filter by category and install on your deck with one click.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='6' height='6' rx='1.5' fill='%233d8bfd'/%3E%3Crect x='9' y='1' width='6' height='6' rx='1.5' fill='%233d8bfd'/%3E%3Crect x='1' y='9' width='6' height='6' rx='1.5' fill='%233d8bfd'/%3E%3Crect x='9' y='9' width='6' height='6' rx='1.5' fill='%2341d1ff'/%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Vibe Deck</a>
+    <nav>
+      <a href="index.html#features">Features</a>
+      <a href="create.html">Create a widget</a>
+      <a href="market.html" aria-current="page">Market</a>
+      <a class="gh" href="https://github.com/StefanoDiPatti/vibe-deck">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="market-page">
+    <section class="section market-hero">
+      <h1>Market</h1>
+      <p class="lead">Start from a <b>ready-made pack</b>, or pick single plugins. Everything is checked before it goes in: market plugins are JSON only, no programs.
+        <b>Install</b> opens the control panel of your deck to confirm.</p>
+      <input id="q" class="search" type="search" placeholder="Search packs, plugins, widgets, authors…" aria-label="Search the market">
+    </section>
+
+    <section class="section">
+      <h2>Ready-made packs</h2>
+      <p class="small">A pack turns on (or installs) a group of plugins that go well together.</p>
+      <div id="packs" class="cards packs"></div>
+    </section>
+
+    <section id="browse" class="section">
+      <h2>All plugins</h2>
+      <div id="tags" class="tags" role="group" aria-label="Filter by category"></div>
+      <p id="market-state" class="small" role="status">Loading the market…</p>
+      <div id="cards" class="cards"></div>
+      <div class="propose">
+        <h3>Made something useful?</h3>
+        <p>Build it in the widget editor: at the end you choose whether to keep it on your deck or propose it to the market with your name as author.</p>
+        <a class="btn" href="create.html">Create a widget</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Vibe Deck · MIT license</span>
+    <span id="deck" class="deck"></span>
+    <a href="https://github.com/StefanoDiPatti/vibe-deck">Source</a>
+    <a href="https://github.com/StefanoDiPatti/vibe-deck-plugins">Market repository</a>
+  </footer>
+
+  <script src="js/icons.js"></script>
+  <script src="common.js"></script>
+  <script src="market.js"></script>
+</body>
+</html>
