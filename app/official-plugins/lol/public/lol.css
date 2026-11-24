@@ -1,0 +1,51 @@
+.w-lol { padding: 0 !important; }
+.lol-bar { position: absolute; left: 10px; right: 10px; top: 10px; height: 92px; }
+.lol-search {
+  position: absolute; left: 0; top: 0; right: 58px; height: 44px; padding: 0 12px; font-size: 16px;
+  background: #0b0f14; color: #fff; border: 1px solid #2a3746; border-radius: 10px; font-family: inherit;
+  -webkit-user-select: text; user-select: text;
+}
+.lol-mic { position: absolute; right: 0; top: 0; width: 50px; height: 44px; border-radius: 10px; background: #243142; text-align: center; padding-top: 9px; }
+.lol-mic.on { background: #b62324; }
+.lol-mic svg.ic { width: 26px; height: 26px; }
+.lol-roles { position: absolute; left: 0; right: 0; top: 52px; height: 36px; white-space: nowrap; overflow: hidden; }
+.lol-role {
+  display: inline-block; height: 34px; line-height: 34px; padding: 0 12px; margin-right: 6px; border-radius: 17px;
+  background: #1d2835; color: #9fb3c8; font-size: 13px; font-weight: bold; letter-spacing: 1px;
+}
+.lol-role.on { background: #c89b3c; color: #0b0f14; }
+.lol-role.pressed { background: #26354a; }
+.lol-grid { position: absolute; left: 10px; right: 10px; top: 106px; bottom: 10px; overflow: auto; -webkit-overflow-scrolling: touch; text-align: center; font-size: 0; }
+.lol-champ { display: inline-block; vertical-align: top; width: 76px; height: 86px; margin: 3px; border-radius: 10px; text-align: center; padding-top: 4px; }
+.lol-champ img { display: block; width: 56px; height: 56px; margin: 0 auto; border-radius: 8px; border: 2px solid #1d2835; background: #0b0f14; }
+.lol-champ span { display: block; font-size: 11px; color: #c9d6e3; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
+.lol-champ.pressed img { border-color: #c89b3c; }
+.lol-detail { position: absolute; left: 10px; right: 10px; top: 10px; bottom: 10px; overflow: auto; -webkit-overflow-scrolling: touch; }
+.lol-head { position: relative; min-height: 84px; padding-left: 86px; padding-right: 130px; }
+.lol-big { position: absolute; left: 0; top: 0; width: 72px; height: 72px; border-radius: 12px; border: 2px solid #c89b3c; }
+.lol-name { font-size: 24px; font-weight: bold; padding-top: 8px; }
+.lol-title { font-size: 14px; color: #9fb3c8; }
+.lol-back { position: absolute; right: 0; top: 6px; height: 40px; line-height: 40px; padding: 0 14px; border-radius: 10px; background: #243142; font-weight: bold; font-size: 13px; letter-spacing: 1px; }
+.lol-back svg.ic { width: 20px; height: 20px; margin: -3px 4px 0 0; vertical-align: middle; }
+.lol-back.pressed { background: #3d8bfd; }
+.lol-builds { margin: 6px 0 10px; }
+.lol-build {
+  display: inline-block; height: 44px; line-height: 44px; padding: 0 14px; margin: 0 8px 8px 0; border-radius: 10px;
+  background: #1f4f8f; font-weight: bold; font-size: 14px;
+}
+.lol-build svg.ic { width: 20px; height: 20px; margin: -3px 6px 0 0; vertical-align: middle; }
+.lol-build b { margin-left: 8px; color: #c89b3c; }
+.lol-build.pressed { background: #3d8bfd; }
+.lol-build.ok { -webkit-box-shadow: inset 0 0 0 2px #3fb950; box-shadow: inset 0 0 0 2px #3fb950; }
+.lol-build.err { -webkit-box-shadow: inset 0 0 0 2px #e5534b; box-shadow: inset 0 0 0 2px #e5534b; }
+.lol-section { font-size: 13px; font-weight: bold; letter-spacing: 2px; color: #9fb3c8; margin: 4px 0 8px; }
+.lol-ability { position: relative; min-height: 52px; padding: 6px 8px 8px 64px; margin-bottom: 6px; border-radius: 10px; background: #1d2835; }
+.lol-ability img { position: absolute; left: 8px; top: 8px; width: 44px; height: 44px; border-radius: 8px; }
+.lol-key { position: absolute; left: 40px; top: 36px; min-width: 18px; height: 18px; line-height: 18px; padding: 0 3px; border-radius: 5px; background: #c89b3c; color: #0b0f14; font-size: 12px; font-weight: bold; text-align: center; }
+.lol-aname { font-weight: bold; font-size: 15px; }
+.lol-aname small { font-weight: normal; color: #9fb3c8; margin-left: 6px; }
+.lol-atext { font-size: 13px; color: #c9d6e3; line-height: 1.4; margin-top: 2px; }
+.lol-narrow .lol-head { padding-right: 0; padding-top: 0; }
+.lol-narrow .lol-back { position: static; display: inline-block; margin-top: 6px; }
+.lol-narrow .lol-champ { width: 66px; }
+.lol-narrow .lol-champ img { width: 48px; height: 48px; }

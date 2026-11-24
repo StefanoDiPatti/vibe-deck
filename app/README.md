@@ -462,6 +462,14 @@ Tap a repository to open it on the PC; tap the PR, ISSUE or CI badges to open th
 
 Ollama just needs to be running on the PC. The tablet never talks to Ollama directly: it always goes through the server.
 
+### League of Legends
+
+Page **LOL** (gaming pack, add it to the bar from the control panel) and a HOME widget: search a champion (or dictate the
+name), filter by role, tap an icon to see passive and abilities, then **Build su u.gg** opens the build of that role
+(skill order, runes, items) on the PC. Champions, icons and abilities come from Riot Data Dragon (in Italian), roles from
+Meraki Analytics; the PC downloads them, keeps them in `data/plugins/lol/` and serves the icons to the tablet (old
+browsers can't always open the Riot site). u.gg has no public API, so the build opens on u.gg itself.
+
 ## Linux
 
 Everything works except the parts that depend on Windows (Sticky Notes), replaced by standard tools. The SCREENS page on Linux needs KDE Plasma 6 and kdotool (see above).

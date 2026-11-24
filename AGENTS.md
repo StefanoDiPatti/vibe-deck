@@ -102,6 +102,10 @@ The widget editor is `control/editor.js` (`EditorState` observer, `Controls` fac
 (`server/shapes/store.js`, user plugins only, default `plugins/miei`). Try UI changes with `npm run e2e` (touch on tablet and
 phone, and the editor with mouse and keyboard): it starts the demo and a headless Edge/Chrome and saves screenshots.
 
+Plugins can expose read-only public routes with `module.exports.publicRoutes(router, ctx)`, mounted at
+`/plugins-public/<name>/` (GET and HEAD only, no access code): use them only for public assets such as images that an
+`<img>` must load (example: `official-plugins/lol`). Everything with data or actions stays in `routes` under `/api`.
+
 Market: `server/market.js` (`Market`, `PackageChecker`, `Installed` in `data/market.json`), panel card `control/market.js`,
 registry in the separate repo `vibe-deck-plugins` (`scripts/build.js --dock ../vibe-deck/app` validates every widget with
 this repo's validator and writes `index.json` + `packages/*.vdp.json`). The site is `site/` (built by
