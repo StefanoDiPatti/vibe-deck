@@ -72,6 +72,13 @@ test('new filters: map, zip, first, join, date; deep keeps numbers for a single 
   assert.strictEqual(template.text('{{t|date:day}}', { t: '2026-11-24' }), 'mar 24');
   assert.strictEqual(template.text('{{t|date}}', { t: '2026-11-24' }), '24 nov');
   assert.deepStrictEqual(template.deep({ value: '{{v}}', label: 'v={{v}}' }, { v: 42 }), { value: 42, label: 'v=42' });
+  assert.strictEqual(template.text('{{p|div:100|round:2}} €', { p: 499 }), '4.99 €', 'cents to euro');
+  assert.strictEqual(template.text('{{m|mul:10}}', { m: 4.5 }), '45');
+  assert.strictEqual(template.text('{{n|div:0}}', { n: 5 }), '5', 'no division by zero');
+  assert.strictEqual(template.text('{{n|thousands}}', { n: 692503 }), '692.503');
+  assert.strictEqual(template.text('{{n|thousands}}', { n: -1234.5 }), '-1.234,5');
+  assert.strictEqual(template.text('{{n|div:1000000000|round|thousands}}', { n: 2045432294636 }), '2.045');
+  assert.strictEqual(template.text('{{d|date:year}}', { d: '2031-10-31' }), '31 ott 2031');
 });
 
 test('text that is not JSON becomes { text, lines }', function () {

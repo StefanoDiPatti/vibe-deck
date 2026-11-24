@@ -25,6 +25,7 @@ const PC_FIELDS = [
 const HTTP_TIMEOUT_MS = 8000;
 const HTTP_MAX_BYTES = 512 * 1024;
 const FILE_MAX_BYTES = 1024 * 1024;
+const USER_AGENT = 'VibeDeck/' + require('../../package.json').version + ' (+https://github.com/StefanoDiPatti/vibe-deck)';
 
 function fail(message, code) { return Object.assign(new Error(message), { code: code || 'UNAVAILABLE' }); }
 
@@ -128,7 +129,7 @@ class HttpSource extends Source {
     const ctrl = new AbortController();
     const timer = setTimeout(function () { ctrl.abort(); }, HTTP_TIMEOUT_MS);
     try {
-      const res = await fetch(src.url, { signal: ctrl.signal, redirect: 'error', headers: { Accept: 'application/json, text/plain' } });
+      const res = await fetch(src.url, { signal: ctrl.signal, redirect: 'error', headers: { Accept: 'application/json', 'User-Agent': USER_AGENT } });
       if (!res.ok) throw fail(host + ' ha risposto ' + res.status);
       const declared = parseInt(res.headers.get('content-length'), 10);
       if (declared > HTTP_MAX_BYTES) throw fail(host + ': risposta troppo grande');
