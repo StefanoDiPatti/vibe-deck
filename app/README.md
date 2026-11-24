@@ -479,6 +479,7 @@ code to enter at twitch.tv/activate (no secret, tokens saved encrypted). Page **
 when the OBS plugin is installed) and a HOME widget: live chat with colours, subs and moderation, viewers and uptime,
 title and category, marker, clip, ads (**hold**), chat modes (slow, emote, subs, followers) and writing in chat (also by
 voice). Connector `twitch.state` and actions `twitch.marker`, `twitch.clip`, `twitch.ad`, `twitch.mode`, `twitch.say`.
+
 ### League of Legends
 
 Page **LOL** (gaming pack, add it to the bar from the control panel) and a HOME widget: search a champion (or dictate the
