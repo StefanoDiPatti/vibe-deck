@@ -1,0 +1,24 @@
+{
+  "name": "Comandi vocali",
+  "description": "Detta un comando: musica, volume, screenshot, blocca il PC; altrimenti cerca sul web",
+  "icon": "mic",
+  "shape": "voice",
+  "show": { "label": "COMANDI VOCALI" },
+  "voice": {
+    "placeholder": "Di' un comando o cosa cercare…",
+    "commands": [
+      { "say": ["pausa", "play", "metti in pausa", "riprendi"], "action": { "type": "media", "command": "play_pause" } },
+      { "say": ["avanti", "prossima", "canzone successiva"], "action": { "type": "media", "command": "next" } },
+      { "say": ["indietro", "precedente", "canzone precedente"], "action": { "type": "media", "command": "previous" } },
+      { "say": ["alza il volume", "volume su", "più forte"], "action": { "type": "media", "command": "volume_up" }, "reply": "Volume su" },
+      { "say": ["abbassa il volume", "volume giù", "più piano"], "action": { "type": "media", "command": "volume_down" }, "reply": "Volume giù" },
+      { "say": ["muto", "silenzio", "togli l'audio"], "action": { "type": "media", "command": "mute" } },
+      { "say": ["screenshot", "cattura lo schermo"], "action": { "type": "hotkey", "keys": ["WIN", "SHIFT", "S"] } },
+      { "say": ["blocca il pc", "blocca il computer"], "action": { "type": "hotkey", "keys": ["WIN", "L"] }, "reply": "PC bloccato" },
+      { "say": ["mostra il desktop", "desktop"], "action": { "type": "hotkey", "keys": ["WIN", "D"] } }
+    ],
+    "action": { "type": "open_url", "url": "https://www.google.com/search?q={{text|url}}" },
+    "reply": "Cerco sul PC"
+  },
+  "size": { "w": 3, "h": 2, "minW": 2, "minH": 2 }
+}

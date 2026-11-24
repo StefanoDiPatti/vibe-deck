@@ -94,10 +94,16 @@ demo.use('/api', function (req, res, next) {
   if (req.path === '/media/art') return next();
   auth.requireToken(req, res, next);
 });
+const DEMO_APPS = { vscode: true, discord: true, claude_desktop: true, spotify: false };
+require('../server/services/system').get = system;
+const appsService = require('../server/services/apps');
+const realRunning = appsService.running;
+appsService.running = async function () { return Object.assign({}, await realRunning(), DEMO_APPS); };
+
 demo.get('/api/state', function (req, res, next) {
   const json = res.json.bind(res);
   res.json = function (body) {
-    if (body && body.data) Object.assign(body.data, { system: system(), media: media(), apps: Object.assign({}, body.data.apps, { vscode: true, discord: true, claude_desktop: true, spotify: false }) });
+    if (body && body.data) Object.assign(body.data, { system: system(), media: media(), apps: Object.assign({}, body.data.apps, DEMO_APPS) });
     return json(body);
   };
   next();

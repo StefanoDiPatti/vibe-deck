@@ -87,6 +87,12 @@ function run() {
   plugins.info().forEach(function (p) {
     if (p.error) out.push({ where: 'plugin ' + p.name, message: p.error });
   });
+  const shapes = require('./shapes');
+  shapes.report().forEach(function (r) {
+    r.problems.forEach(function (m) { out.push({ where: r.where, message: m }); });
+    r.actions.forEach(function (a) { checkAction(a.action, r.where + ' › ' + a.where, ctx, out); });
+  });
+  const shapeKeys = shapes.keys();
   config.missingPages().forEach(function (id) {
     out.push({ where: 'dock.json', message: 'la pagina "' + id + '" è elencata ma non c\'è il file config/pages/' + id + '.json' });
   });
@@ -98,6 +104,7 @@ function run() {
       const where = pageWhere + ' › ' + (t.widget ? 'widget ' + t.widget : 'pulsante ' + (t.label || t.id));
       if (t.widget) {
         if (widgets.indexOf(t.widget) < 0) out.push({ where: where, message: 'widget sconosciuto (validi: ' + widgets.join(', ') + ')' });
+        else if (t.widget === 'shape' && shapeKeys.indexOf(t.def) < 0) out.push({ where: where, message: 'widget JSON "' + t.def + '" non trovato o non valido (plugin/nome, es. pcinfo/cpu)' });
         return;
       }
       if (/_+$/.test(t.id) && seen[t.id.replace(/_+$/, '')]) out.push({ where: where, message: 'id "' + t.id.replace(/_+$/, '') + '" ripetuto nella pagina: dai a ogni pulsante un id diverso', level: 'info' });

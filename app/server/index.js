@@ -18,6 +18,7 @@ const pairing = require('./services/pairing');
 const configCheck = require('./check');
 const plugins = require('./plugins');
 const home = require('./home');
+const shapes = require('./shapes');
 const pkg = require('../package.json');
 
 const PORT = parseInt(process.env.PORT, 10) || 8787;
@@ -120,6 +121,13 @@ app.get('/plugins-theme/:file', function (req, res) {
   if (!m || require('../scripts/build-themes').THEMES.indexOf(m[1]) < 0) return res.status(404).end();
   res.setHeader('Cache-Control', 'no-cache');
   res.type('css').send(pluginThemeCss(m[1]));
+});
+
+app.get('/plugins-lang/:file', function (req, res) {
+  const m = /^([a-z]{2})\.js$/.exec(req.params.file);
+  if (!m) return res.status(404).end();
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('application/javascript').send('I18n.add(' + JSON.stringify(plugins.dictionary(m[1])) + ');\n');
 });
 
 app.get('/plugins/:name/:file', function (req, res) {
@@ -291,6 +299,16 @@ app.get('/api/config', route(function () {
 app.get('/api/state', route(async function () {
   const [now, running] = await Promise.all([media.nowPlaying(), appsState.running()]);
   return { version: config.version(), build: clientBuild(), system: system.get(), media: now, apps: running, time: Date.now() };
+}));
+
+app.get('/api/shapes/:plugin/:id', route(function (req) {
+  return shapes.view(req.params.plugin, req.params.id);
+}));
+app.post('/api/shapes/:plugin/:id/tap', route(function (req) {
+  return shapes.tap(req.params.plugin, req.params.id, (req.body || {}).index);
+}));
+app.post('/api/shapes/:plugin/:id/voice', route(function (req) {
+  return shapes.voice(req.params.plugin, req.params.id, (req.body || {}).text);
 }));
 
 app.post('/api/press', route(function (req) {

@@ -1,0 +1,17 @@
+{
+  "name": "Scorciatoie di Windows",
+  "description": "Screenshot, desktop, blocca, Esplora file, Gestione attività, impostazioni",
+  "icon": "keyboard",
+  "shape": "buttons",
+  "platforms": ["windows"],
+  "show": { "label": "SCORCIATOIE" },
+  "buttons": [
+    { "label": "SCREENSHOT", "icon": "camera", "action": { "type": "hotkey", "keys": ["WIN", "SHIFT", "S"] } },
+    { "label": "DESKTOP", "icon": "desktop", "action": { "type": "hotkey", "keys": ["WIN", "D"] } },
+    { "label": "BLOCCA", "icon": "lock", "color": "#8b1d1d", "action": { "type": "hotkey", "keys": ["WIN", "L"] } },
+    { "label": "FILE", "icon": "folder", "action": { "type": "hotkey", "keys": ["WIN", "E"] } },
+    { "label": "ATTIVITÀ", "icon": "cpu", "action": { "type": "hotkey", "keys": ["CTRL", "SHIFT", "ESC"] } },
+    { "label": "IMPOSTAZIONI", "icon": "settings", "action": { "type": "hotkey", "keys": ["WIN", "I"] } }
+  ],
+  "size": { "w": 3, "h": 2, "minW": 2, "minH": 1 }
+}

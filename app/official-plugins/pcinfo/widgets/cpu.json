@@ -1,0 +1,19 @@
+{
+  "name": "CPU",
+  "description": "Uso della CPU con la temperatura, tocco = Gestione attività",
+  "icon": "cpu",
+  "shape": "value",
+  "source": { "type": "pc" },
+  "every": 3,
+  "show": {
+    "label": "CPU",
+    "value": "{{cpu.usage|default:…}}",
+    "unit": "%",
+    "sub": "{{cpu.cores}} core",
+    "bar": "{{cpu.usage}}",
+    "warn": 60,
+    "hot": 85
+  },
+  "tap": { "type": "hotkey", "keys": ["CTRL", "SHIFT", "ESC"] },
+  "size": { "w": 2, "h": 1 }
+}

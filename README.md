@@ -371,6 +371,47 @@ The tablet cannot run arbitrary commands: only allowed ones. Create `config/comm
 
 Then the button: `{ "label": "IP", "icon": "link", "action": { "type": "command", "id": "ip_addresses" } }`: the output shows up on the tablet.
 
+## JSON widgets: no code needed
+
+A widget can be **a single JSON file** in the `widgets/` folder of a plugin: a **shape**, **where the data comes from**,
+**what to show** and **what a tap does**. The PC fills the placeholders and the tablet only draws the result, so it
+works on old browsers and with every theme. Example (`official-plugins/pcinfo/widgets/cpu.json`):
+
+```json
+{
+  "name": "CPU",
+  "shape": "value",
+  "source": { "type": "pc" },
+  "every": 3,
+  "show": { "label": "CPU", "value": "{{cpu.usage}}", "unit": "%", "sub": "{{cpu.cores}} core", "bar": "{{cpu.usage}}", "warn": 60, "hot": 85 },
+  "tap": { "type": "hotkey", "keys": ["CTRL", "SHIFT", "ESC"] },
+  "size": { "w": 2, "h": 1 }
+}
+```
+
+The widget shows up by itself in the HOME catalog of the control panel (`<plugin>.<file name>`); in a page use
+`{ "widget": "shape", "def": "pcinfo/cpu" }`. VS Code suggests every field ([schema](app/schema/widget.schema.json)).
+
+| Shape | Shows | Main fields |
+|---|---|---|
+| `value` | a big number with unit, subtitle and optional colored bar | `show.value`, `unit`, `sub`, `bar` (0-100), `warn`, `hot` |
+| `bars` | rows "name, bar, value" | `show.rows: [{ label, value, bar, warn, hot }]` |
+| `status` | colored dot and text | `show.on` (true/false), `onText`, `offText`, `sub` |
+| `text` | free text that updates | `show.text`, `sub` |
+| `buttons` | grid of up to 12 buttons | `buttons: [{ label, icon, color, action }]` |
+| `voice` | voice commands and dictation (browser microphone or transcription on the PC) | `voice.commands: [{ say: [...], action, reply }]`, `voice.action` with `{{text}}` when nothing matches |
+
+**Sources:** `pc` (`cpu`, `gpu`, `ram`, `net`, `uptimeSeconds`, `hostname`, `apps.<id>` = app open) and `static`
+(the `"data"` written in the file). `"every"` sets the seconds between updates; the PC reads each source only once per period.
+
+**Placeholders:** `{{field.sub}}` with filters `round[:digits]`, `percent`, `bytes`, `duration`, `ago`, `upper`, `lower`,
+`default:x`, `yesno:yes:no`, `url`, `count`. No code inside the JSON.
+
+**Actions** (`tap`, buttons, voice) are the same as the page buttons. The tablet only says "widget X, button N": what runs is
+decided on the PC. Optional `"platforms": ["windows"]` hides a widget on the other system.
+
+**Translations** of a JSON-only plugin: `lang/en.json` with `{ "Italian text": "English text" }`.
+
 ## Plugins: new widgets and actions
 
 A plugin adds widgets, actions, icons and pages **without touching the project files**: it is a folder in `app/plugins/`,

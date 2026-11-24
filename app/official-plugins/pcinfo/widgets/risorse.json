@@ -1,0 +1,18 @@
+{
+  "name": "Risorse del PC",
+  "description": "CPU, GPU, RAM e rete in barre",
+  "icon": "cpu",
+  "shape": "bars",
+  "source": { "type": "pc" },
+  "every": 3,
+  "show": {
+    "label": "{{hostname}}",
+    "rows": [
+      { "label": "CPU", "value": "{{cpu.usage|percent}}", "bar": "{{cpu.usage}}", "warn": 60, "hot": 85 },
+      { "label": "GPU", "value": "{{gpu.usage|percent|default:N/D}}", "bar": "{{gpu.usage}}", "warn": 65, "hot": 85 },
+      { "label": "RAM", "value": "{{ram.usedGb}} / {{ram.totalGb}} GB", "bar": "{{ram.usage}}", "warn": 75, "hot": 90 },
+      { "label": "RETE", "value": "↓ {{net.downMbps|round:1}} · ↑ {{net.upMbps|round:1}} Mbps" }
+    ]
+  },
+  "size": { "w": 3, "h": 2, "minW": 2, "minH": 2 }
+}

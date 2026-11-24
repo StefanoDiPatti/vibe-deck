@@ -236,6 +236,50 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .bar.warn i { background: #d29922; }
 .bar.hot i { background: #e5534b; }
 
+.w-shape.sh-tap.pressed { border-color: #3d8bfd; }
+.w-shape.ok { border-color: #3fb950; }
+.w-shape.err { border-color: #e5534b; }
+.sh-big { position: absolute; left: 12px; right: 12px; top: 40px; font-weight: bold; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sh-big.warn { color: #e3b341; }
+.sh-big.hot { color: #ff7b72; }
+.sh-unit { font-size: 0.45em; margin-left: 4px; color: #9fb3c8; }
+.sh-sub { position: absolute; left: 12px; right: 12px; bottom: 22px; font-size: 14px; color: #9fb3c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sh-bar { left: 12px; right: 12px; top: auto; bottom: 10px; margin-top: 0; height: 8px; }
+.sh-status { position: absolute; left: 12px; right: 12px; top: 44px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sh-dot { display: inline-block; width: 0.6em; height: 0.6em; border-radius: 50%; margin-right: 0.35em; vertical-align: 0.05em; background: #4a5868; }
+.sh-dot.on { background: #3fb950; -webkit-box-shadow: 0 0 8px rgba(63, 185, 80, 0.7); box-shadow: 0 0 8px rgba(63, 185, 80, 0.7); }
+.sh-text { position: absolute; left: 12px; right: 12px; top: 42px; font-weight: bold; line-height: 1.15; overflow: hidden; word-wrap: break-word; }
+.sh-grid { position: absolute; left: 12px; right: 12px; top: 44px; bottom: 10px; }
+.sh-btn {
+  position: absolute; border-radius: 10px; background: #243142; text-align: center; overflow: hidden;
+  font-weight: bold; letter-spacing: 1px; padding-top: 8%;
+}
+.sh-btn svg.ic { display: block; width: 42%; height: 42%; margin: 0 auto 4%; max-width: 40px; max-height: 40px; }
+.sh-btn.flat { padding-top: 0; }
+.sh-btn.flat svg.ic { display: none; }
+.sh-btn.flat .sh-blabel { position: absolute; left: 4px; right: 4px; top: 50%; margin-top: -0.6em; }
+.sh-blabel { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+.sh-btn.pressed { background: #3d8bfd; }
+.sh-btn.ok { -webkit-box-shadow: inset 0 0 0 2px #3fb950; box-shadow: inset 0 0 0 2px #3fb950; }
+.sh-btn.err { -webkit-box-shadow: inset 0 0 0 2px #e5534b; box-shadow: inset 0 0 0 2px #e5534b; }
+.sh-vform { position: absolute; left: 12px; right: 12px; top: 44px; height: 52px; }
+.sh-vin {
+  position: absolute; left: 0; right: 124px; top: 0; height: 52px; padding: 0 12px; font-size: 17px;
+  background: #0b0f14; color: #fff; border: 1px solid #2a3746; border-radius: 10px; font-family: inherit;
+  -webkit-user-select: text; user-select: text;
+}
+.sh-vmic, .sh-vsend { position: absolute; top: 0; width: 56px; height: 52px; border-radius: 10px; text-align: center; padding-top: 11px; }
+.sh-vmic { right: 62px; background: #243142; }
+.sh-vmic.on { background: #b62324; }
+.sh-vsend { right: 0; background: #2f6fd0; }
+.sh-vsend.busy { opacity: 0.4; }
+.sh-vmic svg.ic, .sh-vsend svg.ic { width: 28px; height: 28px; }
+.sh-vmic.pressed, .sh-vsend.pressed { -webkit-transform: scale(0.94); transform: scale(0.94); }
+.sh-said { position: absolute; left: 12px; right: 12px; top: 104px; font-size: 15px; color: #9fb3c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sh-said.ok { color: #7ee2a8; }
+.sh-said.err { color: #ff9c94; }
+.sh-hints { position: absolute; left: 12px; right: 12px; bottom: 10px; font-size: 13px; color: #6e7f91; overflow: hidden; max-height: 3em; line-height: 1.5em; }
+
 .w-np { padding: 0 !important; }
 .np-art { position: absolute; border-radius: 10px; overflow: hidden; background: #0b0f14; }
 .np-art img { display: none; width: 100%; height: 100%; }

@@ -18,7 +18,7 @@ function check(s, where) {
   if (I.t(s) !== s) return;
   (out[s] = out[s] || []).push(where);
 }
-['app.js', 'widgets.js', 'core.js'].map(function (f) { return path.join(APP, 'public', 'js', f); }).concat(pluginScripts(APP)).forEach(function (file) {
+['app.js', 'widgets.js', 'shapes.js', 'core.js'].map(function (f) { return path.join(APP, 'public', 'js', f); }).concat(pluginScripts(APP)).forEach(function (file) {
   const f = path.basename(file);
   const src = fs.readFileSync(file, 'utf8');
   (function walk(n) {
@@ -38,6 +38,10 @@ pageFiles(APP).forEach(function (file) {
   [p.title, p.description].forEach(function (x) { if (x) check(x, f); });
   (p.tiles || []).forEach(function (t) { [t.label, t.sub, t.linux && t.linux.label, t.linux && t.linux.sub].forEach(function (x) { if (x) check(x, f); }); });
 });
+widgetFiles(APP).forEach(function (file) {
+  const f = path.basename(path.dirname(path.dirname(file))) + '/widgets/' + path.basename(file);
+  shownTexts(parse(fs.readFileSync(file, 'utf8'))).forEach(function (x) { check(x, f); });
+});
 return out;
 };
 function jsonIn(dir) {
@@ -56,9 +60,27 @@ function pluginScripts(APP) {
   });
   return [].concat.apply([], lists);
 }
+function widgetFiles(APP) {
+  const official = path.join(APP, 'official-plugins');
+  return [].concat.apply([], fs.readdirSync(official).map(function (n) { return jsonIn(path.join(official, n, 'widgets')); }));
+}
+function shownTexts(def) {
+  const show = def.show || {};
+  const voice = def.voice || {};
+  const out = [show.label, show.unit, show.sub, show.text, show.onText, show.offText, voice.placeholder, voice.reply];
+  (show.rows || []).forEach(function (r) { out.push(r.label, r.value); });
+  (def.buttons || []).forEach(function (b) { out.push(b.label, b.sub); });
+  (voice.commands || []).forEach(function (c) { out.push(c.reply); });
+  return out.filter(function (x) { return typeof x === 'string' && x && x.indexOf('{{') < 0; });
+}
 function pluginDictionaries(APP) {
   const acorn = require('acorn');
   const out = [];
+  const official = path.join(APP, 'official-plugins');
+  fs.readdirSync(official).forEach(function (n) {
+    const file = path.join(official, n, 'lang', 'en.json');
+    if (fs.existsSync(file)) out.push('I18n.add(' + fs.readFileSync(file, 'utf8') + ');');
+  });
   pluginScripts(APP).forEach(function (file) {
     const src = fs.readFileSync(file, 'utf8');
     (function walk(n) {

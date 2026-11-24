@@ -1,0 +1,15 @@
+{
+  "name": "Discord aperto?",
+  "description": "Esempio di forma status: dice se un'app è aperta sul PC",
+  "icon": "headset",
+  "shape": "status",
+  "source": { "type": "pc" },
+  "every": 5,
+  "show": {
+    "label": "DISCORD",
+    "on": "{{apps.discord}}",
+    "onText": "Aperto",
+    "offText": "Chiuso"
+  },
+  "size": { "w": 2, "h": 1 }
+}

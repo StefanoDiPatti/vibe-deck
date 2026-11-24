@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Vibe Deck JSON widget",
+  "description": "A widget made only of JSON: a shape, where the data comes from, what to show and what a tap does. File: <plugin>/widgets/<name>.json.",
+  "type": "object",
+  "required": ["name", "shape"],
+  "definitions": {
+    "template": {
+      "type": "string",
+      "description": "Text with placeholders filled by the PC: {{field.sub}}, also with filters: {{x|round:1}}, {{x|percent}}, {{x|bytes}}, {{x|duration}}, {{x|ago}}, {{x|upper}}, {{x|lower}}, {{x|default:-}}, {{x|yesno:on:off}}, {{x|url}}, {{x|count}}."
+    },
+    "action": {
+      "type": "object",
+      "required": ["type"],
+      "description": "Same actions as the page buttons (launch, hotkey, key, text, media, open_url, open_path, command, macro, plugin actions). Strings can use {{placeholders}}.",
+      "properties": { "type": { "type": "string" } }
+    },
+    "row": {
+      "type": "object",
+      "properties": {
+        "label": { "$ref": "#/definitions/template" },
+        "value": { "$ref": "#/definitions/template" },
+        "bar": { "$ref": "#/definitions/template", "description": "0-100: fills the bar." },
+        "warn": { "type": "number" },
+        "hot": { "type": "number" }
+      }
+    }
+  },
+  "properties": {
+    "id": { "type": "string", "description": "Optional: must be the file name without .json." },
+    "name": { "type": "string", "description": "Name in the HOME catalog of the control panel." },
+    "description": { "type": "string" },
+    "icon": { "type": "string", "description": "Icon name (see the README)." },
+    "platforms": { "type": "array", "items": { "enum": ["windows", "linux"] }, "minItems": 1 },
+    "shape": {
+      "enum": ["value", "bars", "status", "text", "buttons", "voice"],
+      "description": "value = big number; bars = rows with bars; status = dot + text; text = free text; buttons = grid of buttons; voice = voice commands and dictation."
+    },
+    "source": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["pc", "static"], "description": "pc = data of the PC (cpu, gpu, ram, net, uptimeSeconds, hostname, apps.<id>); static = the \"data\" written here." },
+        "data": { "type": ["object", "array"] }
+      }
+    },
+    "every": { "type": "integer", "minimum": 1, "description": "Seconds between updates (each source has its own minimum)." },
+    "show": {
+      "type": "object",
+      "properties": {
+        "label": { "$ref": "#/definitions/template" },
+        "value": { "$ref": "#/definitions/template" },
+        "unit": { "$ref": "#/definitions/template" },
+        "sub": { "$ref": "#/definitions/template" },
+        "bar": { "$ref": "#/definitions/template" },
+        "level": { "$ref": "#/definitions/template", "description": "Number compared with warn/hot (default: the bar or the value)." },
+        "warn": { "type": "number" },
+        "hot": { "type": "number" },
+        "rows": { "type": "array", "items": { "$ref": "#/definitions/row" }, "maxItems": 12 },
+        "on": { "$ref": "#/definitions/template", "description": "status: true/false." },
+        "onText": { "$ref": "#/definitions/template" },
+        "offText": { "$ref": "#/definitions/template" },
+        "text": { "$ref": "#/definitions/template" }
+      }
+    },
+    "tap": { "$ref": "#/definitions/action" },
+    "buttons": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "required": ["label", "action"],
+        "properties": {
+          "label": { "$ref": "#/definitions/template" },
+          "icon": { "type": "string" },
+          "sub": { "$ref": "#/definitions/template" },
+          "color": { "type": "string" },
+          "action": { "$ref": "#/definitions/action" }
+        }
+      }
+    },
+    "voice": {
+      "type": "object",
+      "properties": {
+        "placeholder": { "type": "string" },
+        "commands": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "required": ["say", "action"],
+            "properties": {
+              "say": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Phrases: the longest one found in what was said wins." },
+              "action": { "$ref": "#/definitions/action" },
+              "reply": { "type": "string" }
+            }
+          }
+        },
+        "action": { "$ref": "#/definitions/action", "description": "When no command matches: {{text}} is what was said (use {{text|url}} inside links)." },
+        "reply": { "type": "string" }
+      }
+    },
+    "size": {
+      "type": "object",
+      "properties": {
+        "w": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "h": { "type": "integer", "minimum": 1, "maximum": 6 },
+        "minW": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "minH": { "type": "integer", "minimum": 1, "maximum": 6 }
+      }
+    }
+  }
+}
