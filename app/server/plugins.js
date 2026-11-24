@@ -74,6 +74,18 @@ function readManifest(name, dir, official) {
 
 function currentPlatform() { return process.platform === 'win32' ? 'windows' : 'linux'; }
 
+let memo = null;
+function remembered(key, build) {
+  if (!memo) {
+    memo = {};
+    setImmediate(function () { memo = null; });
+  }
+  const k = key + '|' + officialDir() + '|' + baseDir();
+  if (!memo.hasOwnProperty(k)) memo[k] = build();
+  return memo[k];
+}
+function forget() { memo = null; catalog = null; }
+
 let catalog = null;
 function scanStamp() {
   const parts = [];
@@ -87,7 +99,7 @@ function scanStamp() {
   return parts.join('|');
 }
 function scan() {
-  const stamp = scanStamp();
+  const stamp = remembered('stamp', scanStamp);
   if (catalog && catalog.stamp === stamp) return catalog;
   catalog = { stamp: stamp, list: [], byName: {}, skipped: [] };
   const add = function (name, dir, official) {
@@ -294,6 +306,9 @@ function mountRoutes(app, express) {
 }
 
 function scripts(ext, sub) {
+  return remembered('files:' + (ext || 'js') + ':' + (sub || ''), function () { return listFiles(ext, sub); }).slice();
+}
+function listFiles(ext, sub) {
   const re = ext === 'css' ? /\.css$/i : /\.js$/i;
   const folder = sub || 'public';
   const out = [];
@@ -314,6 +329,9 @@ function controlScripts() { return scripts('js', 'control'); }
 function controlStyles() { return scripts('css', 'control'); }
 
 function registered(kind) {
+  return Object.assign({}, remembered('registered:' + kind, function () { return findRegistered(kind); }));
+}
+function findRegistered(kind) {
   const re = new RegExp(kind + "\\.register\\(\\s*['\"]([A-Za-z0-9_.-]+)['\"]", 'g');
   const out = {};
   scripts().forEach(function (s) {
@@ -330,6 +348,9 @@ let homeNames = {};
 function widgetLabels() { homeWidgets(); return homeNames; }
 
 function homeWidgets() {
+  return remembered('home', readHomeWidgets).map(function (w) { return Object.assign({}, w); });
+}
+function readHomeWidgets() {
   const out = [];
   const labels = {};
   const reg = widgets();
@@ -432,7 +453,7 @@ function reset() {
     try { delete require.cache[require.resolve(main)]; } catch (e) { }
   });
   loaded = null;
-  catalog = null;
+  forget();
 }
 
 module.exports = {
