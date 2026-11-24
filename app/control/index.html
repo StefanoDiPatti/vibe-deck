@@ -137,6 +137,21 @@
       <datalist id="ed-icons"></datalist>
     </section>
 
+    <section class="card wide" id="market-card">
+      <div class="card-head">
+        <div>
+          <h2>Market</h2>
+          <p class="hint">Widget e pagine fatti da altri, controllati prima di entrare: solo JSON, niente programmi. Installa con un tocco, poi aggiungi i widget dalla <b>HOME</b>. Hai creato un widget? In <b>I tuoi widget</b> puoi proporlo al market, oppure tenerlo solo per te.</p>
+        </div>
+        <span id="mk-count" class="pill"></span>
+      </div>
+      <div class="row-actions mk-actions">
+        <button id="mk-refresh" class="btn ghost small-btn" type="button">Aggiorna l'elenco</button>
+        <a id="mk-site" class="btn ghost small-btn" href="https://stefanodipatti.github.io/vibe-deck/#market" target="_blank" rel="noopener">Sfoglia sul sito</a>
+      </div>
+      <div id="mk-list" class="mk-list"></div>
+    </section>
+
     <section class="card wide" id="buttons-card" hidden>
       <div class="card-head">
         <div>
@@ -191,5 +206,6 @@
   <script src="/js/icons.js"></script>
   <script src="/control/control.js"></script>
   <script src="/control/editor.js"></script>
+  <script src="/control/market.js"></script>
 </body>
 </html>

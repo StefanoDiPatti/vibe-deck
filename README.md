@@ -387,6 +387,22 @@ The preview on the right is drawn with the tablet's own code, in the panel theme
 `plugins/miei/widgets/` (your files, not in git), show up at once in **Aggiungi un widget** of the HOME card, and can be
 edited or deleted from **I tuoi widget**. The JSON is there too, for whoever prefers writing it.
 
+## Market
+
+Widgets and pages made by others, from the [vibe-deck-plugins](https://github.com/StefanoDiPatti/vibe-deck-plugins)
+repository: browse them on the **[site](https://stefanodipatti.github.io/vibe-deck/#market)** or in the **Market** card of
+the control panel, and install with one tap (then add the widgets from the HOME card).
+
+- **JSON only**: no code, no commands, no apps. Before installing, the panel says which internet sites a plugin reads.
+- Every package has a **sha256 fingerprint** in the index: the deck refuses a package that doesn't match, a file outside
+  `widgets/`, `pages/`, `lang/`, `home.json`, `plugin.json`, a name already used by an official or local plugin, or a plugin
+  that needs a newer Vibe Deck.
+- Market plugins go to `plugins/<id>/`; **Togli** removes only what the market installed (`data/market.json`).
+- **Propose your widget**: in **I tuoi widget** press **Proponi al market**. The site opens with your widget, warns if it
+  uses something only your PC has (a file, a command, a local app), and lets you choose: send it as a GitHub proposal, or keep
+  it just for you.
+- Another index (your own market, a test): `services.json` → `"market": { "index": "https://…/index.json" }`.
+
 ## JSON widgets: no code needed
 
 A widget can be **a single JSON file** in the `widgets/` folder of a plugin: a **shape**, **where the data comes from**,

@@ -129,4 +129,60 @@ class Report {
   }
 }
 
-module.exports = { sleep: sleep, waitFor: waitFor, findBrowser: findBrowser, Cdp: Cdp, Session: Session, Report: Report };
+class Hand {
+  constructor(cdp) { this.cdp = cdp; }
+
+  async point(selector) {
+    const r = await this.cdp.eval('(function(){var n=document.querySelector(' + JSON.stringify(selector) + ');if(!n)return null;n.scrollIntoView({block:"center",behavior:"instant"});var b=n.getBoundingClientRect();return {x:b.left+b.width/2,y:b.top+b.height/2,w:b.width};})()');
+    if (!r) throw new Error('Non trovo ' + selector);
+    return r;
+  }
+
+  async click(selector) {
+    const p = await this.point(selector);
+    await sleep(80);
+    for (const type of ['mouseMoved', 'mousePressed', 'mouseReleased']) {
+      await this.cdp.send('Input.dispatchMouseEvent', { type: type, x: p.x, y: p.y, button: 'left', clickCount: 1 });
+    }
+    await sleep(120);
+  }
+
+  async type(text) {
+    await this.cdp.send('Input.insertText', { text: text });
+    await sleep(120);
+  }
+
+  async fill(selector, text) {
+    await this.click(selector);
+    await this.cdp.eval('(function(){var n=document.querySelector(' + JSON.stringify(selector) + ');n.select&&n.select();})()');
+    await this.type(text);
+  }
+
+  async choose(selector, value) {
+    await this.point(selector);
+    const ok = await this.cdp.eval('(function(){var n=document.querySelector(' + JSON.stringify(selector) + ');if(!n)return false;n.value=' + JSON.stringify(value) + ';n.dispatchEvent(new Event("change",{bubbles:true}));return n.value===' + JSON.stringify(value) + ';})()');
+    if (!ok) throw new Error('Opzione ' + value + ' non trovata in ' + selector);
+    await sleep(200);
+  }
+}
+
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
+
+function serveStatic(dir, port) {
+  const http = require('http');
+  const root = path.resolve(dir);
+  const server = http.createServer(function (req, res) {
+    const rel = decodeURIComponent(req.url.split('?')[0].split('#')[0]);
+    let file = path.join(root, rel === '/' ? 'index.html' : rel);
+    if (!file.startsWith(root)) { res.statusCode = 403; res.end(); return; }
+    fs.readFile(file, function (err, buf) {
+      if (err) { res.statusCode = 404; res.end('no'); return; }
+      res.setHeader('Content-Type', TYPES[path.extname(file)] || 'application/octet-stream');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.end(buf);
+    });
+  });
+  return new Promise(function (resolve) { server.listen(port, '127.0.0.1', function () { resolve(server); }); });
+}
+
+module.exports = { Hand: Hand, serveStatic: serveStatic, sleep: sleep, waitFor: waitFor, findBrowser: findBrowser, Cdp: Cdp, Session: Session, Report: Report };
