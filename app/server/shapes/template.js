@@ -1,8 +1,8 @@
 const Registry = require('./registry');
 
 const filters = new Registry('filter');
-const PLACEHOLDER = /\{\{\s*([^{}]+?)\s*\}\}/g;
-const ONLY = /^\{\{\s*([^{}]+?)\s*\}\}$/;
+const PLACEHOLDER = /\{\{\s*([^{}]+?)\}\}/g;
+const ONLY = /^\{\{\s*([^{}]+?)\}\}$/;
 
 function toNumber(v) {
   if (typeof v === 'number') return v;
@@ -56,6 +56,40 @@ filters.register('count', function (v) {
   if (v && typeof v === 'object') return Object.keys(v).length;
   return 0;
 });
+filters.register('map', function (v, name) {
+  const table = this && this.maps && this.maps[name];
+  if (!table || empty(v)) return v;
+  const key = String(v);
+  if (Object.prototype.hasOwnProperty.call(table, key)) return table[key];
+  return Object.prototype.hasOwnProperty.call(table, '*') ? table['*'] : v;
+});
+filters.register('zip', function (v) {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return Array.isArray(v) ? v : [];
+  const keys = Object.keys(v).filter(function (k) { return Array.isArray(v[k]); });
+  const n = keys.reduce(function (m, k) { return Math.max(m, v[k].length); }, 0);
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const row = {};
+    keys.forEach(function (k) { row[k] = v[k][i]; });
+    out.push(row);
+  }
+  return out;
+});
+filters.register('first', function (v) { return Array.isArray(v) ? v[0] : v; });
+filters.register('join', function (v, sep) { return Array.isArray(v) ? v.join(sep === undefined ? ', ' : sep) : v; });
+const DAYS = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
+const MONTHS = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+filters.register('date', function (v, format) {
+  if (empty(v)) return v;
+  const t = typeof v === 'number' ? v : /^\d{4}-\d{2}-\d{2}$/.test(String(v)) ? Date.parse(v + 'T12:00:00') : Date.parse(v);
+  if (isNaN(t)) return v;
+  const d = new Date(t);
+  if (format === 'time') return pad(d.getHours()) + ':' + pad(d.getMinutes());
+  if (format === 'weekday') return DAYS[d.getDay()];
+  if (format === 'day') return DAYS[d.getDay()] + ' ' + d.getDate();
+  return d.getDate() + ' ' + MONTHS[d.getMonth()];
+});
 
 function lookup(data, path) {
   if (path === '.' || path === '') return data;
@@ -68,49 +102,56 @@ function lookup(data, path) {
   return cur;
 }
 
-function evaluate(expression, data) {
-  const pieces = expression.split('|').map(function (s) { return s.trim(); });
-  let value = lookup(data, pieces[0]);
+function evaluate(expression, data, ctx) {
+  const pieces = expression.split('|');
+  let value = lookup(data, pieces[0].trim());
   for (let i = 1; i < pieces.length; i++) {
-    const args = pieces[i].split(':');
+    const args = pieces[i].replace(/^\s+/, '').split(':');
     const filter = filters.get(args[0].trim());
     if (!filter) throw Object.assign(new Error('Filtro sconosciuto: ' + args[0]), { code: 'BAD_CONFIG' });
-    value = filter.apply(null, [value].concat(args.slice(1)));
+    value = filter.apply(ctx || null, [value].concat(args.slice(1)));
   }
   return value;
 }
 
-function value(tpl, data) {
+function value(tpl, data, ctx) {
   if (typeof tpl !== 'string') return tpl === undefined ? null : tpl;
   const m = ONLY.exec(tpl);
   if (m) {
-    const v = evaluate(m[1], data);
+    const v = evaluate(m[1], data, ctx);
     return v === undefined ? null : v;
   }
-  return text(tpl, data);
+  return text(tpl, data, ctx);
 }
 
-function text(tpl, data) {
+function text(tpl, data, ctx) {
   if (tpl === null || tpl === undefined) return '';
   if (typeof tpl !== 'string') return String(tpl);
   return tpl.replace(PLACEHOLDER, function (all, expression) {
-    const v = evaluate(expression, data);
+    const v = evaluate(expression, data, ctx);
     if (empty(v)) return '';
     return typeof v === 'object' ? JSON.stringify(v) : String(v);
   });
 }
 
-function number(tpl, data) {
-  const n = toNumber(value(tpl, data));
+function number(tpl, data, ctx) {
+  const n = toNumber(value(tpl, data, ctx));
   return isNaN(n) ? null : n;
 }
 
-function deep(obj, data) {
-  if (typeof obj === 'string') return text(obj, data);
-  if (Array.isArray(obj)) return obj.map(function (x) { return deep(x, data); });
+function deep(obj, data, ctx) {
+  if (typeof obj === 'string') {
+    const only = ONLY.exec(obj);
+    if (only) {
+      const v = evaluate(only[1], data, ctx);
+      return typeof v === 'number' || typeof v === 'boolean' ? v : text(obj, data, ctx);
+    }
+    return text(obj, data, ctx);
+  }
+  if (Array.isArray(obj)) return obj.map(function (x) { return deep(x, data, ctx); });
   if (obj && typeof obj === 'object') {
     const out = {};
-    Object.keys(obj).forEach(function (k) { out[k] = deep(obj[k], data); });
+    Object.keys(obj).forEach(function (k) { out[k] = deep(obj[k], data, ctx); });
     return out;
   }
   return obj;
@@ -131,11 +172,15 @@ function check(tpl) {
 }
 
 class View {
-  constructor(data) { this.data = data; }
-  text(tpl) { return text(tpl, this.data); }
-  value(tpl) { return value(tpl, this.data); }
-  number(tpl) { return number(tpl, this.data); }
-  deep(obj) { return deep(obj, this.data); }
+  constructor(data, ctx) {
+    this.data = data;
+    this.ctx = ctx || null;
+  }
+  text(tpl) { return text(tpl, this.data, this.ctx); }
+  value(tpl) { return value(tpl, this.data, this.ctx); }
+  number(tpl) { return number(tpl, this.data, this.ctx); }
+  deep(obj) { return deep(obj, this.data, this.ctx); }
+  child(data) { return new View(data, this.ctx); }
 }
 
 module.exports = { filters: filters, text: text, value: value, number: number, deep: deep, check: check, lookup: lookup, View: View };

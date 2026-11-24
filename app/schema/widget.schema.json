@@ -7,7 +7,7 @@
   "definitions": {
     "template": {
       "type": "string",
-      "description": "Text with placeholders filled by the PC: {{field.sub}}, also with filters: {{x|round:1}}, {{x|percent}}, {{x|bytes}}, {{x|duration}}, {{x|ago}}, {{x|upper}}, {{x|lower}}, {{x|default:-}}, {{x|yesno:on:off}}, {{x|url}}, {{x|count}}."
+      "description": "Text with placeholders filled by the PC: {{field.sub}}, also with filters: {{x|round:1}}, {{x|percent}}, {{x|bytes}}, {{x|duration}}, {{x|ago}}, {{x|upper}}, {{x|lower}}, {{x|default:-}}, {{x|yesno:on:off}}, {{x|url}}, {{x|count}}, {{x|map:table}}, {{x|zip}}, {{x|first}}, {{x|join:, }}, {{x|date}} / date:day / date:weekday / date:time."
     },
     "action": {
       "type": "object",
@@ -33,14 +33,23 @@
     "icon": { "type": "string", "description": "Icon name (see the README)." },
     "platforms": { "type": "array", "items": { "enum": ["windows", "linux"] }, "minItems": 1 },
     "shape": {
-      "enum": ["value", "bars", "status", "text", "buttons", "voice"],
-      "description": "value = big number; bars = rows with bars; status = dot + text; text = free text; buttons = grid of buttons; voice = voice commands and dictation."
+      "enum": ["value", "bars", "status", "text", "buttons", "voice", "list", "slider"],
+      "description": "value = big number; bars = rows with bars; status = dot + text; text = free text; buttons = grid of buttons; voice = voice commands and dictation; list = rows from a list in the data; slider = a value to drag (needs set)."
     },
     "source": {
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type": { "enum": ["pc", "static"], "description": "pc = data of the PC (cpu, gpu, ram, net, uptimeSeconds, hostname, apps.<id>); static = the \"data\" written here." },
+        "type": {
+          "anyOf": [
+            { "enum": ["pc", "static", "http", "file", "command"] },
+            { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*\\.[A-Za-z0-9_-]+$", "description": "A source of this plugin (<plugin>.<name>), e.g. audio.mixer." }
+          ],
+          "description": "pc = data of the PC (cpu, gpu, ram, net, uptimeSeconds, hostname, apps.<id>); static = the \"data\" written here; http = JSON from a public address listed in permissions.http of plugin.json (every 30 s at most); file = a JSON or text file inside data/; command = output of a command in commands.json. Text that is not JSON becomes { text, lines }."
+        },
+        "url": { "type": "string", "description": "http: the address (no API keys)." },
+        "path": { "type": "string", "description": "file: path inside data/." },
+        "id": { "type": "string", "description": "command: id of the command in commands.json." },
         "data": { "type": ["object", "array"] }
       }
     },
@@ -49,6 +58,7 @@
       "type": "object",
       "properties": {
         "label": { "$ref": "#/definitions/template" },
+        "icon": { "$ref": "#/definitions/template", "description": "value, text, status, slider: icon or picture (sun, partly, cloudy, fog, drizzle, rain, showers, snow, storm, moon, or any icon name); can change with the data, e.g. {{code|map:icons}}." },
         "value": { "$ref": "#/definitions/template" },
         "unit": { "$ref": "#/definitions/template" },
         "sub": { "$ref": "#/definitions/template" },
@@ -60,10 +70,35 @@
         "on": { "$ref": "#/definitions/template", "description": "status: true/false." },
         "onText": { "$ref": "#/definitions/template" },
         "offText": { "$ref": "#/definitions/template" },
-        "text": { "$ref": "#/definitions/template" }
+        "text": { "$ref": "#/definitions/template" },
+        "items": { "$ref": "#/definitions/template", "description": "list: the list, e.g. {{results}} or {{daily|zip}}." },
+        "item": {
+          "type": "object",
+          "description": "list: what each row shows; use {{item.field}}, {{index}}, {{root.field}}.",
+          "properties": {
+            "icon": { "$ref": "#/definitions/template", "description": "Icon on the left of the row." },
+            "title": { "$ref": "#/definitions/template" },
+            "sub": { "$ref": "#/definitions/template" },
+            "right": { "$ref": "#/definitions/template" },
+            "bar": { "$ref": "#/definitions/template" },
+            "level": { "$ref": "#/definitions/template" },
+            "warn": { "type": "number" },
+            "hot": { "type": "number" }
+          }
+        },
+        "max": { "type": "number", "description": "list: rows shown (1-50, default 20). slider: maximum value." },
+        "empty": { "type": "string", "description": "list: text when there are no rows." },
+        "min": { "type": "number", "description": "slider: minimum value." },
+        "step": { "type": "number", "description": "slider: step." }
       }
     },
-    "tap": { "$ref": "#/definitions/action" },
+    "tap": { "$ref": "#/definitions/action", "description": "Action on tap. In a list it runs for the tapped row ({{item.field}})." },
+    "set": { "$ref": "#/definitions/action", "description": "slider: action with the chosen {{value}}." },
+    "maps": {
+      "type": "object",
+      "description": "Tables for the map filter: { \"weather\": { \"0\": \"Clear\", \"*\": \"other\" } } and {{code|map:weather}}.",
+      "additionalProperties": { "type": "object", "additionalProperties": { "type": "string" } }
+    },
     "buttons": {
       "type": "array",
       "maxItems": 12,

@@ -146,6 +146,8 @@
     [/^Macro interrotta al passo (\d+): (.+)$/, 'Macro stopped at step $1: $2'],
     [/^App "(.+)" non trovata(.*)$/, 'App "$1" not found$2'], [/^Comando "(.+)" non consentito(.*)$/, 'Command "$1" not allowed$2'],
     [/^Sincronizzazione: (.+)$/, 'Sync: $1'], [/^Desktop virtuali · (.+)$/i, 'VIRTUAL DESKTOPS · $1'],
+    [/^(dom|lun|mar|mer|gio|ven|sab) (\d{1,2})$/, function (m, d, n) { return { dom: 'Sun', lun: 'Mon', mar: 'Tue', mer: 'Wed', gio: 'Thu', ven: 'Fri', sab: 'Sat' }[d] + ' ' + n; }],
+    [/^(\d{1,2}) (gen|feb|mar|apr|mag|giu|lug|ago|set|ott|nov|dic)$/, function (m, n, mo) { return n + ' ' + { gen: 'Jan', feb: 'Feb', mar: 'Mar', apr: 'Apr', mag: 'May', giu: 'Jun', lug: 'Jul', ago: 'Aug', set: 'Sep', ott: 'Oct', nov: 'Nov', dic: 'Dec' }[mo]; }],
     [/^(\d+) g fa$/, '$1 d ago'], [/^(\d+) g (\d+) h$/, '$1 d $2 h'], [/^Forma sconosciuta: (.+)$/, 'Unknown shape: $1'], [/^Comando non riconosciuto: (.+)$/, 'Command not recognized: $1'],
     [/^(\d+) min fa$/, '$1 min ago'], [/^(\d+) h fa$/, '$1 h ago'], [/^(\d+) giorni fa$/, '$1 days ago'],
     [/^tocca una zona del monitor (\d+)$/, 'tap a zone of monitor $1'],

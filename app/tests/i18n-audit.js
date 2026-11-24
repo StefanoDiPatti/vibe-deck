@@ -67,8 +67,11 @@ function widgetFiles(APP) {
 function shownTexts(def) {
   const show = def.show || {};
   const voice = def.voice || {};
-  const out = [show.label, show.unit, show.sub, show.text, show.onText, show.offText, voice.placeholder, voice.reply];
+  const item = show.item || {};
+  const out = [show.label, show.unit, show.sub, show.text, show.onText, show.offText, show.empty, voice.placeholder, voice.reply,
+    item.title, item.sub, item.right];
   (show.rows || []).forEach(function (r) { out.push(r.label, r.value); });
+  Object.keys(def.maps || {}).forEach(function (k) { Object.keys(def.maps[k]).forEach(function (code) { out.push(def.maps[k][code]); }); });
   (def.buttons || []).forEach(function (b) { out.push(b.label, b.sub); });
   (voice.commands || []).forEach(function (c) { out.push(c.reply); });
   return out.filter(function (x) { return typeof x === 'string' && x && x.indexOf('{{') < 0; });
@@ -77,9 +80,15 @@ function pluginDictionaries(APP) {
   const acorn = require('acorn');
   const out = [];
   const official = path.join(APP, 'official-plugins');
+  const parse = require(path.join(APP, 'server', 'config.js')).parseJson;
+  const langScript = require(path.join(APP, 'server', 'plugins.js')).langScript;
   fs.readdirSync(official).forEach(function (n) {
     const file = path.join(official, n, 'lang', 'en.json');
-    if (fs.existsSync(file)) out.push('I18n.add(' + fs.readFileSync(file, 'utf8') + ');');
+    if (!fs.existsSync(file)) return;
+    const data = parse(fs.readFileSync(file, 'utf8'));
+    const words = {};
+    Object.keys(data).forEach(function (k) { if (k !== '$rules') words[k] = data[k]; });
+    out.push(langScript({ words: words, rules: data.$rules || [] }));
   });
   pluginScripts(APP).forEach(function (file) {
     const src = fs.readFileSync(file, 'utf8');

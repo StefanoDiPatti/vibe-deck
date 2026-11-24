@@ -82,7 +82,8 @@ breaking anything. The guide for people is in the [README](README.md), section *
 
 ### First choice: a JSON widget
 
-If a shape (`value`, `bars`, `status`, `text`, `buttons`, `voice`) and a source (`pc`, `static`) are enough, write only
+If a shape (`value`, `bars`, `status`, `text`, `buttons`, `voice`, `list`, `slider`) and a source (`pc`, `static`, `http`,
+`file`, `command`, or a connector `<plugin>.<name>` of the same plugin) are enough, write only
 `<plugin>/widgets/<name>.json` (see "JSON widgets" in the README and `app/schema/widget.schema.json`; examples in
 `app/official-plugins/pcinfo/`). No JS, no server code: it is checked by `tests/shapes.test.js` and by the configuration
 check. Translations go in `<plugin>/lang/en.json`.
@@ -90,6 +91,8 @@ check. Translations go in `<plugin>/lang/en.json`.
 Code map: `server/shapes/` (Registry of shapes, sources and filters; `Shape` base class with a template method per shape;
 `SourceCache`; `index.js` is the facade used by routes, HOME catalog and checks) and `public/js/shapes.js` (renderer
 registry + a controller per tile). A new shape = a `Shape` subclass on the server + a renderer on the tablet.
+A new built-in source = a `Source` subclass in `server/shapes/sources.js`; a plugin connector = `module.exports.sources`
+(wrapped by `PluginSourceAdapter`). Sources that reach outside the PC must declare permissions in `plugin.json`.
 
 ### When you need code: a plugin
 

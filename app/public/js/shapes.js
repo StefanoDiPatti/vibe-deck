@@ -4,6 +4,7 @@ var Shapes = (function () {
   var el = D.el, setText = D.setText;
   var MIN_EVERY_MS = 2000;
   var RETRY_MS = 10000;
+  var COMPACT_BELOW = 80;
   var renderers = {};
 
   function register(name, factory) { renderers[name] = factory; }
@@ -172,8 +173,16 @@ var Shapes = (function () {
         s.top = Math.floor(i / best) * chPx + 'px';
         s.width = (cwPx - 6) + 'px';
         s.height = (chPx - 6) + 'px';
-        cells[i].node.style.fontSize = clampNum(Math.round(Math.min(chPx * 0.2, cwPx * 0.11)), 10, 16) + 'px';
-        cells[i].node.className = 'sh-btn' + (chPx < 54 ? ' flat' : '');
+        var fs = clampNum(Math.round(Math.min(chPx * 0.2, cwPx * 0.11)), 10, 16);
+        var labelH = Math.round(fs * 1.3);
+        var inner = chPx - 6;
+        var iconSize = clampNum(Math.min(inner - labelH - 14, cwPx * 0.4), 0, 40);
+        var flat = iconSize < 16;
+        cells[i].node.style.fontSize = fs + 'px';
+        cells[i].node.className = 'sh-btn' + (flat ? ' flat' : '');
+        cells[i].node.style.paddingTop = flat ? '' : Math.max(0, Math.round((inner - iconSize - labelH - 4) / 2)) + 'px';
+        var svg = cells[i].node.getElementsByTagName('svg')[0];
+        if (svg && !flat) { svg.style.width = svg.style.height = iconSize + 'px'; }
       }
     }
     function build(list) {
@@ -199,6 +208,130 @@ var Shapes = (function () {
         if (grid.__sig !== sig) { grid.__sig = sig; build(v.buttons); }
       },
       resize: function (w, h) { lastW = w; lastH = h; layout(); }
+    };
+  });
+
+  register('list', function (ctx) {
+    var title = header(ctx.root, '');
+    var list = el('div', 'w-list sh-list scroll');
+    ctx.root.appendChild(list);
+    var view = null;
+    function row(item, index, tap) {
+      var icon = item.icon && Icons.has(item.icon) ? Icons.html(item.icon) : '';
+      var r = el('div', 'sh-row' + (tap ? ' tap' : '') + (icon ? ' has-icon' : ''));
+      r.innerHTML = (icon ? '<div class="sh-ricon">' + icon + '</div>' : '') + '<div class="sh-rtop"><span class="sh-rright">' + D.esc(item.right) + '</span><span class="sh-rtitle">' + D.esc(item.title) + '</span></div>' +
+        (item.sub ? '<div class="sh-rsub">' + D.esc(item.sub) + '</div>' : '') +
+        (item.bar !== null ? '<div class="sh-rbar ' + (item.level || '') + '"><i style="width:' + clampNum(item.bar, 2, 100) + '%"></i></div>' : '');
+      if (tap) D.bindTap(r, { scrollable: true, onTap: function () { ctx.tap(index, r); } });
+      return r;
+    }
+    return {
+      paint: function (v) {
+        view = v;
+        setText(title, v.label);
+        var sig = (v.rowTap ? 't' : '') + JSON.stringify(v.items);
+        if (list.__sig === sig) return;
+        list.__sig = sig;
+        list.innerHTML = '';
+        if (!v.items.length) { list.appendChild(el('div', 'empty', v.empty)); return; }
+        for (var i = 0; i < v.items.length; i++) list.appendChild(row(v.items[i], i, v.rowTap));
+      },
+      resize: function () { if (view) { list.__sig = ''; this.paint(view); } }
+    };
+  });
+
+  register('slider', function (ctx) {
+    var title = header(ctx.root, '');
+    var num = el('div', 'sh-sval');
+    var track = el('div', 'sh-track');
+    var fill = el('i', 'sh-tfill');
+    var knob = el('b', 'sh-knob');
+    track.appendChild(fill); track.appendChild(knob);
+    var sub = el('div', 'sh-sub');
+    ctx.root.appendChild(num); ctx.root.appendChild(track); ctx.root.appendChild(sub);
+    var view = null, dragging = false, local = null, lastSent = 0, sendTimer = null, holdUntil = 0;
+    var SEND_EVERY_MS = 350;
+
+    function show(value) {
+      if (!view) return;
+      var pct = view.max > view.min ? (value - view.min) / (view.max - view.min) * 100 : 0;
+      pct = clampNum(pct, 0, 100);
+      fill.style.width = pct + '%';
+      knob.style.left = pct + '%';
+      setText(num, value === null ? '—' : value + (view.unit ? ' ' + view.unit : ''));
+    }
+    function valueAt(p) {
+      var r = track.getBoundingClientRect();
+      var ratio = ctx.app.rotated ?
+        (r.height ? clampNum((p.y - r.top) / r.height, 0, 1) : 0) :
+        (r.width ? clampNum((p.x - r.left) / r.width, 0, 1) : 0);
+      var raw = view.min + ratio * (view.max - view.min);
+      var step = view.step || 1;
+      return clampNum(Math.round((raw - view.min) / step) * step + view.min, view.min, view.max);
+    }
+    function send(final) {
+      clearTimeout(sendTimer);
+      var now = new Date().getTime();
+      if (!final && now - lastSent < SEND_EVERY_MS) {
+        sendTimer = setTimeout(function () { send(false); }, SEND_EVERY_MS - (now - lastSent));
+        return;
+      }
+      lastSent = now;
+      holdUntil = now + 2500;
+      ctx.set(local, function (err) { if (err) ctx.app.toast(err.message, 'err'); });
+    }
+    function point(e) {
+      var t = e.touches && e.touches.length ? e.touches[0] : e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : e;
+      return { x: t.clientX, y: t.clientY };
+    }
+    function start(e) {
+      if (!view) return;
+      dragging = true;
+      D.addClass(track, 'on');
+      local = valueAt(point(e));
+      show(local);
+      send(false);
+      if (e.preventDefault) e.preventDefault();
+    }
+    function move(e) {
+      if (!dragging) return;
+      local = valueAt(point(e));
+      show(local);
+      send(false);
+      if (e.preventDefault) e.preventDefault();
+    }
+    function end() {
+      if (!dragging) return;
+      dragging = false;
+      D.removeClass(track, 'on');
+      send(true);
+    }
+    track.addEventListener('touchstart', start, false);
+    track.addEventListener('touchmove', move, false);
+    track.addEventListener('touchend', end, false);
+    track.addEventListener('touchcancel', end, false);
+    track.addEventListener('mousedown', start, false);
+    document.addEventListener('mousemove', move, false);
+    document.addEventListener('mouseup', end, false);
+
+    return {
+      paint: function (v) {
+        view = v;
+        setText(title, v.label);
+        setText(sub, v.sub);
+        if (dragging || new Date().getTime() < holdUntil) return;
+        local = v.value;
+        show(v.value);
+      },
+      resize: function (w, h) {
+        num.style.fontSize = clampNum(Math.round((h - 34) * 0.3), 16, 40) + 'px';
+        sub.style.display = h > 150 ? '' : 'none';
+      },
+      destroy: function () {
+        clearTimeout(sendTimer);
+        document.removeEventListener('mousemove', move, false);
+        document.removeEventListener('mouseup', end, false);
+      }
     };
   });
 
@@ -272,12 +405,14 @@ var Shapes = (function () {
       root: self.body,
       app: self.app,
       tap: function (index, node) { self.tap(index, node); },
+      set: function (value, done) { D.api.post(self.url + '/set', { value: value }, done, 30000); },
       say: function (text, done) { D.api.post(self.url + '/voice', { text: text }, done, 30000); }
     };
   };
 
   Controller.prototype.build = function (shape) {
     var factory = renderers[shape];
+    if (this.painter && this.painter.destroy) this.painter.destroy();
     if (this.body) this.root.removeChild(this.body);
     this.body = el('div', 'sh-body');
     this.root.appendChild(this.body);
@@ -298,8 +433,32 @@ var Shapes = (function () {
     if (v.error) { this.showError(v.label, v.error); this.shape = ''; return; }
     if (v.shape !== this.shape || !this.painter) this.build(v.shape);
     if (this.painter) this.painter.paint(v);
+    this.paintGlyph(v);
     var tappable = !!v.tappable;
     if (tappable !== !!this.tapBound) this.bindRoot(tappable);
+  };
+
+  var GLYPH_CLASS = { value: 'sh-glyph', text: 'sh-glyph', status: 'sh-glyph', slider: 'sh-sicon' };
+
+  Controller.prototype.paintGlyph = function (v) {
+    var cls = GLYPH_CLASS[v.shape];
+    var html = cls && v.glyph && Icons.has(v.glyph) ? Icons.html(v.glyph) : '';
+    if (!this.glyph || this.glyph.parentNode !== this.body) {
+      if (!html) return;
+      this.glyph = el('div', cls);
+      this.body.appendChild(this.glyph);
+    }
+    if (this.glyph.__html !== html) { this.glyph.innerHTML = html; this.glyph.__html = html; }
+    this.glyph.style.display = html ? '' : 'none';
+    if (html) D.addClass(this.body, 'sh-has-glyph'); else D.removeClass(this.body, 'sh-has-glyph');
+    this.sizeGlyph();
+  };
+
+  Controller.prototype.sizeGlyph = function () {
+    if (!this.glyph || !this.size || this.glyph.className !== 'sh-glyph') return;
+    if (this.size.h < COMPACT_BELOW) { this.glyph.style.width = this.glyph.style.height = ''; return; }
+    var s = clampNum(Math.round((this.size.h - 48) * 0.75), 36, 120);
+    this.glyph.style.width = this.glyph.style.height = s + 'px';
   };
 
   Controller.prototype.bindRoot = function (on) {
@@ -344,12 +503,15 @@ var Shapes = (function () {
 
   Controller.prototype.resize = function (w, h) {
     this.size = { w: w, h: h };
+    if (h < COMPACT_BELOW) D.addClass(this.root, 'sh-compact'); else D.removeClass(this.root, 'sh-compact');
     if (this.painter) this.painter.resize(w, h);
+    this.sizeGlyph();
   };
 
   Controller.prototype.destroy = function () {
     this.dead = true;
     clearTimeout(this.timer);
+    if (this.painter && this.painter.destroy) this.painter.destroy();
   };
 
   function create(root, tile, app) {

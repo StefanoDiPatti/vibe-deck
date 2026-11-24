@@ -6,6 +6,7 @@
   "source": { "type": "pc" },
   "every": 60,
   "show": {
+    "icon": "clock",
     "label": "ACCESO DA",
     "text": "{{uptimeSeconds|duration}}",
     "sub": "{{hostname}}"

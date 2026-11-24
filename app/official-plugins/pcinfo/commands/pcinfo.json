@@ -1,0 +1,12 @@
+{
+  "commands": {
+    "pcinfo_disks": {
+      "label": "Dischi del PC",
+      "timeoutMs": 15000,
+      "windows": {
+        "cmd": "powershell.exe",
+        "args": ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", "{root}/official-plugins/pcinfo/scripts/dischi.ps1"]
+      }
+    }
+  }
+}

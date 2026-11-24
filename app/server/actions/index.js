@@ -35,7 +35,7 @@ function normalizeArgs(args) {
   return [];
 }
 
-function runCommand(id) {
+function runCommand(id, capture) {
   const all = config.commands();
   const def = forPlatform(all[id]);
   if (!all[id]) return Promise.reject(fail('Comando "' + id + '" non definito in commands.json', 'NOT_FOUND'));
@@ -52,7 +52,8 @@ function runCommand(id) {
       proc = spawn(cmd, args, { cwd: def.cwd ? common.expandPath(def.cwd) : os.homedir() });
     }
     let out = '';
-    const append = function (d) { if (out.length < 8000) out += d; };
+    const limit = capture ? 256000 : 8000;
+    const append = function (d) { if (out.length < limit) out += d; };
     proc.stdout.on('data', append);
     proc.stderr.on('data', append);
     const timer = setTimeout(function () { proc.kill(); }, timeout);
@@ -61,7 +62,7 @@ function runCommand(id) {
       clearTimeout(timer);
       const text = common.stripAnsi(out).trim();
       if (code !== 0) return reject(fail((def.label || id) + ' fallito (codice ' + code + ')' + (text ? ': ' + text.split('\n').slice(-1)[0] : '')));
-      resolve({ message: (def.label || id) + ': fatto', output: def.showOutput ? text.slice(0, 4000) : undefined });
+      resolve({ message: (def.label || id) + ': fatto', output: capture ? text : def.showOutput ? text.slice(0, 4000) : undefined });
     });
   });
 }
@@ -201,4 +202,6 @@ async function press(pageId, tileId) {
   return result;
 }
 
-module.exports = { execute: execute, press: press, HANDLERS: HANDLERS, BUILTIN: BUILTIN, forPlatform: forPlatform };
+function capture(id) { return runCommand(id, true).then(function (r) { return r.output || ''; }); }
+
+module.exports = { execute: execute, press: press, capture: capture, HANDLERS: HANDLERS, BUILTIN: BUILTIN, forPlatform: forPlatform };

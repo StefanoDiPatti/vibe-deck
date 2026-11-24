@@ -34,6 +34,9 @@ class Shape {
   validate(def) {
     const problems = [];
     if (def.show !== undefined && !isObject(def.show)) problems.push('"show" deve essere un oggetto');
+    if (def.maps !== undefined && (!isObject(def.maps) || Object.keys(def.maps).some(function (k) { return !isObject(def.maps[k]); }))) {
+      problems.push('"maps" deve essere un oggetto di tabelle, es. { "meteo": { "0": "Sereno" } }');
+    }
     templatesIn(def.show || {}, []).forEach(function (t) { problems.push.apply(problems, template.check(t)); });
     if (def.tap !== undefined) problems.push.apply(problems, actionProblems(def.tap, '"tap"'));
     return problems.concat(this.check(def));
@@ -42,12 +45,13 @@ class Shape {
   check() { return []; }
 
   view(def, data) {
-    const v = new template.View(data);
+    const v = new template.View(data, { maps: def.maps || {} });
     const show = def.show || {};
     return Object.assign({
       shape: this.name,
       label: v.text(show.label !== undefined ? show.label : def.name),
       icon: def.icon || '',
+      glyph: v.text(show.icon),
       tappable: !!def.tap
     }, this.fields(def, v, show));
   }
@@ -55,6 +59,87 @@ class Shape {
   fields() { return {}; }
 
   action(def) { return def.tap || null; }
+
+  scope(def, data) { return data; }
+}
+
+const MAX_ROWS = 50;
+
+class ListShape extends Shape {
+  constructor() { super('list'); }
+  check(def) {
+    const show = def.show || {};
+    const problems = [];
+    if (typeof show.items !== 'string') problems.push('"show.items" deve indicare la lista, es. "{{elenco}}"');
+    if (!isObject(show.item)) problems.push('"show.item" deve dire cosa mostrare per ogni riga: { "title", "sub", "right", "bar" }');
+    if (show.max !== undefined && !(show.max >= 1 && show.max <= MAX_ROWS)) problems.push('"show.max" deve essere tra 1 e ' + MAX_ROWS);
+    return problems;
+  }
+  rows(def, v) {
+    const show = def.show || {};
+    const list = v.value(show.items);
+    return Array.isArray(list) ? list.slice(0, show.max || 20) : [];
+  }
+  fields(def, v, show) {
+    const item = show.item;
+    const self = this;
+    return {
+      tappable: false,
+      rowTap: !!def.tap,
+      empty: v.text(show.empty !== undefined ? show.empty : 'Niente da mostrare'),
+      items: this.rows(def, v).map(function (row, index) {
+        const r = v.child(self.rowScope(v.data, row, index));
+        const bar = item.bar !== undefined ? percent(r.number(item.bar)) : null;
+        return {
+          icon: r.text(item.icon),
+          title: r.text(item.title),
+          sub: r.text(item.sub),
+          right: r.text(item.right),
+          bar: bar,
+          level: level(bar !== null ? bar : r.number(item.level), item.warn, item.hot)
+        };
+      })
+    };
+  }
+  rowScope(data, row, index) { return { item: row, index: index, root: data }; }
+  scope(def, data, index) {
+    const list = this.rows(def, new template.View(data, { maps: def.maps || {} }));
+    return this.rowScope(data, list[index], index);
+  }
+}
+
+class SliderShape extends Shape {
+  constructor() { super('slider'); }
+  check(def) {
+    const show = def.show || {};
+    const problems = [];
+    if (show.value === undefined) problems.push('"show.value" mancante');
+    if (typeof show.min !== 'number' || typeof show.max !== 'number' || show.min >= show.max) problems.push('"show.min" e "show.max" devono essere numeri, min < max');
+    if (show.step !== undefined && !(show.step > 0)) problems.push('"show.step" deve essere maggiore di 0');
+    problems.push.apply(problems, actionProblems(def.set, '"set"'));
+    return problems;
+  }
+  fields(def, v, show) {
+    return {
+      tappable: false,
+      value: v.number(show.value),
+      min: show.min,
+      max: show.max,
+      step: show.step || 1,
+      unit: v.text(show.unit),
+      sub: v.text(show.sub)
+    };
+  }
+  action(def) { return def.set || null; }
+  clamp(def, raw) {
+    const show = def.show;
+    const step = show.step || 1;
+    const n = Number(raw);
+    if (isNaN(n)) return null;
+    const snapped = Math.round((n - show.min) / step) * step + show.min;
+    return Math.max(show.min, Math.min(show.max, Math.round(snapped * 1000) / 1000));
+  }
+  scope(def, data, value) { return Object.assign({}, data, { value: value }); }
 }
 
 class ValueShape extends Shape {
@@ -182,7 +267,7 @@ class VoiceShape extends Shape {
   }
 }
 
-[new ValueShape(), new BarsShape(), new StatusShape(), new TextShape(), new ButtonsShape(), new VoiceShape()]
+[new ValueShape(), new BarsShape(), new StatusShape(), new TextShape(), new ButtonsShape(), new VoiceShape(), new ListShape(), new SliderShape()]
   .forEach(function (s) { shapes.register(s.name, s); });
 
 module.exports = { shapes: shapes, Shape: Shape, level: level, normalize: normalize };

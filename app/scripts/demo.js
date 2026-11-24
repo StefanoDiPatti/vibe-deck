@@ -172,6 +172,22 @@ const AUDIO = {
   ]
 };
 demo.get('/api/plugins/audio', function (req, res) { ok(res, AUDIO); });
+const demoActions = [];
+const shapesRunner = require('../server/shapes').runner;
+const realExecute = shapesRunner.execute;
+shapesRunner.execute = async function (action) {
+  demoActions.push(action);
+  if (/^audio\./.test(String(action.type))) return realExecute(action);
+  return { message: 'Demo: ' + action.type };
+};
+demo.get('/api/demo/actions', function (req, res) { ok(res, demoActions); });
+const demoMixer = require('../official-plugins/audio/lib/mixer');
+demoMixer.state = async function () { return AUDIO; };
+demoMixer.device = async function (id, body) {
+  const dev = AUDIO.devices.filter(function (d) { return d.id === id; })[0];
+  if (dev && typeof body.volume === 'number') dev.volume = body.volume;
+  return AUDIO;
+};
 
 demo.get('/api/plugins/github', function (req, res) {
   const repo = function (name, prs, issues, ci, deploy, msg, ago) {

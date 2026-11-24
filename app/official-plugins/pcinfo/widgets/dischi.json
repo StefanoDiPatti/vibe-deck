@@ -1,0 +1,24 @@
+{
+  "name": "Dischi",
+  "description": "Spazio usato su ogni disco del PC, tocco = apri il disco",
+  "icon": "save",
+  "shape": "list",
+  "platforms": ["windows"],
+  "source": { "type": "command", "id": "pcinfo_disks" },
+  "every": 120,
+  "show": {
+    "label": "DISCHI",
+    "items": "{{.}}",
+    "item": {
+      "icon": "disk",
+      "title": "{{item.name}} {{item.label}}",
+      "sub": "{{item.freeGb}} GB liberi",
+      "right": "{{item.usedGb}} / {{item.totalGb}} GB",
+      "bar": "{{item.pct}}",
+      "warn": 80,
+      "hot": 92
+    }
+  },
+  "tap": { "type": "open_path", "path": "{{item.name}}\\" },
+  "size": { "w": 3, "h": 2, "minW": 2, "minH": 2 }
+}

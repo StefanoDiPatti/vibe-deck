@@ -152,7 +152,7 @@ body.phone .tile.btn.short .t-label { letter-spacing: 0; }
 #toast {
   position: absolute; left: 50%; bottom: 76px; width: 520px; margin-left: -260px; z-index: 50;
   background: #26313d; color: #fff; padding: 12px 16px; border-radius: 10px; text-align: center;
-  font-size: 16px; font-weight: bold; opacity: 0; visibility: hidden;
+  font-size: 16px; font-weight: bold; opacity: 0; visibility: hidden; pointer-events: none;
   -webkit-transition: opacity 0.2s; transition: opacity 0.2s;
   -webkit-box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
@@ -252,9 +252,9 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .sh-grid { position: absolute; left: 12px; right: 12px; top: 44px; bottom: 10px; }
 .sh-btn {
   position: absolute; border-radius: 10px; background: #243142; text-align: center; overflow: hidden;
-  font-weight: bold; letter-spacing: 1px; padding-top: 8%;
+  font-weight: bold; letter-spacing: 1px;
 }
-.sh-btn svg.ic { display: block; width: 42%; height: 42%; margin: 0 auto 4%; max-width: 40px; max-height: 40px; }
+.sh-btn svg.ic { display: block; width: 32px; height: 32px; margin: 0 auto 4px; }
 .sh-btn.flat { padding-top: 0; }
 .sh-btn.flat svg.ic { display: none; }
 .sh-btn.flat .sh-blabel { position: absolute; left: 4px; right: 4px; top: 50%; margin-top: -0.6em; }
@@ -279,6 +279,60 @@ body.phone #offline .pair-msg { margin-bottom: 10px; font-size: 14px; }
 .sh-said.ok { color: #7ee2a8; }
 .sh-said.err { color: #ff9c94; }
 .sh-hints { position: absolute; left: 12px; right: 12px; bottom: 10px; font-size: 13px; color: #6e7f91; overflow: hidden; max-height: 3em; line-height: 1.5em; }
+
+svg.ic .p-sun { fill: #f7b928; }
+svg.ic .p-moon { fill: #e8dfb0; }
+svg.ic .p-cloud { fill: #dfe7ef; }
+svg.ic .p-cloud2 { fill: #8d9cad; }
+svg.ic .p-rain { fill: #4aa3ff; }
+svg.ic .p-snow { fill: #ffffff; }
+svg.ic .p-bolt { fill: #ffd43b; }
+svg.ic .p-fog { fill: #9fb3c8; }
+.sh-glyph { position: absolute; right: 12px; top: 36px; width: 64px; height: 64px; }
+.sh-glyph svg.ic { width: 100%; height: 100%; }
+.sh-has-glyph .sh-big, .sh-has-glyph .sh-sub, .sh-has-glyph .sh-text, .sh-has-glyph .sh-status { right: 90px; }
+.sh-ricon { float: left; width: 30px; height: 30px; margin: 1px 10px 0 0; }
+.sh-ricon svg.ic { width: 30px; height: 30px; }
+.sh-row.has-icon .sh-rbar { margin-left: 40px; }
+.sh-sicon { position: absolute; left: 12px; top: 58px; width: 28px; height: 28px; margin-top: -4px; padding-top: 4px; }
+.sh-sicon svg.ic { width: 28px; height: 28px; }
+.sh-has-glyph .sh-track { left: 54px; }
+.w-shape.sh-compact .w-head { height: 28px; line-height: 24px; }
+.w-shape.sh-compact .w-title { margin-right: 45%; }
+.w-shape.sh-compact .sh-big { top: 7px; left: auto; right: 12px; max-width: 55%; text-align: right; font-size: 22px !important; line-height: 26px; }
+.w-shape.sh-compact .sh-has-glyph .sh-big { right: 46px; }
+.w-shape.sh-compact .sh-sub { display: none !important; }
+.w-shape.sh-compact .sh-bar { bottom: 6px; height: 5px; }
+.w-shape.sh-compact .sh-glyph { top: 6px; right: 12px; width: 28px !important; height: 28px !important; }
+.w-shape.sh-compact .sh-text, .w-shape.sh-compact .sh-status { top: 30px; }
+.w-shape.sh-compact .sh-has-glyph .sh-text, .w-shape.sh-compact .sh-has-glyph .sh-status { right: 12px; }
+.w-shape.sh-compact .sh-sval { top: 6px; height: 26px; line-height: 26px; font-size: 18px !important; }
+.w-shape.sh-compact .sh-track { top: 30px; height: 26px; margin-top: 0; left: 18px; right: 18px; }
+.w-shape.sh-compact .sh-has-glyph .sh-track { left: 44px; }
+.w-shape.sh-compact .sh-track:before, .w-shape.sh-compact .sh-tfill { top: 9px; height: 8px; }
+.w-shape.sh-compact .sh-knob { top: 1px; width: 24px; height: 24px; margin-left: -12px; }
+.w-shape.sh-compact .sh-sicon { top: 32px; width: 22px; height: 22px; padding: 0; margin: 0; }
+.w-shape.sh-compact .sh-sicon svg.ic { width: 22px; height: 22px; }
+.sh-list { top: 48px; }
+.sh-row { padding: 8px 12px; border-radius: 8px; margin-bottom: 4px; background: #1d2835; }
+.sh-row.tap.pressed { background: #26354a; }
+.sh-row.ok { -webkit-box-shadow: inset 4px 0 0 #3fb950; box-shadow: inset 4px 0 0 #3fb950; }
+.sh-row.err { -webkit-box-shadow: inset 4px 0 0 #e5534b; box-shadow: inset 4px 0 0 #e5534b; }
+.sh-rtop { white-space: nowrap; overflow: hidden; }
+.sh-rtitle { display: block; font-weight: bold; font-size: 15px; overflow: hidden; text-overflow: ellipsis; }
+.sh-rright { float: right; margin-left: 10px; font-weight: bold; font-size: 15px; color: #c9d6e3; }
+.sh-rsub { font-size: 13px; color: #9fb3c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.sh-rbar { height: 6px; margin-top: 6px; background: #0b0f14; border-radius: 3px; overflow: hidden; }
+.sh-rbar i { display: block; height: 100%; background: #3d8bfd; }
+.sh-rbar.ok i { background: #3fb950; }
+.sh-rbar.warn i { background: #d29922; }
+.sh-rbar.hot i { background: #e5534b; }
+.sh-sval { position: absolute; right: 12px; top: 10px; font-weight: bold; line-height: 34px; height: 34px; font-size: 20px; }
+.sh-track { position: absolute; left: 24px; right: 24px; top: 58px; height: 36px; margin-top: -4px; }
+.sh-track:before { content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 10px; border-radius: 5px; background: #0b0f14; }
+.sh-tfill { position: absolute; left: 0; top: 13px; height: 10px; width: 0; border-radius: 5px; background: #3d8bfd; }
+.sh-knob { position: absolute; top: 2px; width: 32px; height: 32px; margin-left: -16px; border-radius: 50%; background: #e6edf3; -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); }
+.sh-track.on .sh-knob { background: #3d8bfd; }
 
 .w-np { padding: 0 !important; }
 .np-art { position: absolute; border-radius: 10px; overflow: hidden; background: #0b0f14; }
