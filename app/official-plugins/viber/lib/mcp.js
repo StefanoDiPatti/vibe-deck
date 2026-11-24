@@ -185,7 +185,11 @@ Session.prototype.stop = function () {
   this.ready = null;
   clearTimeout(this.idle);
   this.failAll('Collegamento con Viber chiuso');
-  if (proc) { try { proc.kill(); } catch (e) { } }
+  if (!proc || proc.exitCode !== null || proc.signalCode !== null) return Promise.resolve();
+  return new Promise(function (resolve) {
+    proc.once('exit', function () { resolve(); });
+    try { proc.kill(); } catch (e) { resolve(); }
+  });
 };
 
 module.exports = { Session: Session, serverCommand: serverCommand, reachable: reachable, endpointFile: endpointFile, err: err };

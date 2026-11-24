@@ -33,11 +33,11 @@ function fakeViber(t, world) {
     platform: { focus: async function () { }, sendKeys: async function (combo) { sent.push(combo.join('+')); } },
     keys: keys
   });
-  t.after(function () {
-    svc.stop();
+  t.after(async function () {
+    await svc.stop();
     server.close();
     Object.keys(prev).forEach(function (k) { if (prev[k] === undefined) delete process.env[k]; else process.env[k] = prev[k]; });
-    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
   return new Promise(function (resolve) {
     server.listen(0, '127.0.0.1', function () {

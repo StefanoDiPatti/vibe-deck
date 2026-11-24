@@ -280,9 +280,10 @@ function create(deps) {
   }
 
   function stop() {
-    agents.stop();
-    Object.keys(ui).forEach(function (k) { ui[k].stop(); delete ui[k]; });
+    const waits = [agents.stop()];
+    Object.keys(ui).forEach(function (k) { waits.push(ui[k].stop()); delete ui[k]; });
     shown = '';
+    return Promise.all(waits);
   }
 
   return {
