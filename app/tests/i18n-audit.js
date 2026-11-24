@@ -6,6 +6,7 @@ const ctx = { window: { localStorage: { getItem: function (k) { return store[k] 
 ctx.window.window = ctx.window;
 vm.createContext(ctx);
 ['i18n.js', 'lang-en.js'].forEach(function (f) { vm.runInContext(fs.readFileSync(path.join(APP, 'public', 'js', f), 'utf8') + '\nwindow.I18n = I18n;', ctx); });
+pluginDictionaries(APP).forEach(function (code) { vm.runInContext(code, ctx); });
 const I = ctx.window.I18n;
 
 const IT = /[àèéìòù]|\b(il|lo|la|gli|le|di|da|del|della|dei|delle|al|alla|sul|sulla|nel|nella|per|non|che|una|uno|sei|tocca|tieni|apri|chiudi|nessun[ao]?|niente|carico|scegli|scrivi|premi|aggiungi|torna|passa|mostra|uscita|ingresso|microfono|predefinit[oa]|finestr[ae]|stanza|canali|aperte?|collega\w*|sincronizz\w*|dettatura|modello|sessione|guida|zona|divisione|attiv[ao]|schermo|nuov[ao]|giorni|settimana|consumi|completat\w+|riproduzione|coda|brano|indietro|avanti|cartella|flusso|modifica|inizio|fine|tutt[eio]|metà|terzi|quarti|griglia|ricarica|errori|sistema|suoni|volume|esci|entra|ieri|ora|fa|libero|vuot[ao]|caric\w+|riprova|salva\w*|annulla|sposta\w*|chiud\w+|invia\w*|scarica|cerca|nascost\w+|mostrat\w+|disponibil\w+|selezion\w+|monitor del|su|in corso|vicino|ancora|sempre|prima|dopo|subito|solo|anche|oppure|questo|questa|quello|quella|tuo|tua|tuoi)\b/i;
@@ -17,10 +18,12 @@ function check(s, where) {
   if (I.t(s) !== s) return;
   (out[s] = out[s] || []).push(where);
 }
-['app.js', 'widgets.js', 'core.js'].forEach(function (f) {
-  const src = fs.readFileSync(path.join(APP, 'public', 'js', f), 'utf8');
+['app.js', 'widgets.js', 'core.js'].map(function (f) { return path.join(APP, 'public', 'js', f); }).concat(pluginScripts(APP)).forEach(function (file) {
+  const f = path.basename(file);
+  const src = fs.readFileSync(file, 'utf8');
   (function walk(n) {
     if (!n || typeof n !== 'object') return;
+    if (n.type === 'CallExpression' && n.callee.type === 'MemberExpression' && n.callee.object.name === 'I18n') return;
     if (n.type === 'Literal' && typeof n.value === 'string' && !SKIP.test(n.value.trim())) {
       n.value.split(/<[^>]*>/).forEach(function (part) { check(part, f); });
     }
@@ -29,10 +32,42 @@ function check(s, where) {
 });
 fs.readFileSync(path.join(APP, 'public', 'index.html'), 'utf8').replace(/<script[\s\S]*?<\/script>/g, '').split(/<[^>]*>/).forEach(function (t) { check(t, 'index.html'); });
 const parse = require(path.join(APP, 'server', 'config.js')).parseJson;
-fs.readdirSync(path.join(APP, 'config', 'defaults', 'pages')).forEach(function (f) {
-  const p = parse(fs.readFileSync(path.join(APP, 'config', 'defaults', 'pages', f), 'utf8'));
+pageFiles(APP).forEach(function (file) {
+  const f = path.basename(file);
+  const p = parse(fs.readFileSync(file, 'utf8'));
   [p.title, p.description].forEach(function (x) { if (x) check(x, f); });
   (p.tiles || []).forEach(function (t) { [t.label, t.sub, t.linux && t.linux.label, t.linux && t.linux.sub].forEach(function (x) { if (x) check(x, f); }); });
 });
 return out;
 };
+function jsonIn(dir) {
+  try { return fs.readdirSync(dir).filter(function (f) { return /\.json$/i.test(f); }).map(function (f) { return path.join(dir, f); }); } catch (e) { return []; }
+}
+function pageFiles(APP) {
+  const official = path.join(APP, 'official-plugins');
+  const lists = fs.readdirSync(official).map(function (n) { return jsonIn(path.join(official, n, 'pages')); });
+  return [].concat.apply(jsonIn(path.join(APP, 'config', 'defaults', 'pages')), lists);
+}
+function pluginScripts(APP) {
+  const official = path.join(APP, 'official-plugins');
+  const lists = fs.readdirSync(official).map(function (n) {
+    const dir = path.join(official, n, 'public');
+    try { return fs.readdirSync(dir).filter(function (f) { return /\.js$/i.test(f); }).map(function (f) { return path.join(dir, f); }); } catch (e) { return []; }
+  });
+  return [].concat.apply([], lists);
+}
+function pluginDictionaries(APP) {
+  const acorn = require('acorn');
+  const out = [];
+  pluginScripts(APP).forEach(function (file) {
+    const src = fs.readFileSync(file, 'utf8');
+    (function walk(n) {
+      if (!n || typeof n.type !== 'string') return;
+      if (n.type === 'CallExpression' && n.callee.type === 'MemberExpression' && n.callee.object.name === 'I18n') { out.push('I18n.' + n.callee.property.name + '(' + src.slice(n.arguments[0].start, n.arguments[0].end) + ');'); return; }
+      for (const k in n) { const v = n[k]; if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v.type === 'string') walk(v); }
+    })(acorn.parse(src, { ecmaVersion: 5 }));
+  });
+  return out;
+}
+module.exports.pageFiles = pageFiles;
+module.exports.pluginDictionaries = pluginDictionaries;

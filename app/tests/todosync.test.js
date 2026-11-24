@@ -9,8 +9,8 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'dock-sync-'));
 process.env.DOCK_DATA_DIR = path.join(TMP, 'data');
 process.env.LOG_LEVEL = 'error';
 const config = require('../server/config');
-const todo = require('../server/services/todo');
-const sync = require('../server/services/todosync');
+const todo = require('../official-plugins/todo/lib/todo');
+const sync = require('../official-plugins/todo/lib/todosync');
 
 const realGet = config.get;
 config.get = function (name) {

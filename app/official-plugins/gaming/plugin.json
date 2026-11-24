@@ -1,0 +1,13 @@
+{
+  "id": "gaming",
+  "name": "Gaming pack",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Discord voice and your games on the tablet",
+  "type": "pack",
+  "includes": [
+    "discord",
+    "games"
+  ],
+  "engine": ">=2.1.1"
+}

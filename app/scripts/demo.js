@@ -106,14 +106,14 @@ demo.get('/api/media/art', function (req, res) { res.type('image/svg+xml').send(
 demo.get('/api/media/queue', function (req, res) {
   ok(res, { available: true, items: QUEUE.map(function (q, i) { return { id: 'q' + i, title: q[0], artist: q[1], duration: q[2], current: !!q[3] }; }) });
 });
-demo.get('/api/todo', function (req, res) {
+demo.get('/api/plugins/todo', function (req, res) {
   ok(res, { items: todo, source: 'memo', notes: NOTES, voiceServer: false, sync: { enabled: false, ok: null, at: 0, message: '' } });
 });
-demo.post('/api/todo/toggle', express.json(), function (req, res) {
+demo.post('/api/plugins/todo/toggle', express.json(), function (req, res) {
   todo.forEach(function (t) { if (t.id === (req.body || {}).id) t.done = !t.done; });
   ok(res, { items: todo, source: 'memo', notes: NOTES, voiceServer: false, sync: { enabled: false, ok: null, at: 0, message: '' } });
 });
-demo.get('/api/claude/desktop', function (req, res) {
+demo.get('/api/plugins/claude/desktop', function (req, res) {
   ok(res, {
     available: true, appUi: true,
     sections: [
@@ -122,10 +122,10 @@ demo.get('/api/claude/desktop', function (req, res) {
     ]
   });
 });
-demo.get('/api/claude/usage', function (req, res) {
+demo.get('/api/plugins/claude/usage', function (req, res) {
   ok(res, { ok: true, fiveHour: { percent: 34, resetsAt: new Date(Date.now() + 2.5 * H).toISOString() }, sevenDay: { percent: 58, resetsAt: new Date(Date.now() + 60 * H).toISOString() }, models: [], at: Date.now() });
 });
-demo.get('/api/claude/chats', function (req, res) { ok(res, []); });
+demo.get('/api/plugins/claude/chats', function (req, res) { ok(res, []); });
 
 const MAIL_ACCOUNTS = [
   { id: 'demo1', label: 'Gmail', provider: 'gmail', email: 'mario.rossi@example.com', unread: 3, status: 'ok', error: '' },
@@ -138,17 +138,17 @@ const MAILS = [
   ['Marco Verdi', 'marco@example.com', 'Riunione di giovedì', 26, true],
   ['Newsletter Musica', 'news@music.example', 'Le uscite della settimana', 50, true]
 ].map(function (m, i) { return { uid: 100 + i, date: new Date(Date.now() - m[3] * H).toISOString(), from: { name: m[0], address: m[1] }, subject: m[2], seen: m[4] }; });
-demo.get('/api/mail', function (req, res) { ok(res, { accounts: MAIL_ACCOUNTS }); });
-demo.get('/api/mail/list', function (req, res) {
+demo.get('/api/plugins/mail', function (req, res) { ok(res, { accounts: MAIL_ACCOUNTS }); });
+demo.get('/api/plugins/mail/list', function (req, res) {
   const a = MAIL_ACCOUNTS.filter(function (x) { return x.id === req.query.account; })[0] || MAIL_ACCOUNTS[0];
   const list = a.id === 'demo1' ? MAILS : [];
   ok(res, { account: a, unread: list.filter(function (m) { return !m.seen; }).length, total: list.length, messages: list });
 });
-demo.get('/api/mail/message', function (req, res) {
+demo.get('/api/plugins/mail/message', function (req, res) {
   const m = MAILS.filter(function (x) { return String(x.uid) === String(req.query.uid); })[0] || MAILS[0];
   ok(res, { subject: m.subject, from: m.from, date: m.date, text: 'Ciao!\n\nQuesto è un messaggio di esempio della demo di Vibe Deck.\n\nA presto', attachments: [], truncated: false });
 });
-demo.post('/api/mail/open', function (req, res) { ok(res, { message: 'Thunderbird aperto sul PC' }); });
+demo.post('/api/plugins/mail/open', function (req, res) { ok(res, { message: 'Thunderbird aperto sul PC' }); });
 
 const AUDIO = {
   devices: [
@@ -165,9 +165,9 @@ const AUDIO = {
     { id: 'p4', pid: 0, process: 'system', name: 'Suoni di sistema', volume: 50, mute: false, active: false, device: 'Altoparlanti' }
   ]
 };
-demo.get('/api/audio', function (req, res) { ok(res, AUDIO); });
+demo.get('/api/plugins/audio', function (req, res) { ok(res, AUDIO); });
 
-demo.get('/api/github', function (req, res) {
+demo.get('/api/plugins/github', function (req, res) {
   const repo = function (name, prs, issues, ci, deploy, msg, ago) {
     const run = function (c) { return c ? { status: 'completed', conclusion: c, name: 'CI', url: 'https://github.com/' } : null; };
     return { name: name, full: 'demo/' + name, url: 'https://github.com/', private: false, stars: 12, prs: prs, issues: issues, pushedAt: new Date(Date.now() - ago * H).toISOString(),
@@ -188,43 +188,43 @@ const WINDOWS = [
   { id: 'w2', pid: 202, process: 'code', state: 'normal', monitor: 'm2', x: 2560, y: 0, w: 1920, h: 1040, active: false, title: 'shop-web - Editor' },
   { id: 'w3', pid: 203, process: 'music', state: 'min', monitor: 'm2', x: 2600, y: 100, w: 900, h: 700, active: false, title: 'Music' }
 ];
-demo.get('/api/screens/windows', function (req, res) { ok(res, WINDOWS); });
-demo.get('/api/screens', function (req, res, next) {
+demo.get('/api/plugins/screens/windows', function (req, res) { ok(res, WINDOWS); });
+demo.get('/api/plugins/screens', function (req, res, next) {
   const json = res.json.bind(res);
   res.json = function (body) { if (body && body.data) Object.assign(body.data, { monitors: MONITORS, target: null }); return json(body); };
   next();
 });
-demo.get('/api/screens/desktops', function (req, res) {
+demo.get('/api/plugins/screens/desktops', function (req, res) {
   ok(res, { supported: true, max: 3, monitors: MONITORS.map(function (m) { return { id: m.id, n: m.n, x: m.x, y: m.y, w: m.w, h: m.h }; }),
     desktops: [{ id: 'd1', n: 1, name: 'Lavoro', current: true, windows: WINDOWS.slice(0, 2) }, { id: 'd2', n: 2, name: 'Svago', current: false, windows: [WINDOWS[2]] }] });
 });
 
-demo.get('/api/discord/state', function (req, res) {
+demo.get('/api/plugins/discord/state', function (req, res) {
   ok(res, { status: 'ready', message: '', configured: true, user: { id: 'u1', name: 'Mario' }, voice: { mute: false, deaf: false, video: false, stream: false }, media: true,
     channel: { id: 'c1', name: 'Salotto', guild_id: 'g1', guild: 'Amici', members: [
       { id: 'u1', name: 'Mario', me: true, speaking: true, mute: false, deaf: false },
       { id: 'u2', name: 'Laura', speaking: false, mute: false, deaf: false },
       { id: 'u3', name: 'Marco', speaking: false, mute: true, deaf: false }] } });
 });
-demo.get('/api/discord/guilds', function (req, res) { ok(res, [{ id: 'g1', name: 'Amici', icon: null }, { id: 'g2', name: 'Studio', icon: null }]); });
-demo.get('/api/discord/channels', function (req, res) {
+demo.get('/api/plugins/discord/guilds', function (req, res) { ok(res, [{ id: 'g1', name: 'Amici', icon: null }, { id: 'g2', name: 'Studio', icon: null }]); });
+demo.get('/api/plugins/discord/channels', function (req, res) {
   ok(res, [{ id: 'c1', name: 'Salotto', type: 'voice', members: 3 }, { id: 'c2', name: 'Giochi', type: 'voice', members: 0 }]);
 });
 
-demo.get('/api/viber/state', function (req, res) {
+demo.get('/api/plugins/viber/state', function (req, res) {
   ok(res, { online: true, panels: ['terminal', 'git', 'browser', 'chat', 'tasks', 'files'], project: '/home/demo/shop-web', name: 'shop-web', active: 'chat', open: ['terminal', 'git', 'browser', 'chat', 'tasks', 'files'] });
 });
-demo.get('/api/viber/projects', function (req, res) {
+demo.get('/api/plugins/viber/projects', function (req, res) {
   ok(res, { projects: [
     { path: '/home/demo/shop-web', name: 'shop-web', active: true, state: 'working', agents: 1, title: 'Pagamento con un tocco' },
     { path: '/home/demo/shop-api', name: 'shop-api', active: false, state: 'question', agents: 1, title: 'Filtro ordini per data' },
     { path: '/home/demo/blog', name: 'blog', active: false, state: 'completed', agents: 1, title: 'Tema scuro' }] });
 });
-demo.get('/api/viber/tasks', function (req, res) {
+demo.get('/api/plugins/viber/tasks', function (req, res) {
   ok(res, { project: 'shop-web', tasks: [{ id: 't1', text: 'Pagamento con un tocco', status: 'in_progress', branch: 'feature/pagamento', steps: [
     { text: 'Pulsante nel carrello', status: 'done' }, { text: 'Conferma con impronta', status: 'in_progress' }, { text: 'Test e PR', status: 'open' }] }] });
 });
-demo.get('/api/ollama/models', function (req, res) { ok(res, { running: true, models: [{ name: 'llama3.2:3b', size: 2 }, { name: 'qwen2.5-coder:7b', size: 4.7 }], error: '' }); });
+demo.get('/api/plugins/ollama/models', function (req, res) { ok(res, { running: true, models: [{ name: 'llama3.2:3b', size: 2 }, { name: 'qwen2.5-coder:7b', size: 4.7 }], error: '' }); });
 
 function shotScript(q, panel) {
   const set = function (k, v) { return 'localStorage.setItem(' + JSON.stringify(k) + ',' + JSON.stringify(v) + ');'; };

@@ -8,9 +8,11 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dock-home-'));
 process.env.DOCK_CONFIG_DIR = path.join(tmp, 'config');
 process.env.DOCK_DATA_DIR = path.join(tmp, 'data');
 process.env.DOCK_PLUGINS_DIR = path.join(tmp, 'plugins');
+process.env.DOCK_OFFICIAL_PLUGINS_DIR = path.join(tmp, 'official');
 process.env.DOCK_TOKEN = 'TESTCODE';
 process.env.LOG_LEVEL = 'error';
 fs.mkdirSync(process.env.DOCK_CONFIG_DIR, { recursive: true });
+['viber', 'ollama', 'claude', 'github', 'screens', 'audio', 'games', 'mail', 'discord', 'todo'].forEach(function (n) { fs.cpSync(path.join(__dirname, '..', 'official-plugins', n), path.join(process.env.DOCK_OFFICIAL_PLUGINS_DIR, n), { recursive: true }); });
 
 const home = require('../server/home');
 const config = require('../server/config');
@@ -41,7 +43,9 @@ test('catalogo: un widget per pagina, solo widget che il tablet sa disegnare', f
     assert.ok(c.minW <= c.w && c.minH <= c.h, c.id + ': misura minima');
     assert.ok(c.page, c.id + ': pagina di provenienza');
   });
-  ['claudeusage', 'desks', 'viber-projects', 'viber-tasks', 'ollama', 'games', 'discordmini'].forEach(function (id) { assert.ok(ids[id], id); });
+  const all = {};
+  home.catalog().forEach(function (c) { all[c.id] = c; });
+  [['viber-projects', 'viber'], ['viber-tasks', 'viber'], ['ollama', 'ollama'], ['claudeusage', 'claude'], ['desks', 'screens'], ['games', 'games'], ['discordmini', 'discord']].forEach(function (x) { assert.strictEqual(all[x[0]] && all[x[0]].plugin, x[1], x[0] + ' from the ' + x[1] + ' plugin'); });
 });
 
 test('griglia: le posizioni scelte restano, le altre nella prima cella libera', function () {

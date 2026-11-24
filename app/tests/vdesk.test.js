@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const vdesk = require('../server/services/vdesk');
+const vdesk = require('../official-plugins/screens/lib/vdesk');
 
 const K = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops';
 

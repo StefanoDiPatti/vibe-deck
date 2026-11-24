@@ -1,0 +1,27 @@
+.w-mail .ml-tools { white-space: nowrap; }
+.w-head .ml-tools { position: absolute; right: 0; top: 0; }
+.w-mail .ml-tools .sbtn { position: static; }
+.w-mail .sbtn.hidden { display: none; }
+.w-mail .w-title { margin-right: 300px; }
+.ml-info { height: 22px; line-height: 22px; font-size: 13px; color: #8b9bab; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ml-info.err { color: #ff9c94; }
+.w-mail .w-list { top: 70px; }
+.ml-row { position: relative; background: #1a232e; border-radius: 10px; padding: 9px 12px 9px 14px; margin-bottom: 6px; }
+.ml-row.pressed { background: #26354a; }
+.ml-row.unread { background: #1f2c3c; }
+.ml-from { font-size: 15px; color: #c6d1dc; margin-right: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ml-row.unread .ml-from { color: #fff; font-weight: bold; }
+.ml-dot { display: inline-block; width: 9px; height: 9px; border-radius: 5px; background: #3d8bfd; margin-right: 8px; vertical-align: 1px; }
+.ml-when { position: absolute; right: 12px; top: 10px; font-size: 13px; color: #8b9bab; }
+.ml-row.unread .ml-when { color: #6cb6ff; font-weight: bold; }
+.ml-subj { font-size: 14px; color: #8b9bab; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ml-row.unread .ml-subj { color: #c6d1dc; }
+.ml-reader { display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: #18212c; padding: 10px 12px; }
+.w-mail.ml-open .ml-reader { display: block; }
+.ml-rhead { height: 34px; white-space: nowrap; }
+.ml-rhead .sbtn:first-child { margin-left: 0; }
+.ml-rtitle { font-size: 18px; font-weight: bold; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ml-rmeta { font-size: 13px; color: #8b9bab; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ml-body { position: absolute; left: 12px; right: 12px; top: 104px; bottom: 10px; overflow: auto; -webkit-overflow-scrolling: touch; font-size: 15px; line-height: 1.5; color: #dfe6ee; word-wrap: break-word; }
+.ml-note { margin-top: 14px; padding: 8px 10px; border-radius: 8px; background: #1d2835; color: #9fb3c8; font-size: 13px; }
+.ml-note svg.ic { width: 16px; height: 16px; fill: #9fb3c8; }

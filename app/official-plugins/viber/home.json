@@ -1,0 +1,4 @@
+{
+  "viber-projects": { "widget": "viber", "props": { "show": "projects" }, "label": "Viber: progetti", "name": "Viber", "icon": "code", "description": "Progetti aperti con lo stato degli agenti, tocco = passa al progetto", "w": 2, "h": 2, "minW": 2, "minH": 2 },
+  "viber-tasks": { "widget": "viber", "props": { "show": "tasks" }, "label": "Viber: task", "icon": "flag", "description": "Le task del progetto aperto, con i passi", "w": 2, "h": 2, "minW": 2, "minH": 2 }
+}

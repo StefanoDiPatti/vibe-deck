@@ -1,0 +1,19 @@
+{
+  "apps": {
+    "scrcpy": {
+      "label": "scrcpy (schermo del telefono)",
+      "toggle": true,
+      "windows": [
+        {
+          "path": "%LOCALAPPDATA%\\Microsoft\\WinGet\\Links\\scrcpy.exe"
+        },
+        {
+          "path": "scrcpy"
+        }
+      ],
+      "linux": {
+        "path": "scrcpy"
+      }
+    }
+  }
+}

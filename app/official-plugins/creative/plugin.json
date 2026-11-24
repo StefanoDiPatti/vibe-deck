@@ -1,0 +1,14 @@
+{
+  "id": "creative",
+  "name": "Creative pack",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Blender, DaVinci Resolve and Unreal Editor shortcut pages",
+  "type": "pack",
+  "includes": [
+    "blender",
+    "davinci",
+    "unreal"
+  ],
+  "engine": ">=2.1.1"
+}

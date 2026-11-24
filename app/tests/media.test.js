@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const media = require('../server/services/media');
 const bridge = require('../server/services/bridge');
-const claudecode = require('../server/services/claudecode');
+const claudecode = require('../official-plugins/claude/lib/claudecode');
 
 const M = media._internals;
 

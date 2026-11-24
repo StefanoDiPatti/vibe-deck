@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "vibe-deck/plugin.schema.json",
+  "title": "Vibe Deck plugin manifest",
+  "description": "plugin.json at the root of a plugin folder (official-plugins/<id>/ or plugins/<id>/).",
+  "type": "object",
+  "required": ["id", "name", "version"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$", "description": "Same as the folder name." },
+    "name": { "type": "string", "description": "Name shown in the control panel and in the market." },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "description": { "type": "string" },
+    "author": { "type": "string", "description": "GitHub login of the author." },
+    "type": { "enum": ["plugin", "pack"], "default": "plugin", "description": "\"pack\" = a bundle that only lists other plugins in \"includes\"." },
+    "includes": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" }, "description": "Plugins installed together with this pack." },
+    "platforms": { "type": "array", "items": { "enum": ["windows", "linux"] }, "minItems": 1, "description": "Systems the plugin works on (default: both)." },
+    "engine": { "type": "string", "pattern": "^>=\\s*\\d+\\.\\d+\\.\\d+$", "description": "Minimum Vibe Deck version, e.g. \">=2.2.0\"." },
+    "permissions": {
+      "type": "object",
+      "description": "What the plugin uses: shown before installing.",
+      "properties": {
+        "http": { "type": "array", "items": { "type": "string" }, "description": "Domains the plugin contacts." },
+        "apps": { "type": "array", "items": { "type": "string" }, "description": "Apps (apps.json ids) its buttons launch." },
+        "commands": { "type": "array", "items": { "type": "string" }, "description": "Allowed commands it defines or uses." },
+        "local": { "type": "array", "items": { "type": "string" }, "description": "Local resources (e.g. discord-ipc, powershell)." }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

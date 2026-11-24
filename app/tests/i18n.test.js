@@ -12,6 +12,7 @@ function load(lang) {
   ['i18n.js', 'lang-en.js'].forEach(function (f) {
     vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'public', 'js', f), 'utf8') + '\nwindow.I18n = I18n;', ctx, { filename: f });
   });
+  require('./i18n-audit').pluginDictionaries(path.join(__dirname, '..')).forEach(function (code) { vm.runInContext(code, ctx); });
   return ctx.window.I18n;
 }
 
@@ -39,13 +40,13 @@ test('inglese: parole, maiuscole, pezzi separati da " · " e testi con numeri', 
   assert.strictEqual(I.t('METEO DI CASA'), 'HOME WEATHER');
 });
 
-test('dizionario: niente traduzioni vuote; titoli delle pagine predefinite tradotti', function () {
+test('dizionario: niente traduzioni vuote; titoli delle pagine predefinite e dei plugin ufficiali tradotti', function () {
   const I = load('en');
   const config = require('../server/config');
-  const dir = path.join(__dirname, '..', 'config', 'defaults', 'pages');
   const missing = [];
-  fs.readdirSync(dir).forEach(function (f) {
-    const p = config.parseJson(fs.readFileSync(path.join(dir, f), 'utf8'));
+  require('./i18n-audit').pageFiles(path.join(__dirname, '..')).forEach(function (file) {
+    const f = path.basename(file);
+    const p = config.parseJson(fs.readFileSync(file, 'utf8'));
     const title = p.title || p.id.toUpperCase();
     if (/[ÀÈÉÌÒÙ]|MUSICA|SCHERMI|GIOCHI|DESKTOP VIRTUALI/.test(title) && I.t(title) === title) missing.push(title);
     if (p.description && I.t(p.description) === p.description) missing.push(f + ': ' + p.description);
@@ -53,7 +54,7 @@ test('dizionario: niente traduzioni vuote; titoli delle pagine predefinite trado
   assert.deepStrictEqual(missing, []);
 });
 
-test('ogni testo italiano del tablet ha la traduzione inglese (codice, index.html, pagine predefinite)', function () {
+test('ogni testo italiano del tablet ha la traduzione inglese (codice, index.html, pagine predefinite e dei plugin ufficiali)', function () {
   const out = require('./i18n-audit')(path.join(__dirname, '..'));
   const PEZZI = ['Aggiungi a', 'Ancorata nella zona', 'CONNESSIONE PERSA · nuovo tentativo tra', 'English · tocca per l\'italiano',
     'IN CODA ·', 'Le app dal tablet si aprono sul monitor', 'Non disponibile per', 'Nuovo tentativo automatico tra', 'PR aperte',

@@ -58,7 +58,7 @@ test('ogni pulsante di default punta ad app, comandi, pagine e tasti esistenti',
       case 'macro': a.steps.forEach(function (s, i) { checkAction(s, where + ' passo ' + i); }); break;
       case 'discord': assert.ok(['mute', 'deaf', 'video', 'stream'].indexOf(a.command) >= 0, where + ': discord ' + a.command); break;
       case 'viber': {
-        const viber = require('../server/services/viber');
+        const viber = require('../official-plugins/viber/lib/viber');
         const ok = (a.panel && viber.PANELS.indexOf(a.panel) >= 0) || (a.layout && viber.LAYOUTS.indexOf(a.layout) >= 0) ||
           (a.view && viber.VIEWS[a.view]) || a.project === 'next' || a.project === 'prev';
         assert.ok(ok, where + ': viber ' + JSON.stringify(a));

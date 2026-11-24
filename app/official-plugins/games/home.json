@@ -1,0 +1,3 @@
+{
+  "games": { "widget": "games", "label": "Giochi", "icon": "gamepad", "description": "I tuoi giochi in piccolo, tocco = avvia", "w": 2, "h": 1, "minW": 1, "minH": 1 }
+}

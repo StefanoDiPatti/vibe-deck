@@ -90,19 +90,19 @@ Volume and undo buttons repeat while you hold them.
 | HOME | music (basic controls), PC status, todo |
 | MUSIC | full player (seek, shuffle, repeat, app volume) and track queue |
 | APPS | programs (green dot = already running, another tap closes it), Claude, PowerShell/Terminal, screenshot, lock PC, screen off, **system volume**, Blender and DaVinci |
-| DEV | VS Code, Claude Code, PowerShell, OpenClaw, VS Code shortcuts |
-| GITHUB | PRs, issues, CI, latest deployment (GitHub Actions workflows with deploy, release, publish or pages in their name: DEPLOY ✓/✗/… badge) and latest commit of your repositories |
-| OLLAMA | chat with local models |
-| CLAUDE | chat, Claude Code sessions, dictation, typing on the PC |
-| DISCORD | servers, voice channels with who is inside, who is talking, mute/deafen, webcam, Go Live, per-person volume and mute just for you |
-| GAMES | the games picked in the control panel, with their icons (green dot when running; if running it is brought to the front) |
-| EMAIL *(available)* | inbox of the Thunderbird accounts chosen in the control panel, message reading, opening Thunderbird on the PC |
-| SCREENS *(Windows; Linux with KDE Plasma 6 + kdotool)* | PC monitors, window layouts, monitor apps open on, **virtual desktops** (switch, create, close, drag a window onto one) and a **GUIDE** button with the shortcuts |
-| AUDIO | outputs and microphones (default, volume, mute), volume and mute of every app playing audio |
-| VIRTUAL DESKTOPS *(Linux only)* | guide to virtual desktop shortcuts (KDE Plasma, GNOME, Windows too); on Windows the same guide is in the SCREENS page |
-| VIBER *(add it from the panel)* | switch to Viber's open panels (terminal, git, browser, chat, tasks, files), change view (tabs, agents, focus), show the tasks of the open project |
-| BROWSER DEV *(available)* | browser shortcuts: HARD RELOAD, DEVTOOLS, CONSOLE, INSPECT, DEVICE, CLEAR DATA (hold), LOCALHOST:5173 and :3000; keys go to the window in front |
-| ANDROID *(available)* | adb (Android SDK platform-tools): DEVICES, logcat ERRORS and CRASHES, SCREENSHOT to Pictures, SCREEN with scrcpy, HOME/BACK/RECENTS, React Native DEV MENU and RELOAD, METRO 8081, RESTART ADB. Commands in `config/defaults/commands/android.json` |
+| DEV *(official plugin `dev`)* | VS Code, Claude Code, PowerShell, OpenClaw, VS Code shortcuts |
+| GITHUB *(official plugin `github`)* | PRs, issues, CI, latest deployment (GitHub Actions workflows with deploy, release, publish or pages in their name: DEPLOY ✓/✗/… badge) and latest commit of your repositories |
+| OLLAMA *(official plugin `ollama`)* | chat with local models |
+| CLAUDE *(official plugin `claude`)* | chat, Claude Code sessions, dictation, typing on the PC |
+| DISCORD *(official plugin `discord`)* | servers, voice channels with who is inside, who is talking, mute/deafen, webcam, Go Live, per-person volume and mute just for you |
+| GAMES *(official plugin `games`)* | the games picked in the control panel, with their icons (green dot when running; if running it is brought to the front) |
+| EMAIL *(official plugin `mail`)* | inbox of the Thunderbird accounts chosen in the control panel, message reading, opening Thunderbird on the PC |
+| SCREENS *(official plugin `screens`; Windows; Linux with KDE Plasma 6 + kdotool)* | PC monitors, window layouts, monitor apps open on, **virtual desktops** (switch, create, close, drag a window onto one) and a **GUIDE** button with the shortcuts |
+| AUDIO *(official plugin `audio`)* | outputs and microphones (default, volume, mute), volume and mute of every app playing audio |
+| VIRTUAL DESKTOPS *(official plugin `screens`, Linux only)* | guide to virtual desktop shortcuts (KDE Plasma, GNOME, Windows too); on Windows the same guide is in the SCREENS page |
+| VIBER *(official plugin `viber`, add it from the panel)* | switch to Viber's open panels (terminal, git, browser, chat, tasks, files), change view (tabs, agents, focus), show the tasks of the open project |
+| BROWSER DEV *(available)* | official plugin `official-plugins/browserdev/`: browser shortcuts: HARD RELOAD, DEVTOOLS, CONSOLE, INSPECT, DEVICE, CLEAR DATA (hold), LOCALHOST:5173 and :3000; keys go to the window in front |
+| ANDROID *(available)* | adb (Android SDK platform-tools): DEVICES, logcat ERRORS and CRASHES, SCREENSHOT to Pictures, SCREEN with scrcpy, HOME/BACK/RECENTS, React Native DEV MENU and RELOAD, METRO 8081, RESTART ADB. Official plugin `official-plugins/android/` (page, adb commands, scrcpy) |
 | BLENDER, DAVINCI, UNREAL *(available: add them to the bar from the panel)* | shortcuts for the three programs (UNREAL: play, simulate, compile C++ with Live Coding, W/E/R tools, views) |
 
 ## Viber
@@ -117,7 +117,7 @@ The **VIBER** page controls the Viber window in front on the PC (Windows and Lin
 
 For buttons in your pages: `{ "type": "viber", "panel": "terminal" }`, `{ "type": "viber", "layout": "review" }`, `{ "type": "viber", "view": "agents" }`, `{ "type": "viber", "project": "next" }`.
 
-The deck uses Viber's local API: port and token are in `~/.viber/browser-mcp.json`, which Viber writes while it is open (it only talks to `127.0.0.1`). With several Viber windows, the one in front wins. If Viber rejects a command (for example a tab closed in the meantime) the tablet shows a warning.
+The official plugin `official-plugins/viber/` talks to Viber as an **MCP client**: it starts Viber's own MCP server (`browser-mcp-server.cjs`, the one Viber registers as `viber-browser` in `~/.claude.json`; otherwise it is looked for in the Viber install folder, or set `VIBER_MCP_SERVER`) and calls its tools. Projects, agents and tasks come from the `--agents` tools (`viber_agent_projects`, `viber_agent_list`, `viber_task_list`); panels and layouts from `viber_focus_panel` and `viber_set_layout`, run in the folder of the project on screen, because Viber only lets a window be changed by a client working in the project it shows. Views and project switching use Viber's keyboard shortcuts. Viber must be open: the deck checks it from `~/.viber/browser-mcp.json` before calling. With several Viber windows, the one in front wins. If Viber rejects a command (for example a tab closed in the meantime) the tablet shows a warning.
 
 ## Phone
 
@@ -292,7 +292,7 @@ All files are JSON. **Save and the tablet updates by itself**, without restartin
 | `config/services.json` | music, Claude, voice, GitHub, Ollama, system monitor |
 | `.env` | port, access code, tokens and API keys |
 
-The files in `config/` are yours and do not go to git. The defaults live in `config/defaults/` (pages in `config/defaults/pages/`, one per file): delete a file from `config/` to restore it. Step-by-step examples in the [developer guide](../README.md#3-developer-guide-make-vibe-deck-your-own); at the bottom of the control panel you find the list of configuration problems.
+The files in `config/` are yours and do not go to git. The defaults live in `config/defaults/` (pages in `config/defaults/pages/`, one per file) and in the official plugins (`official-plugins/<id>/pages/`): delete a file from `config/` to restore it. Step-by-step examples in the [developer guide](../README.md#3-developer-guide-make-vibe-deck-your-own); at the bottom of the control panel you find the list of configuration problems.
 If you never edited a file in `config/`, it is upgraded to the new default at startup (after a `git pull`). Edited files stay as they are.
 
 ### dock.json
@@ -350,7 +350,7 @@ Allowed commands for `{ "type": "command", "id": "<id>" }`. The tablet can only 
 | `showOutput` | show the output on the tablet in a window |
 | `timeoutMs` | maximum time (20 s by default) |
 
-`{root}` in arguments = the deck folder. The ANDROID page commands (adb and logcat) are in `config/defaults/commands/android.json`: on Windows the adb of the standard SDK folder is used, otherwise the one in the PATH. To change one, copy an entry to `config/commands/<id>.json`.
+`{root}` in arguments = the deck folder. The ANDROID page commands (adb and logcat) are in the official plugin, `official-plugins/android/commands/android.json`: on Windows the adb of the standard SDK folder is used, otherwise the one in the PATH. To change one, copy an entry to `config/commands/<id>.json`.
 
 ### services.json
 
@@ -565,7 +565,8 @@ The guide to customize pages, buttons, actions and widgets is in the [main READM
 | `public/` | tablet client (ES5, no framework) |
 | `extension/` | browser extension for Apple Music web and YouTube |
 | `config/defaults/` | default configuration |
-| `plugins/<name>/` | plugins: extra actions, routes, pages and widgets (`npm run new:widget -- <name>`) |
+| `official-plugins/<id>/` | official plugins shipped with Vibe Deck, each with `plugin.json`: one plugin per feature (`blender`, `davinci`, `unreal`) and packs that group them (`creative`) |
+| `plugins/<name>/` | local plugins: extra actions, routes, pages and widgets (`npm run new:widget -- <name>`) |
 | `scripts/bootstrap.js` | automatic startup (same on Windows and Linux) |
 | `scripts/windows/` | notification area icon and hidden startup |
 | `scripts/linux/` | background startup, desktop and app menu icon |

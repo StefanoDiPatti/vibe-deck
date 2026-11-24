@@ -15,7 +15,6 @@
   let btPage = 'apps';
   let tdrag = null;
   let pairSel = 0;
-  let mlKey = '';
   let pairShown = '';
 
   async function api(method, url, body) {
@@ -73,8 +72,7 @@
       const li = document.createElement('li');
       li.className = 'item';
       li.dataset.id = p.id;
-      const tags = (on && p.id === home ? '<span class="tag">INIZIALE</span>' : '') +
-        (!on && p.id === 'discord' ? '<span class="tag new">NUOVA</span>' : '');
+      const tags = on && p.id === home ? '<span class="tag">INIZIALE</span>' : '';
       li.innerHTML =
         '<span class="grip" aria-hidden="true">' + icon('drag') + '</span>' +
         '<span class="ico">' + icon(p.icon) + '</span>' +
@@ -417,13 +415,32 @@
     const os = info.platform === 'windows' ? 'Windows' : info.platform === 'linux' ? 'Linux' : info.platform;
     $('sub').textContent = 'Pannello di controllo · v' + info.version + (os ? ' · ' + os : '');
     render();
-    renderDiscord();
     renderPairing();
-    renderMail();
-    renderGames();
     renderChecks();
     renderHome();
+    sections.forEach((fn) => {
+      try { fn(info); } catch (e) { console.error(e); }
+    });
   }
+
+  const sections = [];
+  window.Panel = {
+    $: $, esc: esc, icon: icon, api: api, toast: toast,
+    refresh: () => refresh(),
+    update: (next) => { info = next; adopt(); },
+    card: (id, html) => {
+      let el = $(id);
+      if (!el) {
+        el = document.createElement('section');
+        el.className = 'card';
+        el.id = id;
+        $('plugin-cards').appendChild(el);
+      }
+      el.innerHTML = html;
+      return el;
+    },
+    register: (fn) => { sections.push(fn); if (info) fn(info); }
+  };
 
   let hm = null;
   let hmSaved = '';
@@ -618,224 +635,14 @@
       p.commands && p.commands + (p.commands === 1 ? ' comando' : ' comandi'),
       p.icons.length && 'icone ' + p.icons.join(', ')
     ].filter(Boolean).join(' · ');
+    const label = (p) => (p.title && p.title !== p.name ? p.title + ' [' + p.name + ']' : p.name) +
+      (p.version ? ' ' + p.version : '') + (p.official ? ' · ufficiale' : '') + (p.type === 'pack' ? ' · pacchetto' : '');
+    const body = (p) => p.error || (!p.active ? 'spento: ' + p.inactiveReason : '') ||
+      (p.type === 'pack' ? 'contiene ' + p.includes.join(', ') : what(p)) || 'niente da mostrare';
     $('pl-list').innerHTML = pl.length ? '<h3 class="pl-head">Plugin</h3><ul class="ck-list">' + pl.map((p) =>
-      '<li class="' + (p.error ? 'err' : 'info') + '"><b>' + esc(p.name) + '</b>' + (p.description ? ' (' + esc(p.description) + ')' : '') + ': ' +
-        esc(p.error || what(p) || 'niente da mostrare') + '</li>').join('') + '</ul>' : '';
+      '<li class="' + (p.error ? 'err' : 'info') + '"><b>' + esc(label(p)) + '</b>' + (p.description ? ' (' + esc(p.description) + ')' : '') + ': ' +
+        esc(body(p)) + '</li>').join('') + '</ul>' : '';
   }
-
-  let gm = null;
-  let gmKey = '';
-  const gmChoiceKey = (c) => (!c ? 'none' : c.token ? 't:' + c.token : 'u:' + c.url);
-
-  function renderGames() {
-    const g = info.games;
-    if (!g) return;
-    $('gm-count').textContent = g.games.length ? g.games.length + (g.games.length === 1 ? ' GIOCO' : ' GIOCHI') : 'NESSUN GIOCO';
-    $('gm-count').className = 'pill' + (g.games.length ? ' ok' : '');
-    $('gm-list').innerHTML = g.games.map((x, i) =>
-      '<div class="gm-row" data-gm="' + esc(x.id) + '">' +
-        '<span class="gm-ico">' + (x.icon ? '<img src="' + esc(x.icon) + '" alt="">' : icon('gamepad')) + '</span>' +
-        '<span class="txt"><span class="name">' + esc(x.label) + '</span>' +
-          '<span class="desc' + (x.exists ? '' : ' err') + '" title="' + esc(x.path) + '">' + esc(x.exists ? x.path : 'File non trovato: ' + x.path) + '</span></span>' +
-        '<button class="ibtn" type="button" data-gmact="up" title="Più a sinistra"' + (i ? '' : ' disabled') + '>↑</button>' +
-        '<button class="ibtn" type="button" data-gmact="down" title="Più a destra"' + (i < g.games.length - 1 ? '' : ' disabled') + '>↓</button>' +
-        '<button class="btn ghost small-btn" type="button" data-gmact="icon">Icona</button>' +
-        '<button class="ibtn rm" type="button" data-gmact="remove" title="Togli" aria-label="Togli ' + esc(x.label) + '">' + icon('close') + '</button>' +
-      '</div>'
-    ).join('');
-    renderGameForm();
-  }
-
-  function renderGameForm() {
-    const key = gm ? [gm.mode, gm.id, gm.path, gm.iconToken, gm.searching, (gm.icons || []).length, gmChoiceKey(gm.chosen), gm.error || ''].join('|') : 'closed';
-    if (key === gmKey) return;
-    gmKey = key;
-    if (!gm) {
-      $('gm-add').innerHTML = '<button class="btn add-acc" type="button" data-gmact="pick">' + icon('add') + ' Aggiungi un gioco</button>' +
-        '<p class="hint small">Si apre il selettore di file ' + (info.games.os === 'windows' ? 'di Windows' : 'del sistema') + ': scegli l\'eseguibile del gioco o il suo collegamento' +
-        (info.games.os === 'windows' ? ' (.exe, .lnk, .url di Steam)' : ' (file .desktop, script o AppImage)') + '.</p>';
-      return;
-    }
-    const cards = [];
-    if (gm.iconToken) cards.push({ c: { token: gm.iconToken }, img: '/api/control/games/preview/' + encodeURIComponent(gm.iconToken), src: 'Dal file del gioco' });
-    (gm.icons || []).forEach((x) => cards.push({ c: { url: x.url }, img: x.url, src: x.source, title: x.title }));
-    const chosen = gmChoiceKey(gm.chosen);
-    const grid = '<div class="gm-icons">' + cards.map((x) =>
-      '<button type="button" class="gm-pick' + (gmChoiceKey(x.c) === chosen ? ' on' : '') + '" data-gmchoice="' + esc(JSON.stringify(x.c)) + '" title="' + esc((x.title ? x.title + ' · ' : '') + x.src) + '">' +
-        '<img src="' + esc(x.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"><span>' + esc(x.src) + '</span></button>'
-    ).join('') +
-      '<button type="button" class="gm-pick none' + (chosen === 'none' ? ' on' : '') + '" data-gmchoice="null">' + icon('gamepad') + '<span>Nessuna</span></button>' +
-    '</div>';
-    const head = gm.mode === 'new'
-      ? '<div class="ml-form"><div class="wide"><label>File del gioco</label><div class="gm-path">' + esc(gm.path) + '</div></div>' +
-        '<div><label for="gm-label">Nome sul tablet</label><input id="gm-label" type="text" autocomplete="off" maxlength="40" value="' + esc(gm.label) + '"></div>' +
-        '<div><label for="gm-proc">Processo del gioco (facoltativo)</label><input id="gm-proc" type="text" autocomplete="off" spellcheck="false" placeholder="' + esc(gm.process || 'nome del file') + '" value="' + esc(gm.procInput || '') + '"></div></div>' +
-        '<p class="hint small">Il processo serve per il pallino verde e per riportare il gioco in primo piano. Se il file è un launcher (Battle.net, Riot, Game Center...) scrivi il nome del processo del gioco vero, senza .exe (più nomi separati da virgola).</p>'
-      : '<p class="ml-help">Nuova icona per <b>' + esc(gm.label) + '</b>.</p>';
-    $('gm-add').innerHTML = '<div class="gm-form">' + head +
-      '<div class="gm-icons-head"><h3>Icona</h3>' +
-        '<input id="gm-q" type="text" autocomplete="off" placeholder="Cerca sul web" value="' + esc(gm.query || gm.label) + '">' +
-        '<button class="btn ghost small-btn" type="button" data-gmact="search"' + (gm.searching ? ' disabled' : '') + '>' + (gm.searching ? 'Cerco…' : 'Cerca icone') + '</button></div>' +
-      grid +
-      (gm.error ? '<p class="hint small err">' + esc(gm.error) + '</p>' : '') +
-      '<p class="hint small">Proposte: l\'icona del file e le immagini del gioco su Steam, Wikipedia e Wikimedia Commons. L\'immagine scelta viene salvata su questo PC.</p>' +
-      '<div class="row-actions"><button class="btn primary" type="button" data-gmact="save">' + (gm.mode === 'new' ? 'Aggiungi alla pagina GAMES' : 'Salva l\'icona') + '</button>' +
-      '<button class="btn ghost" type="button" data-gmact="cancel">Annulla</button></div></div>';
-  }
-
-  async function searchGameIcons() {
-    const q = ($('gm-q') && $('gm-q').value.trim()) || gm.label;
-    if (!q) return;
-    gm.query = q; gm.searching = true; gm.error = ''; renderGameForm();
-    try {
-      const r = await api('POST', '/api/control/games/search', { name: q });
-      if (!gm) return;
-      gm.icons = r.icons || [];
-      if (!gm.icons.length) gm.error = 'Nessuna immagine trovata per "' + q + '": prova con un altro nome.';
-      if (!gm.chosen && !gm.iconToken && gm.icons.length) gm.chosen = { url: gm.icons[0].url };
-    } catch (e) { if (gm) gm.error = e.message; }
-    if (gm) { gm.searching = false; renderGameForm(); }
-  }
-
-  async function gameAction(act, id, btn, el) {
-    const keepInputs = () => { if (gm && $('gm-label')) { gm.label = $('gm-label').value; gm.procInput = $('gm-proc').value; } if (gm && $('gm-q')) gm.query = $('gm-q').value; };
-    if (act === 'cancel') { gm = null; renderGameForm(); return; }
-    if (act === 'search') { keepInputs(); searchGameIcons(); return; }
-    if (act === 'choice') { keepInputs(); gm.chosen = JSON.parse(el.dataset.gmchoice); renderGameForm(); return; }
-    if (btn) btn.disabled = true;
-    try {
-      if (act === 'pick') {
-        toast('Si apre il selettore di file sul PC…', '');
-        const r = await api('POST', '/api/control/games/pick', {});
-        if (r.path) {
-          gm = { mode: 'new', path: r.path, label: r.label || '', process: r.process || '', iconToken: r.iconToken || '', icons: [], chosen: r.iconToken ? { token: r.iconToken } : null };
-          renderGameForm();
-          searchGameIcons();
-        }
-      } else if (act === 'icon') {
-        const g = info.games.games.find((x) => x.id === id);
-        gm = { mode: 'icon', id: id, label: g ? g.label : '', icons: [], chosen: null };
-        renderGameForm();
-        searchGameIcons();
-        api('POST', '/api/control/games/fileicon', { id: id }).then((r) => {
-          if (gm && gm.id === id && r.token) { gm.iconToken = r.token; if (!gm.chosen) gm.chosen = { token: r.token }; renderGameForm(); }
-        }).catch(() => {});
-      } else if (act === 'save') {
-        keepInputs();
-        if (gm.mode === 'new') {
-          info = await api('POST', '/api/control/games', { path: gm.path, label: gm.label, process: gm.procInput || '', icon: gm.chosen });
-          toast(gm.label + ' aggiunto alla pagina GAMES', 'ok');
-        } else {
-          info = await api('POST', '/api/control/games/icon', { id: gm.id, icon: gm.chosen });
-          toast('Icona cambiata', 'ok');
-        }
-        gm = null;
-        adopt();
-      } else if (act === 'remove') {
-        const g = info.games.games.find((x) => x.id === id);
-        if (!confirm('Togliere ' + (g ? g.label : 'il gioco') + ' dalla pagina GAMES?')) { if (btn) btn.disabled = false; return; }
-        info = await api('POST', '/api/control/games/remove', { id: id });
-        adopt();
-      } else if (act === 'up' || act === 'down') {
-        const ids = info.games.games.map((x) => x.id);
-        const i = ids.indexOf(id), j = act === 'up' ? i - 1 : i + 1;
-        if (i < 0 || j < 0 || j >= ids.length) return;
-        ids.splice(j, 0, ids.splice(i, 1)[0]);
-        info = await api('POST', '/api/control/games/order', { ids: ids });
-        adopt();
-      }
-    } catch (e) {
-      if (gm && act === 'save') { gm.error = e.message; renderGameForm(); }
-      toast(e.message, 'err');
-    }
-    if (btn) btn.disabled = false;
-  }
-  document.addEventListener('click', (e) => {
-    const c = e.target.closest('[data-gmchoice]');
-    if (c) { gameAction('choice', '', null, c); return; }
-    const b = e.target.closest('[data-gmact]');
-    if (!b) return;
-    const row = b.closest('[data-gm]');
-    gameAction(b.dataset.gmact, row ? row.dataset.gm : '', b);
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && e.target && e.target.id === 'gm-q') { e.preventDefault(); gameAction('search'); }
-  });
-
-  function mailSteps(m) {
-    return '<ol class="steps ml-steps">' +
-      '<li>' + (m.installed ? '<b>Thunderbird è installato.</b>' : '<b>Scarica e installa Thunderbird</b> (gratis, open source, di Mozilla): ' +
-        '<a href="' + esc(m.download) + '" target="_blank" rel="noopener">thunderbird.net</a>') + '</li>' +
-      '<li>Aprilo e aggiungi il tuo account: <b>Account email esistente</b>, scrivi nome, indirizzo e lascia vuota la password se è Gmail o Microsoft. ' +
-        'Si apre la pagina di accesso del tuo servizio: entri come sempre (con la conferma sul telefono se ce l\'hai). Funziona anche con le mail di <b>università e aziende</b>, se l\'organizzazione permette Thunderbird.</li>' +
-      '<li>Lascia attivo <b>"Conserva i messaggi di questo account sul computer"</b> (è già così: impostazioni dell\'account → Sincronizzazione e archiviazione). Serve per leggere il testo dal tablet.</li>' +
-      '<li>Aspetta che Thunderbird scarichi la posta: l\'account compare qui da solo. Thunderbird deve restare aperto (anche ridotto a icona) per ricevere le email nuove.</li>' +
-    '</ol>';
-  }
-  function renderMail() {
-    const m = info.mail;
-    if (!m) return;
-    const shown = m.accounts.filter((a) => a.shown).length;
-    $('ml-count').textContent = m.accounts.length ? shown + ' SUL TABLET' : (m.installed ? 'NESSUN ACCOUNT' : 'THUNDERBIRD NON INSTALLATO');
-    $('ml-count').className = 'pill' + (shown ? ' ok' : '');
-    const st = !m.installed ? 'Thunderbird non è installato su questo PC.'
-      : !m.profile ? 'Thunderbird è installato ma non è ancora stato aperto: aprilo e aggiungi il tuo account.'
-      : !m.accounts.length ? 'Thunderbird è collegato, ma non ha account di posta: aggiungili in Thunderbird.'
-      : 'Thunderbird è collegato: ' + m.accounts.length + (m.accounts.length === 1 ? ' account trovato.' : ' account trovati.');
-    $('ml-status').innerHTML = '<span class="dot' + (m.accounts.length ? ' ok' : '') + '"></span><span class="txt">' + esc(st) + '</span>' +
-      (m.exe ? '<button class="btn ghost small-btn" type="button" data-mlact="open">Apri Thunderbird</button>' : '') +
-      '<button class="btn ghost small-btn" type="button" data-mlact="check">Controlla di nuovo</button>';
-    const accDesc = (a) => a.status === 'error' ? a.error
-      : a.unread != null ? a.unread + ' da leggere' + (a.offline ? '' : ' · il testo delle email non è sul PC: attiva "Conserva i messaggi sul computer"')
-      : 'lettura della posta in corso…';
-    $('ml-accounts').innerHTML = m.accounts.map((a) =>
-      '<div class="ml-acc' + (a.shown ? '' : ' off') + '" data-acc="' + esc(a.id) + '">' +
-        '<span class="ico">' + icon('mail') + '</span>' +
-        '<span class="txt"><span class="name">' + esc(a.label) + '</span> <span class="hint">' + esc(a.email) + '</span>' +
-          '<span class="desc' + (a.status === 'error' ? ' err' : '') + '">' + esc(accDesc(a)) + '</span></span>' +
-        '<button class="chip' + (a.shown ? ' on' : '') + '" type="button" data-mlact="' + (a.shown ? 'hide' : 'show') + '">' + (a.shown ? 'Sul tablet' : 'Nascosto') + '</button>' +
-      '</div>'
-    ).join('');
-    const key = m.installed + '|' + m.profile + '|' + m.accounts.length;
-    if (key === mlKey) return;
-    mlKey = key;
-    $('ml-add').innerHTML = (m.accounts.length
-      ? '<details class="ml-more"><summary>Aggiungere un altro account</summary>' + mailSteps(m) + '</details>'
-      : mailSteps(m)) +
-      '<p class="hint small">Riservatezza: la dock non chiede e non salva password. Legge in sola lettura i file che Thunderbird tiene su questo PC e manda le email solo al tuo tablet, sulla rete di casa. ' +
-      'I file della posta non sono cifrati: proteggi l\'account del PC con una password (e, se puoi, la cifratura del disco).</p>';
-  }
-
-  async function mailAction(act, id, btn) {
-    if (btn) btn.disabled = true;
-    try {
-      if (act === 'check') {
-        toast('Cerco Thunderbird e leggo la posta…', '');
-        info = await api('POST', '/api/control/mail/check', {});
-        adopt();
-        const n = info.mail.accounts.length;
-        toast(n ? 'Thunderbird collegato: ' + n + (n === 1 ? ' account' : ' account') : (info.mail.profile ? 'Nessun account in Thunderbird' : 'Thunderbird non trovato'), n ? 'ok' : 'err');
-        if (btn) btn.disabled = false;
-        return;
-      }
-      if (act === 'open') {
-        await api('POST', '/api/control/mail/open', {});
-        toast('Thunderbird aperto', 'ok');
-        if (btn) btn.disabled = false;
-        return;
-      }
-      info = await api('POST', '/api/control/mail/show', { id: id, shown: act === 'show' });
-      adopt();
-      if (act === 'show') toast('Account sul tablet: aggiungi la pagina EMAIL alla barra se non c\'è', 'ok');
-    } catch (e) { toast(e.message, 'err'); }
-    if (btn) btn.disabled = false;
-  }
-  document.addEventListener('click', (e) => {
-    const b = e.target.closest('[data-mlact]');
-    if (!b) return;
-    const row = b.closest('[data-acc]');
-    mailAction(b.dataset.mlact, row ? row.dataset.acc : '', b);
-  });
 
   function renderPairing() {
     const list = info.pairing || [];
@@ -864,98 +671,6 @@
     const b = e.target.closest('[data-pair]');
     if (b) { pairSel = parseInt(b.dataset.pair, 10) || 0; renderPairing(); }
   });
-
-  let dcKey = '';
-  let editing = false;
-  function renderDiscord() {
-    const d = info.discord;
-    const pill = $('dc-status');
-    const body = $('dc-body');
-    const map = {
-      ready: ['COLLEGATO', 'ok'], setup: ['DA CONFIGURARE', ''], unauthorized: ['DA AUTORIZZARE', 'warn'],
-      offline: ['DISCORD CHIUSO', 'bad'], connecting: ['IN ATTESA…', 'warn']
-    };
-    const st = map[d.status] || [d.status, ''];
-    pill.textContent = st[0];
-    pill.className = 'pill ' + st[1];
-    const key = [d.status, d.configured, d.message, d.authError, d.media, d.user && d.user.id, editing].join('|');
-    if (key === dcKey) return;
-    dcKey = key;
-    if (editing) { renderSetup(true); return; }
-
-    if (d.status === 'ready') {
-      body.innerHTML =
-        '<div class="me">' + (d.user && d.user.avatar ? '<img alt="" src="' + esc(d.user.avatar) + '">' : '') +
-        '<div><div class="who">' + esc(d.user ? d.user.name : '') + '</div><div class="hint">Il tablet può vedere i tuoi server e gestire la voce' + (d.media ? ', la webcam e il Go Live.' : '.') + '</div></div></div>' +
-        (d.media ? '' : '<div class="err-box warn-box">Per i pulsanti <b>CAM</b> e <b>LIVE</b> serve un permesso in più: premi <b>Riautorizza</b> e conferma su Discord.</div>') +
-        '<div class="row-actions">' +
-          (d.media ? '' : '<button class="btn discord" id="dc-reauth" type="button">Riautorizza</button>') +
-          '<button class="btn ghost" id="dc-logout" type="button">Scollega</button></div>';
-      if ($('dc-reauth')) $('dc-reauth').onclick = () => run('/api/control/discord/authorize');
-      $('dc-logout').onclick = async () => {
-        if (!confirm('Scollegare Discord dalla dock?')) return;
-        info = await api('POST', '/api/control/discord/logout'); adopt();
-      };
-      return;
-    }
-    if (d.configured && (d.status === 'unauthorized' || d.status === 'offline' || d.status === 'connecting')) {
-      const msg = d.status === 'offline'
-        ? 'Apri Discord su questo PC: la dock si collega da sola.'
-        : d.status === 'connecting'
-          ? 'Guarda la finestra di Discord: c\'è una richiesta da <b>autorizzare</b>.'
-          : 'Manca l\'autorizzazione: premi il pulsante e conferma nella finestra di Discord.';
-      body.innerHTML = '<p class="hint">' + msg + '</p>' +
-        (d.authError || (d.status === 'offline' && d.message) ? '<div class="err-box">' + esc(d.authError || d.message) + '</div>' : '') +
-        '<div class="row-actions">' +
-          (d.status !== 'connecting' ? '<button class="btn discord" id="dc-auth" type="button">Autorizza su Discord</button>' : '') +
-          '<button class="btn ghost" id="dc-edit" type="button">Cambia credenziali</button>' +
-        '</div>';
-      if ($('dc-auth')) $('dc-auth').onclick = () => run('/api/control/discord/authorize');
-      $('dc-edit').onclick = () => { editing = true; renderDiscord(); };
-      return;
-    }
-    renderSetup(false);
-  }
-
-  function renderSetup(editing) {
-    const d = info.discord;
-    $('dc-body').innerHTML =
-      '<ol class="steps">' +
-        '<li>Apri il <a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Developer Portal di Discord</a> e premi <b>New Application</b> (nome a piacere, es. "Vibe Deck").</li>' +
-        '<li>Vai in <b>OAuth2</b>: copia il <b>Client ID</b> e premi <b>Reset Secret</b> per avere il <b>Client Secret</b>.</li>' +
-        '<li>Sempre in OAuth2, sotto <b>Redirects</b> premi <b>Add Redirect</b>, scrivi <code>' + esc(d.redirect) + '</code> (esatto, senza barra finale) e premi <b>Save Changes</b> in basso. Senza questo Discord risponde "missing redirect_uri".</li>' +
-        '<li>Incolla qui sotto e premi <b>Collega</b>: Discord ti chiede di autorizzare la dock.</li>' +
-      '</ol>' +
-      '<div class="form">' +
-        '<div><label for="dc-id">Client ID</label><input id="dc-id" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" value="' + esc(d.clientId) + '"></div>' +
-        '<div><label for="dc-secret">Client Secret</label><input id="dc-secret" type="password" autocomplete="off" spellcheck="false" placeholder="' + (d.hasSecret && !editing ? 'già salvato' : '') + (d.hasSecret && editing ? 'lascia vuoto per tenere quello salvato' : '') + '"></div>' +
-        '<button class="btn discord" id="dc-go" type="button">Collega</button>' +
-      '</div>' +
-      '<p class="hint small">Le credenziali restano su questo PC, cifrate in <code>data/discord.json</code>.</p>' +
-      ((d.authError || d.message) && d.status !== 'setup' ? '<div class="err-box">' + esc(d.authError || d.message) + '</div>' : '');
-    $('dc-go').onclick = () => run('/api/control/discord', { clientId: $('dc-id').value, clientSecret: $('dc-secret').value });
-  }
-
-  async function run(url, body) {
-    const btns = document.querySelectorAll('#dc-body .btn');
-    btns.forEach((b) => { b.disabled = true; });
-    info.discord.status = 'connecting';
-    $('dc-status').textContent = 'IN ATTESA…';
-    $('dc-status').className = 'pill warn';
-    toast('Conferma la richiesta nella finestra di Discord', '');
-    try {
-      info = await api('POST', url, body);
-      editing = false;
-      dcKey = '';
-      adopt();
-      toast('Discord collegato', 'ok');
-    } catch (e) {
-      toast(e.message, 'err');
-      btns.forEach((b) => { b.disabled = false; });
-      dcKey = '';
-      refresh();
-    }
-  }
 
   async function refresh() {
     try {

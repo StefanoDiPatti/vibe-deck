@@ -56,6 +56,7 @@ main { max-width: 1080px; margin: 0 auto; padding: 24px 32px; display: grid; gri
 .card, .col { min-width: 0; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--card-shadow); padding: 22px 24px; }
 .card.subtle { background: transparent; }
+.plugin-cards { display: contents; }
 .card h2 { margin: 0 0 4px; font-size: 17px; }
 .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
 .hint { color: var(--muted); margin: 0; }
@@ -92,7 +93,6 @@ body.is-dragging, body.is-dragging * { cursor: grabbing !important; user-select:
 .item .name { font-weight: 650; letter-spacing: .4px; display: flex; align-items: center; gap: 8px; }
 .item .desc { display: block; color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tag { font-size: 10.5px; font-weight: 700; letter-spacing: .8px; padding: 1px 7px; border-radius: 20px; background: var(--accent-tint); color: var(--accent-2); }
-.tag.new { background: color-mix(in srgb, var(--discord) 20%, transparent); color: var(--discord-text); }
 
 .ibtn { flex: none; width: 32px; height: 32px; border-radius: 8px; border: 0; background: transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .ibtn:hover { background: var(--hover); color: var(--strong); }
@@ -153,25 +153,6 @@ body.is-dragging, body.is-dragging * { cursor: grabbing !important; user-select:
 .bt-grid.drop, .bt-hidden.drop { background: var(--accent-soft); }
 .bt-hidden.drop { border-color: var(--accent); }
 
-.ml-acc { display: flex; align-items: center; gap: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
-.ml-acc .ico { flex: none; width: 36px; height: 36px; border-radius: 9px; background: var(--sunken); display: flex; align-items: center; justify-content: center; color: var(--accent-2); }
-.ml-acc .txt { flex: 1 1 auto; min-width: 0; }
-.ml-acc .name { font-weight: 650; }
-.ml-acc .desc { display: block; color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ml-acc .desc.err { color: var(--bad-text); white-space: normal; }
-.ml-login { margin: -2px 0 10px; padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); border: 1px solid var(--accent); }
-.ml-login .code { font: 700 22px/1.2 Consolas, monospace; letter-spacing: 3px; color: var(--strong); margin: 6px 0; user-select: all; }
-.ml-login a { color: var(--accent-2); }
-.ml-providers { margin: 14px 0 12px; }
-.ml-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: end; }
-.ml-form .wide { grid-column: 1 / -1; }
-.ml-help { color: var(--text-2); font-size: 14px; margin: 0 0 12px; }
-.ml-help a { color: var(--accent-2); }
-.ml-acc.off { opacity: .6; }
-.ml-acc .chip { flex: none; }
-.ml-steps { margin-top: 12px; }
-.ml-more { margin: 6px 0 12px; }
-.ml-more summary { cursor: pointer; color: var(--accent-2); font-weight: 600; margin-bottom: 8px; }
 .btn.add-acc { margin-top: 4px; }
 
 .pill { font-size: 12px; font-weight: 700; letter-spacing: .6px; padding: 4px 11px; border-radius: 20px; background: var(--panel-2); color: var(--muted); white-space: nowrap; }
@@ -196,8 +177,6 @@ input[type=text], input[type=password] { width: 100%; height: 40px; padding: 0 1
 .btn:hover { background: var(--hover); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-.btn.discord { background: var(--discord); border-color: var(--discord); color: #fff; }
-.btn.discord:hover { background: #4752c4; }
 .btn.ghost { background: transparent; }
 .btn[disabled] { opacity: .5; cursor: progress; }
 
@@ -213,29 +192,8 @@ input[type=text], input[type=password] { width: 100%; height: 40px; padding: 0 1
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
-.gm-row { display: flex; align-items: center; gap: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
-.gm-ico { flex: none; width: 44px; height: 44px; border-radius: 9px; background: var(--sunken); display: flex; align-items: center; justify-content: center; color: var(--accent-2); overflow: hidden; }
-.gm-ico img { width: 100%; height: 100%; object-fit: contain; }
-.gm-row .txt { flex: 1 1 auto; min-width: 0; }
-.gm-row .name { font-weight: 650; }
-.gm-row .desc { display: block; color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gm-row .desc.err, .hint.err { color: var(--bad-text); }
-.gm-form { margin-top: 6px; }
-.gm-path { font: 13px/1.4 Consolas, monospace; color: var(--text-2); background: var(--sunken); border-radius: 8px; padding: 8px 10px; word-break: break-all; }
-.gm-icons-head { display: flex; align-items: center; gap: 10px; margin: 16px 0 10px; }
-.gm-icons-head h3 { margin: 0 auto 0 0; }
-.gm-icons-head input { width: min(280px, 50%); }
-.gm-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; }
-.gm-pick { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel-2); color: var(--muted); font: inherit; font-size: 11.5px; cursor: pointer; }
-.gm-pick img { width: 100%; height: 84px; object-fit: contain; }
-.gm-pick svg.ic { width: 48px; height: 84px; }
-.gm-pick:hover { border-color: var(--line-2); color: var(--strong); }
-.gm-pick.on { border-color: var(--accent); background: var(--accent-tint); color: var(--strong); }
+.hint.err { color: var(--bad-text); }
 
-.ml-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: var(--sunken); }
-.ml-status .txt { flex: 1 1 260px; color: var(--text-2); font-size: 14px; }
-.ml-status .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
-.ml-status .dot.ok { background: var(--ok); }
 
 .ck-list { margin: 4px 0 0; padding-left: 20px; font-size: 13.5px; }
 .ck-list li { margin-bottom: 6px; color: var(--text-2); }

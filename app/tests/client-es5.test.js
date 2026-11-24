@@ -23,13 +23,15 @@ const FORBIDDEN_JS = [
   [/\{\s*passive\s*:/, 'opzioni passive negli event listener']
 ];
 
-const PLUGINS_DIR = path.join(__dirname, '..', 'plugins');
+const PLUGIN_ROOTS = [path.join(__dirname, '..', 'plugins'), path.join(__dirname, '..', 'official-plugins')];
 function pluginFiles(re) {
   const out = [];
   let dirs = [];
-  try { dirs = fs.readdirSync(PLUGINS_DIR); } catch (e) { dirs = []; }
+  PLUGIN_ROOTS.forEach(function (root) {
+    try { dirs = dirs.concat(fs.readdirSync(root).map(function (d) { return path.join(root, d); })); } catch (e) { }
+  });
   dirs.forEach(function (d) {
-    const pub = path.join(PLUGINS_DIR, d, 'public');
+    const pub = path.join(d, 'public');
     let files = [];
     try { files = fs.readdirSync(pub); } catch (e) { files = []; }
     files.filter(function (f) { return re.test(f); }).forEach(function (f) { out.push(path.join(pub, f)); });

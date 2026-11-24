@@ -7,7 +7,6 @@ const keys = require('../platform/keys');
 const common = require('../platform/common');
 const media = require('../services/media');
 const appsState = require('../services/apps');
-const screens = require('../services/screens');
 const fs = require('fs');
 const log = require('../log');
 
@@ -23,23 +22,6 @@ function fail(message, code) {
 function appLabel(id, app) { return (app && app.label) || id; }
 
 const forPlatform = common.forPlatform;
-
-async function runningGame() {
-  if (typeof platform.windowList !== 'function') return null;
-  const all = config.apps();
-  const games = Object.keys(all).map(function (id) { return { id: id, app: forPlatform(all[id]) }; })
-    .filter(function (g) { return g.app && g.app.game; });
-  if (!games.length) return null;
-  const wins = await platform.windowList().catch(function () { return []; });
-  wins.sort(function (x, y) { return (y.active ? 1 : 0) - (x.active ? 1 : 0); });
-  for (let i = 0; i < wins.length; i++) {
-    if (wins[i].state === 'min') continue;
-    for (let j = 0; j < games.length; j++) {
-      if (appsState.processNames(games[j].app).indexOf(wins[i].process) >= 0) return { pid: wins[i].pid, label: appLabel(games[j].id, games[j].app) };
-    }
-  }
-  return null;
-}
 
 function pickPath(p) {
   if (!Array.isArray(p)) return p;
@@ -107,13 +89,13 @@ const HANDLERS = {
       return { message: appLabel(id, app) + ' in primo piano' };
     }
     appsState.invalidate();
-    const follow = screens.followLaunch(appsState.processNames(app));
+    const follow = require('../plugins').hook('launch', { app: id, processes: appsState.processNames(app) }).filter(function (f) { return typeof f === 'function'; });
     try {
       await platform.launch({ path: pickPath(app.path), args: normalizeArgs(app.args), cwd: app.cwd });
     } catch (e) {
       throw fail(appLabel(id, app) + ': ' + e.message, 'NOT_FOUND');
     }
-    if (follow) follow();
+    follow.forEach(function (f) { f(); });
     return { message: appLabel(id, app) + ' avviata' };
   },
 
@@ -171,30 +153,6 @@ const HANDLERS = {
 
   command: async function (a) {
     return runCommand(a.id || a.commandId);
-  },
-
-  discord: async function (a) {
-    const discord = require('../services/discord');
-    const what = String(a.command || '');
-    if (['mute', 'deaf', 'video', 'stream'].indexOf(what) < 0) throw fail('Comando Discord sconosciuto: ' + what, 'BAD_CONFIG');
-    await discord.ensure();
-    if (discord.state().status !== 'ready') {
-      if (what === 'video' || what === 'stream') throw fail('Per webcam e Go Live collega Discord dal pannello di controllo sul PC', 'UNAVAILABLE');
-      await HANDLERS.hotkey({ keys: ['CTRL', 'SHIFT', what === 'mute' ? 'M' : 'D'], focus: 'discord' });
-      return Object.assign(discord.state(), { message: (what === 'mute' ? 'Mute' : 'Silenzia') + ' inviato a Discord (scorciatoia)' });
-    }
-    if (what === 'mute' || what === 'deaf') return Object.assign(await discord.toggle(what), { message: null });
-    const was = discord.state().voice[what];
-    const game = what === 'stream' && !was ? await runningGame() : null;
-    const st = await discord.toggleMedia(what, game ? game.pid : null);
-    const message = what === 'video' ? (was ? 'Webcam spenta' : 'Webcam accesa') :
-      was ? 'Condivisione fermata' : 'Go Live' + (game ? ': ' + game.label : ' avviato');
-    return Object.assign(st, { message: message });
-  },
-
-  viber: async function (a) {
-    const viber = require('../services/viber');
-    return { message: null, viber: await viber.action(a) };
   },
 
   wait: async function (a) {

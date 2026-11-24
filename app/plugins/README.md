@@ -9,11 +9,12 @@ npm run new:widget -- weather
 
 | File | What it is |
 |---|---|
+| `plugins/weather/plugin.json` | name, version, systems, minimum Vibe Deck version, permissions (`schema/plugin.schema.json`) |
 | `plugins/weather/index.js` | server: actions (`"weather.saluta"`) and routes (`/api/plugins/weather/...`) |
 | `plugins/weather/pages/*.json` | pages (turn them on from the control panel) |
 | `plugins/weather/apps/*.json`, `commands/*.json` | apps and allowed commands |
 | `plugins/weather/public/*.js` | tablet (ES5): `Widgets.register(...)`, `Icons.register(...)` |
-| `plugins/weather/public/*.css` | widget style (no flexbox) |
+| `plugins/weather/public/*.css` | widget style (no flexbox); the themes recolor it by themselves |
 | `plugins/weather/home.json` | the widget in the HOME catalog (name, icon, sizes) |
 
 - A folder starting with `_` or `.` is ignored: rename `weather` to `_weather` to turn a plugin off.

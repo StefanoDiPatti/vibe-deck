@@ -30,7 +30,8 @@ breaking anything. The guide for people is in the [README](README.md), section *
 | `public/css/dock.css` | tablet style; `public/css/themes/*.css` are GENERATED |
 | `control/` | PC control panel (modern browser, only from 127.0.0.1) |
 | `config/defaults/` | default configuration (in git): `pages/`, `apps/`, `commands/`, `dock.json`... |
-| `plugins/<name>/` | plugins: actions, routes, pages, widgets, icons, translations |
+| `official-plugins/<id>/` | official plugins (in git), each with `plugin.json`: features outside the base (HOME, MUSIC, APPS) move here |
+| `plugins/<name>/` | local plugins (and later market plugins): actions, routes, pages, widgets, icons, translations |
 | `schema/` | JSON schemas for the editor |
 | `tests/` | `node --test` |
 
@@ -58,14 +59,24 @@ breaking anything. The guide for people is in the [README](README.md), section *
 7. **Windows and Linux**: everything that depends on the OS goes in `server/platform/windows.js` *and* `linux.js`. Apps and
    commands have `"windows"` and `"linux"` variants (lists of alternatives too). A Windows-only feature must
    degrade with a clear message on Linux.
-8. **Default files**: before changing a JSON file in `config/defaults/` that is not a page, add the fingerprint
+8. **New features are plugins**: anything outside the base (HOME, MUSIC, APPS) goes in an official plugin
+   (`official-plugins/<id>/` with `plugin.json`, see `schema/plugin.schema.json`), never in `config/defaults/`.
+   One plugin = one feature (e.g. `blender`); a **pack** (`"type": "pack"`, e.g. `creative`) only lists plugins in
+   `includes` and contains nothing but its `plugin.json`. **Every plugin must install and work on its own**: it
+   only uses the core and its own files (apps, commands, widgets, actions, pages), never another plugin. Packs are
+   only ready-made suggestions, and a plugin is in at most one pack. `tests/plugin-standalone.test.js` checks it.
+   Server code of a plugin lives in its `index.js` and `lib/`; official plugins may require core modules
+   (`../../server/...`), plugins for the market only use `ctx`. Tablet scripts and styles go in `public/`: the
+   themes recolor plugin CSS by themselves. The project is moving every existing page there in the
+   `refactor/plugins` branch, to prepare the market.
+9. **Default files**: before changing a JSON file in `config/defaults/` that is not a page, add the fingerprint
    of the previous version to `config/defaults/history.json`. Better still: add a new file in the
    `config/defaults/pages|apps|commands/` folders, which does not need it.
-9. **PowerShell files** in UTF-8 with BOM. In the helper (`PsHelper.call`) never an argument named `id`.
-10. **Tests**: `npm test` in `app/` must pass entirely before every commit. Tests touching data, Discord or
+10. **PowerShell files** in UTF-8 with BOM. In the helper (`PsHelper.call`) never an argument named `id`.
+11. **Tests**: `npm test` in `app/` must pass entirely before every commit. Tests touching data, Discord or
     the Windows helper use `DOCK_DATA_DIR` / `DOCK_CONFIG_DIR` / `DOCK_PLUGINS_DIR` (temporary folders).
     In an environment without Windows the PowerShell helper tests may be skipped: tell the user.
-11. **No personal data** in the repository, screenshots or tests: use `npm run demo` (everything fake).
+12. **No personal data** in the repository, screenshots or tests: use `npm run demo` (everything fake).
 
 ## Adding a widget
 
@@ -145,7 +156,7 @@ stops everything in `destroy`, shows a clear message when a service is missing (
 
 | What | Where |
 |---|---|
-| Page of buttons | `npm run new:page -- <id>` (user) or `config/defaults/pages/<id>.json` (project, `"tab": false` = among the available ones) |
+| Page of buttons | `npm run new:page -- <id>` (user) or `official-plugins/<id>/pages/<page>.json` with a `plugin.json` (project, `"tab": false` = among the available ones) |
 | Launchable app | `config/defaults/apps/<file>.json` (`{ "apps": { "id": { "label", "windows": {"path"}, "linux": {"path"} } } }`) |
 | Allowed command | `config/defaults/commands/<file>.json` (`cmd`, `args`, `showOutput`, per-OS variants) |
 | Action type | a function in `HANDLERS` (`server/actions/index.js`) + schema; or a plugin action |

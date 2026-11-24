@@ -280,7 +280,7 @@
       }
       flash(node, 'ok');
       if (a.type === 'launch') { clearTimeout(app.pollTimer); app.pollTimer = setTimeout(poll, 1800); }
-      if (r && r.viber) for (var i = 0; i < app.tiles.length; i++) if (app.tiles[i].widget && app.tiles[i].widget.viber) app.tiles[i].widget.viber(r.viber);
+      if (r && r.event) for (var i = 0; i < app.tiles.length; i++) if (app.tiles[i].widget && app.tiles[i].widget.event) app.tiles[i].widget.event(r.event.name, r.event.data);
       if (r && r.output !== undefined) showModal(tile.label || 'Output', r.output);
       else if (r && r.message) app.toast(r.message, 'ok');
     }, 125000);
@@ -530,18 +530,21 @@
     }
   }
 
+  function themeLink(linkId, href) {
+    var link = D.$(linkId);
+    if (!href) { if (link) link.parentNode.removeChild(link); return; }
+    if (!link) {
+      link = document.createElement('link');
+      link.id = linkId; link.rel = 'stylesheet';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = href;
+  }
+
   function setTheme(id) {
     if (!themeOk(id) || id === app.theme) return;
-    var link = D.$('theme-css');
-    if (id === 'classic') { if (link) link.parentNode.removeChild(link); }
-    else {
-      if (!link) {
-        link = document.createElement('link');
-        link.id = 'theme-css'; link.rel = 'stylesheet';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.href = 'css/themes/' + id + '.css';
-    }
+    themeLink('plugin-theme-css', id === 'classic' ? '' : 'plugins-theme/' + id + '.css');
+    themeLink('theme-css', id === 'classic' ? '' : 'css/themes/' + id + '.css');
     D.removeClass(document.body, 'th-' + app.theme);
     D.addClass(document.body, 'th-' + id);
     app.theme = id;

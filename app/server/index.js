@@ -11,24 +11,10 @@ const platform = require('./platform');
 const actions = require('./actions');
 const system = require('./services/system');
 const media = require('./services/media');
-const github = require('./services/github');
-const ollama = require('./services/ollama');
-const claude = require('./services/claude');
-const todo = require('./services/todo');
-const todosync = require('./services/todosync');
-const desktopcode = require('./services/desktopcode');
-const mixer = require('./services/mixer');
 const bridge = require('./services/bridge');
 const voice = require('./services/voice');
 const appsState = require('./services/apps');
-const discord = require('./services/discord');
-const screens = require('./services/screens');
-const vdesk = require('./services/vdesk');
-const claudeusage = require('./services/claudeusage');
-const viber = require('./services/viber');
 const pairing = require('./services/pairing');
-const mail = require('./services/mail');
-const games = require('./services/games');
 const configCheck = require('./check');
 const plugins = require('./plugins');
 const home = require('./home');
@@ -46,11 +32,7 @@ app.use(auth.lanOnly);
 app.use(express.json({ limit: '64kb' }));
 
 function ok(res, data) { res.json({ ok: true, data: data === undefined ? null : data }); }
-function sendError(res, e) {
-  const map = { UNAUTHORIZED: 409, BAD_REQUEST: 400, BAD_CONFIG: 400, UNKNOWN_ACTION: 400, NOT_FOUND: 404, CONFIG_CHANGED: 409, BUSY: 409, TOO_LONG: 409, UNAVAILABLE: 503, UNSUPPORTED: 501 };
-  const code = e.code && map[e.code] ? e.code : 'ACTION_FAILED';
-  res.status(map[code] || 500).json({ ok: false, error: { code: code, message: e.message || 'Errore' } });
-}
+const sendError = require('./http-error').sendError;
 function route(fn) {
   return function (req, res) {
     Promise.resolve().then(function () { return fn(req, res); }).then(function (data) {
@@ -100,9 +82,9 @@ function versionedIndex() {
     return plugins.scripts().map(function (s) {
       return '<script src="' + s.url + '?v=' + Math.round(s.mtime).toString(36) + '"></script>\n  ';
     }).join('') + m;
-  }).replace('</head>', function (m) {
+  }).replace('<script id="theme-boot">', function (m) {
     return plugins.styles().map(function (s) {
-      return '  <link rel="stylesheet" href="' + s.url + '?v=' + Math.round(s.mtime).toString(36) + '">\n';
+      return '<link rel="stylesheet" href="' + s.url + '?v=' + Math.round(s.mtime).toString(36) + '">\n  ';
     }).join('') + m;
   });
 }
@@ -119,11 +101,32 @@ app.use(express.static(paths.PUBLIC_DIR, {
   }
 }));
 
+const pluginThemeCache = {};
+function pluginThemeCss(theme) {
+  const fs = require('fs');
+  const styles = plugins.styles();
+  const stamp = styles.map(function (s) { return s.path + ':' + s.mtime; }).join('|');
+  const hit = pluginThemeCache[theme];
+  if (hit && hit.stamp === stamp) return hit.css;
+  const themes = require('../scripts/build-themes');
+  const css = styles.map(function (s) {
+    try { return themes.themeRules(fs.readFileSync(s.path, 'utf8'), theme); } catch (e) { log.warn('plugin', s.plugin + '/' + s.file + ': ' + e.message); return ''; }
+  }).filter(Boolean).join('\n') + '\n';
+  pluginThemeCache[theme] = { stamp: stamp, css: css };
+  return css;
+}
+app.get('/plugins-theme/:file', function (req, res) {
+  const m = /^([a-z]+)\.css$/.exec(req.params.file);
+  if (!m || require('../scripts/build-themes').THEMES.indexOf(m[1]) < 0) return res.status(404).end();
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('css').send(pluginThemeCss(m[1]));
+});
+
 app.get('/plugins/:name/:file', function (req, res) {
   const name = req.params.name, file = req.params.file;
   if (!plugins.NAME_RE.test(name) || plugins.names().indexOf(name) < 0 || !/^[A-Za-z0-9_-][A-Za-z0-9_.-]*\.(js|css)$/.test(file)) return res.status(404).end();
   res.setHeader('Cache-Control', 'no-cache');
-  res.sendFile(path.join(plugins.baseDir(), name, 'public', file), function (err) { if (err && !res.headersSent) res.status(404).end(); });
+  res.sendFile(path.join(plugins.dirOf(name), 'public', file), function (err) { if (err && !res.headersSent) res.status(404).end(); });
 });
 
 function bridgeOnly(req, res, next) {
@@ -152,22 +155,32 @@ function controlOnly(req, res, next) {
   if (isLoopback(req) && req.get('x-dock-control') === '1') return next();
   res.status(403).json({ ok: false, error: { code: 'FORBIDDEN', message: 'Solo dal pannello di controllo su questo PC' } });
 }
+function assetUrl(s) { return '/' + s.url + '?v=' + Math.round(s.mtime).toString(36); }
 app.get(['/control', '/control/'], localPage, function (req, res) {
   res.setHeader('Cache-Control', 'no-store');
   const list = plugins.scripts();
-  const html = require('fs').readFileSync(path.join(paths.CONTROL_DIR, 'index.html'), 'utf8');
-  if (!list.length) return res.type('html').send(html);
-  const tags = '<script>window.Widgets = window.Widgets || { register: function () {}, helpers: {} };</script>\n  ' +
-    list.map(function (s) { return '<script src="/' + s.url + '?v=' + Math.round(s.mtime).toString(36) + '"></script>\n  '; }).join('');
-  res.type('html').send(html.replace('<script src="/control/control.js"', function (m) { return tags + m; }));
+  let html = require('fs').readFileSync(path.join(paths.CONTROL_DIR, 'index.html'), 'utf8');
+  const before = list.length ? '<script>window.Widgets = window.Widgets || { register: function () {}, helpers: {} };</script>\n  ' +
+    list.map(function (s) { return '<script src="' + assetUrl(s) + '"></script>\n  '; }).join('') : '';
+  const after = plugins.controlScripts().map(function (s) { return '\n  <script src="' + assetUrl(s) + '"></script>'; }).join('');
+  const css = plugins.controlStyles().map(function (s) { return '  <link rel="stylesheet" href="' + assetUrl(s) + '">\n'; }).join('');
+  html = html.replace('<script src="/control/control.js"></script>', function (m) { return before + m + after; });
+  res.type('html').send(html.replace('</head>', function (m) { return css + m; }));
+});
+app.get('/plugins/:name/control/:file', localPage, function (req, res) {
+  const name = req.params.name, file = req.params.file;
+  if (!plugins.NAME_RE.test(name) || plugins.names().indexOf(name) < 0 || !/^[A-Za-z0-9_-][A-Za-z0-9_.-]*\.(js|css)$/.test(file)) return res.status(404).end();
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(plugins.dirOf(name), 'control', file), function (err) { if (err && !res.headersSent) res.status(404).end(); });
 });
 app.use('/control', localPage, express.static(paths.CONTROL_DIR, { index: false, setHeaders: function (res) { res.setHeader('Cache-Control', 'no-cache'); } }));
 
-const WIDGET_NAMES = { mail: 'email', system: 'stato PC', nowplaying: 'musica', queue: 'coda', github: 'GitHub', todo: 'TODO', clock: 'orologio', claude: 'Claude', chat: 'chat', discord: 'Discord', screens: 'schermi e finestre', audio: 'audio' };
+const WIDGET_NAMES = { system: 'stato PC', nowplaying: 'musica', queue: 'coda', clock: 'orologio' };
 function pageSummary(p) {
   const widgets = [], buttons = [];
+  const labels = plugins.widgetLabels();
   p.tiles.forEach(function (t) {
-    if (t.widget) widgets.push(t.widget === 'chat' && t.provider ? t.provider : (WIDGET_NAMES[t.widget] || t.widget));
+    if (t.widget) widgets.push(WIDGET_NAMES[t.widget] || labels[t.widget] || t.widget);
     else if (t.label) buttons.push(t.label);
   });
   let auto = '';
@@ -218,12 +231,10 @@ function controlInfo() {
     homeEditor: homeEditor(d),
     home: d.home,
     custom: !!(config.get('layout') || {}).tabs,
-    discord: discord.panelInfo(),
     tablet: urls,
     pairing: pairing.links(PORT),
-    mail: mail.panelInfo(),
-    games: games.panelInfo(),
     checks: safeCheck(),
+    ...plugins.controlInfo(),
     configErrors: config.errors(),
     version: pkg.version,
     platform: platform.name
@@ -235,7 +246,7 @@ app.get('/api/control/qr', controlOnly, route(async function (req) {
   if (!ok) throw Object.assign(new Error('Link sconosciuto'), { code: 'BAD_REQUEST' });
   return { link: link, svg: await pairing.svg(link) };
 }));
-app.get('/api/control/info', controlOnly, route(async function () { await discord.ensure(); return controlInfo(); }));
+app.get('/api/control/info', controlOnly, route(async function () { await plugins.controlPrepare(); return controlInfo(); }));
 app.post('/api/control/layout', controlOnly, route(function (req) {
   const b = req.body || {};
   config.saveLayout(b.tabs, b.home, b.tiles);
@@ -249,110 +260,11 @@ app.post('/api/control/home', controlOnly, route(function (req) {
   return controlInfo();
 }));
 app.post('/api/control/home/reset', controlOnly, route(function () { config.saveHome(null); return controlInfo(); }));
-app.post('/api/control/discord', controlOnly, route(async function (req) {
-  const b = req.body || {};
-  await discord.setup(b.clientId, b.clientSecret);
-  return controlInfo();
-}));
-app.post('/api/control/discord/authorize', controlOnly, route(async function () { await discord.authorize(); return controlInfo(); }));
-app.post('/api/control/mail/check', controlOnly, route(async function () { await mail.check(); return controlInfo(); }));
-app.post('/api/control/mail/open', controlOnly, route(function () { return mail.openWebmail(); }));
-app.post('/api/control/mail/show', controlOnly, route(function (req) { const b = req.body || {}; mail.setShown(String(b.id || ''), b.shown !== false); return controlInfo(); }));
-app.post('/api/control/discord/logout', controlOnly, route(function () { discord.logout(); return controlInfo(); }));
 
-app.post('/api/control/games/pick', controlOnly, route(async function () {
-  const picked = await games.pickFile();
-  if (!picked.path) return { path: '' };
-  const info = await games.fileInfo(picked.path);
-  const icon = await games.fileIcon(picked.path).catch(function (e) { log.debug('games', 'icona del file: ' + e.message); return { token: '' }; });
-  return Object.assign(info, { iconToken: icon.token });
-}));
-app.post('/api/control/games/fileicon', controlOnly, route(function (req) { return games.fileIconOf((req.body || {}).id); }));
-app.post('/api/control/games/search', controlOnly, route(function (req) { return games.searchIcons((req.body || {}).name); }));
-app.post('/api/control/games', controlOnly, route(async function (req) { await games.add(req.body || {}); return controlInfo(); }));
-app.post('/api/control/games/remove', controlOnly, route(function (req) { games.remove((req.body || {}).id); return controlInfo(); }));
-app.post('/api/control/games/icon', controlOnly, route(async function (req) { const b = req.body || {}; await games.setIcon(b.id, b.icon); return controlInfo(); }));
-app.post('/api/control/games/order', controlOnly, route(function (req) { games.reorder((req.body || {}).ids); return controlInfo(); }));
-function sendImage(res, file) { res.setHeader('Cache-Control', 'no-cache'); res.sendFile(file); }
-app.get('/api/control/games/preview/:token', localPage, function (req, res) {
-  try { sendImage(res, games.previewFile(req.params.token)); } catch (e) { res.status(404).end(); }
-});
-app.get('/api/control/games/icon/:id', localPage, function (req, res) {
-  try { sendImage(res, games.icon(req.params.id)); } catch (e) { res.status(404).end(); }
-});
+plugins.setControl({ only: controlOnly, info: controlInfo });
+plugins.mountControl(app, express, localPage);
 
 app.use('/api', auth.requireToken);
-
-app.get('/api/games/icon/:id', function (req, res) {
-  try { res.setHeader('Cache-Control', 'private, max-age=86400'); res.sendFile(games.icon(req.params.id)); } catch (e) { res.status(404).end(); }
-});
-
-app.get('/api/mail', route(function () { return mail.state(); }));
-app.get('/api/mail/list', route(function (req) { return mail.list(String(req.query.account || ''), req.query.refresh === '1'); }));
-app.get('/api/mail/message', route(function (req) { return mail.message(String(req.query.account || ''), req.query.uid); }));
-app.post('/api/mail/open', route(function (req) { return mail.openWebmail(String((req.body || {}).account || '')); }));
-
-app.get('/api/discord/state', route(async function () { await discord.ensure(); return discord.state(); }));
-app.get('/api/discord/guilds', route(function (req) { return discord.guilds(req.query.refresh === '1'); }));
-app.get('/api/discord/channels', route(function (req) { return discord.channels(String(req.query.guild || '')); }));
-app.post('/api/discord/toggle', route(function (req) {
-  const what = String((req.body || {}).what || '');
-  if (['mute', 'deaf', 'video', 'stream'].indexOf(what) < 0) throw badRequest('Comando non valido');
-  return actions.execute({ type: 'discord', command: what });
-}));
-app.post('/api/discord/join', route(function (req) {
-  const c = (req.body || {}).channel;
-  return discord.join(c === null || c === undefined || c === '' ? null : String(c));
-}));
-app.post('/api/discord/user', route(function (req) {
-  const b = req.body || {};
-  return discord.userVoice(String(b.user || ''), { mute: typeof b.mute === 'boolean' ? b.mute : undefined, volume: typeof b.volume === 'number' ? b.volume : undefined });
-}));
-app.get('/api/discord/img', function (req, res) {
-  discord.image(String(req.query.p || '')).then(function (im) {
-    res.setHeader('Cache-Control', 'max-age=86400');
-    res.type(im.type).send(im.body);
-  }).catch(function () { res.status(404).end(); });
-});
-
-app.get('/api/audio', route(function () { return mixer.state(); }));
-app.post('/api/audio/default', route(function (req) { return mixer.setDefault(String((req.body || {}).id || '')); }));
-app.post('/api/audio/device', route(function (req) { const b = req.body || {}; return mixer.device(String(b.id || ''), b); }));
-app.post('/api/audio/app', route(function (req) { const b = req.body || {}; return mixer.app(String(b.id || ''), b); }));
-
-app.get('/api/screens', route(function () { return screens.info(); }));
-app.get('/api/screens/windows', route(function () { return screens.windows(); }));
-app.post('/api/screens/target', route(function (req) {
-  const m = (req.body || {}).monitor;
-  return screens.setTarget(m === null || m === undefined || m === '' ? null : String(m));
-}));
-app.post('/api/screens/place', route(function (req) {
-  const b = req.body || {};
-  return screens.place(String(b.window || ''), String(b.monitor || ''), String(b.layout || ''), b.zone, b.focus !== false);
-}));
-app.post('/api/screens/window', route(function (req) {
-  const b = req.body || {};
-  return screens.act(String(b.window || ''), String(b.action || ''));
-}));
-app.get('/api/viber/state', route(function () { return viber.state(); }));
-app.get('/api/viber/tasks', route(function () { return viber.tasks(); }));
-app.post('/api/viber/panel', route(function (req) { return viber.focusPanel(String((req.body || {}).panel || '')); }));
-app.post('/api/viber/view', route(function (req) { return viber.view(String((req.body || {}).mode || '')); }));
-app.post('/api/viber/layout', route(function (req) { return viber.setLayout(String((req.body || {}).preset || '')); }));
-app.get('/api/viber/projects', route(function () { return viber.projects(); }));
-app.post('/api/viber/project', route(function (req) { return viber.project(String((req.body || {}).target || '')); }));
-
-app.get('/api/screens/desktops', route(function () { return vdesk.list(); }));
-app.post('/api/screens/move', route(function (req) {
-  const b = req.body || {};
-  if (b.monitor) return screens.moveWindowToMonitor(String(b.window || ''), String(b.monitor));
-  if (b.desktop) return vdesk.moveWindow(String(b.window || ''), String(b.desktop));
-  throw badRequest('desktop o monitor richiesti');
-}));
-app.post('/api/screens/desktops', route(function (req) {
-  const b = req.body || {};
-  return vdesk.action(String(b.action || ''), b.desktop ? String(b.desktop) : '');
-}));
 
 function tabletPower() {
   const t = (config.get('services') || {}).tablet || {};
@@ -372,7 +284,6 @@ app.get('/api/config', route(function () {
     power: tabletPower(),
     platform: platform.name,
     hostname: os.hostname(),
-    claude: claude.info(),
     errors: config.errors()
   };
 }));
@@ -405,59 +316,6 @@ app.get('/api/media/art', function (req, res) {
     res.end(art.data);
   }).catch(function () { res.status(404).end(); });
 });
-
-app.get('/api/github', route(function (req) { return github.summary(req.query.refresh === '1'); }));
-app.post('/api/github/open', route(async function (req) {
-  const b = req.body || {};
-  const url = github.urlFor(String(b.repo || ''), String(b.what || ''));
-  if (!url) throw Object.assign(new Error('Repository sconosciuto'), { code: 'NOT_FOUND' });
-  await platform.open(url);
-  return { message: 'Aperto sul PC' };
-}));
-
-function todoState() { return { items: todo.list(), source: todo.source(), notes: todo.notes(), voiceServer: voice.available(), sync: todosync.status() }; }
-app.get('/api/todo', route(todoState));
-app.post('/api/todo/add', route(async function (req) {
-  const b = req.body || {};
-  const item = await todo.add(b.text, b.priority, b.note ? String(b.note) : '');
-  return Object.assign(todoState(), { item: item });
-}));
-app.post('/api/todo/toggle', route(async function (req) { await todo.toggle((req.body || {}).id); return todoState(); }));
-app.post('/api/todo/remove', route(async function (req) { await todo.remove((req.body || {}).id); return todoState(); }));
-app.post('/api/todo/sync', route(async function () { await todosync.sync(); return todoState(); }));
-app.post('/api/todo/clear', route(async function () { const removed = await todo.clearDone(); return Object.assign(todoState(), { removed: removed }); }));
-
-app.get('/api/ollama/models', route(function () { return ollama.models(); }));
-app.post('/api/ollama/chat', route(function (req) {
-  const b = req.body || {};
-  if (!b.text || !String(b.text).trim()) throw badRequest('Messaggio vuoto');
-  return ollama.chat(b.sessionId, String(b.model || ''), String(b.text).slice(0, 8000));
-}));
-
-app.get('/api/claude/info', route(function () {
-  return Object.assign(claude.info(), { voiceServer: voice.available() });
-}));
-app.get('/api/claude/usage', route(function (req) { return claudeusage.usage(req.query.refresh === '1'); }));
-app.get('/api/claude/desktop', route(function () { return desktopcode.list(); }));
-app.get('/api/claude/desktop/session', route(function (req) { return desktopcode.get(String(req.query.id || '')); }));
-app.post('/api/claude/desktop/send', route(function (req) { const b = req.body || {}; return desktopcode.send(String(b.id || ''), b.text); }));
-app.post('/api/claude/desktop/cancel', route(function (req) { return desktopcode.cancel(String((req.body || {}).id || '')); }));
-app.post('/api/claude/desktop/stop', route(function (req) { return desktopcode.stop(String((req.body || {}).id || '')); }));
-app.post('/api/claude/desktop/open', route(function (req) { return desktopcode.openOnPc(String((req.body || {}).id || '')); }));
-app.post('/api/claude/desktop/new', route(function (req) { const b = req.body || {}; return desktopcode.create(String(b.section || ''), b.text); }));
-app.get('/api/claude/chats', route(function () { return claude.listChats(); }));
-app.get('/api/claude/chat', route(function (req) { return claude.getChat(String(req.query.kind || ''), String(req.query.id || '')); }));
-app.post('/api/claude/send', route(function (req) {
-  const b = req.body || {};
-  return claude.send(String(b.kind || ''), b.id ? String(b.id) : null, String(b.text || '').slice(0, 12000), b.cwd ? String(b.cwd) : null);
-}));
-app.get('/api/claude/job', route(function (req) { return claude.getJob(String(req.query.id || '')); }));
-app.post('/api/claude/delete', route(function (req) { return claude.deleteChat(String((req.body || {}).id || '')); }));
-app.post('/api/claude/chat', route(function (req) {
-  const b = req.body || {};
-  if (!b.text || !String(b.text).trim()) throw badRequest('Messaggio vuoto');
-  return claude.chat(b.sessionId, String(b.text).slice(0, 8000));
-}));
 
 app.post('/api/remote/type', route(async function (req) {
   const b = req.body || {};
@@ -509,8 +367,6 @@ function banner() {
   console.log('  Pannello di controllo (solo da questo PC):  http://127.0.0.1:' + PORT + '/control');
   const caps = platform.capabilities();
   (caps.notes || []).forEach(function (n) { console.log('  Nota: ' + n); });
-  const ci = claude.info();
-  console.log('  Claude: ' + (ci.available ? ci.backend + ' (' + ci.model + ')' : 'non configurato'));
   config.errors().forEach(function (e) { console.log('  ERRORE CONFIG: ' + e); });
   console.log(line);
   console.log(process.env.DOCK_SERVICE === '1'
@@ -536,9 +392,9 @@ function start() {
   }).then(function () {
     return new Promise(function (resolve, reject) {
       const server = app.listen(PORT, HOST, function () {
-        banner(); todosync.start();
+        banner();
         safeCheck().filter(function (x) { return x.level === 'error'; }).forEach(function (x) { log.warn('config', x.where + ': ' + x.message); });
-        mail.startupCheck().catch(function (e) { log.debug('mail', 'controllo all\'avvio: ' + e.message); });
+        plugins.hook('start');
         resolve(server);
       });
       server.keepAliveTimeout = 65000;
@@ -553,7 +409,7 @@ function start() {
 
 function shutdown() {
   system.stop();
-  todosync.stop();
+  plugins.hook('stop');
   platform.shutdown();
   process.exit(0);
 }

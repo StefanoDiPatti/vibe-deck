@@ -3,7 +3,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const sticky = require('../server/services/sticky');
+const sticky = require('../official-plugins/todo/lib/sticky');
 
 const P = sticky._parse;
 const NOTE = '113b8a75-7487-40b2-8e7b-c0458428426d';

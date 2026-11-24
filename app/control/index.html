@@ -121,47 +121,13 @@
       </div>
     </section>
 
-    <section class="card" id="games-card">
-      <div class="card-head">
-        <div>
-          <h2>Giochi</h2>
-          <p class="hint">I pulsanti della pagina <b>GAMES</b>: scegli il file del gioco, dagli un nome e un'icona. Restano su questo PC (in <code>data/games.json</code>), non nel progetto. Aggiungi la pagina <b>GAMES</b> alla barra qui sopra.</p>
-        </div>
-        <span id="gm-count" class="pill"></span>
-      </div>
-      <div id="gm-list"></div>
-      <div id="gm-add"></div>
-    </section>
-
-    <section class="card" id="mail-card">
-      <div class="card-head">
-        <div>
-          <h2>Email</h2>
-          <p class="hint">Posta in arrivo sul tablet, in sola lettura. <b>Si collega solo tramite Thunderbird</b>: aggiungi lì i tuoi account (Gmail, Outlook, iCloud, università, lavoro...) e la dock legge la posta dal PC. Poi aggiungi la pagina <b>EMAIL</b> alla barra qui sopra.</p>
-        </div>
-        <span id="ml-count" class="pill"></span>
-      </div>
-      <div id="ml-status" class="ml-status"></div>
-      <div id="ml-accounts"></div>
-      <div id="ml-add"></div>
-    </section>
-
-    <section class="card" id="discord-card">
-      <div class="card-head">
-        <div>
-          <h2>Discord</h2>
-          <p class="hint">Server, canali vocali, chi c'è in stanza e mute dal tablet. Aggiungi la pagina <b>DISCORD</b> alla barra qui sopra.</p>
-        </div>
-        <span id="dc-status" class="pill">…</span>
-      </div>
-      <div id="dc-body"></div>
-    </section>
+    <div id="plugin-cards" class="plugin-cards"></div>
 
     <section class="card" id="check-card">
       <div class="card-head">
         <div>
           <h2>Pulsanti e nuove pagine</h2>
-          <p class="hint">Una pagina nuova è un file in <code>config/pages/&lt;id&gt;.json</code>; per cambiare una pagina predefinita copiala da <code>config/defaults/pages/</code> a <code>config/pages/</code>. Le app stanno in <code>config/apps.json</code> (o <code>config/apps/&lt;id&gt;.json</code>), i comandi in <code>config/commands.json</code>. Il tablet si aggiorna da solo quando salvi. Pagina nuova: <code>npm run new:page -- &lt;id&gt;</code>; widget nuovo (plugin in <code>plugins/&lt;nome&gt;/</code>): <code>npm run new:widget -- &lt;nome&gt;</code>. Esempi nella guida per sviluppatori del README.</p>
+          <p class="hint">Una pagina nuova è un file in <code>config/pages/&lt;id&gt;.json</code>; per cambiare una pagina predefinita copiala da <code>config/defaults/pages/</code> (o da <code>official-plugins/&lt;id&gt;/pages/</code>) a <code>config/pages/</code>. Le app stanno in <code>config/apps.json</code> (o <code>config/apps/&lt;id&gt;.json</code>), i comandi in <code>config/commands.json</code>. Il tablet si aggiorna da solo quando salvi. Pagina nuova: <code>npm run new:page -- &lt;id&gt;</code>; widget nuovo (plugin in <code>plugins/&lt;nome&gt;/</code>): <code>npm run new:widget -- &lt;nome&gt;</code>. Esempi nella guida per sviluppatori del README.</p>
         </div>
         <span id="ck-count" class="pill"></span>
       </div>

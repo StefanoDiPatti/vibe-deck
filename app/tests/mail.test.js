@@ -10,8 +10,8 @@ process.env.DOCK_THUNDERBIRD_DIR = path.join(tmp, 'Thunderbird');
 process.env.LOG_LEVEL = 'error';
 fs.mkdirSync(process.env.DOCK_DATA_DIR, { recursive: true });
 
-const tb = require('../server/services/thunderbird');
-const mail = require('../server/services/mail');
+const tb = require('../official-plugins/mail/lib/thunderbird');
+const mail = require('../official-plugins/mail/lib/mail');
 
 const ROOT = process.env.DOCK_THUNDERBIRD_DIR;
 const PROFILE = path.join(ROOT, 'Profiles', 'abcd.default-release');

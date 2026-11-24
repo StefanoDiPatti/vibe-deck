@@ -89,8 +89,9 @@ test('pagina APP di default: CLAUDE unico, Viber su entrambi, terminale su Linux
   assert.strictEqual(lin.tiles.filter(function (t) { return t.id === 'screenshot'; })[0].action.type, 'launch');
 });
 
-test('pagina DEV di default: TERM VSC e PALETTE subito dopo VS CODE, pulsanti con id fissi', function () {
-  const raw = config.defaultDock();
+test('pagina DEV del plugin ufficiale: TERM VSC e PALETTE subito dopo VS CODE, pulsanti con id fissi', function () {
+  const dev = config.parseJson(fs.readFileSync(path.join(__dirname, '..', 'official-plugins', 'dev', 'pages', 'dev.json'), 'utf8'));
+  const raw = Object.assign({}, config.defaultDock(), { pages: [dev] });
   ['linux', 'windows'].forEach(function (os) {
     const p = page(config.normalizeDock(raw, {}, os), 'dev');
     assert.ok(p.editable);
@@ -199,7 +200,7 @@ test('pagine BROWSER DEV e ANDROID e app DOCKER: disponibili e con una variante 
 });
 
 test('GitHub: i workflow di deploy si riconoscono dal nome o dal file', function () {
-  const g = require('../server/services/github');
+  const g = require('../official-plugins/github/lib/github');
   assert.ok(g.isDeploy({ name: 'Deploy to Vercel' }));
   assert.ok(g.isDeploy({ name: 'pages build and deployment' }));
   assert.ok(g.isDeploy({ name: 'build', path: '.github/workflows/cd.yml' }));
@@ -208,9 +209,14 @@ test('GitHub: i workflow di deploy si riconoscono dal nome o dal file', function
 });
 
 test('configurazione standard (prima installazione): barra semplice, il resto tra le disponibili', function () {
+  const fromPlugins = ['audio', 'screens'].map(function (id) {
+    const p = config.parseJson(fs.readFileSync(path.join(__dirname, '..', 'official-plugins', id, 'pages', id + '.json'), 'utf8'));
+    return Object.assign({}, p, { tab: p.tab === true });
+  });
+  const withPlugin = Object.assign({}, config.defaultDock(), { pages: config.defaultDock().pages.concat(fromPlugins) });
+  const tabs = function (os) { return config.normalizeDock(withPlugin, {}, os).pages.filter(function (p) { return p.tab; }).map(function (p) { return p.id; }); };
+  assert.deepStrictEqual(tabs('windows'), ['main', 'media', 'apps', 'audio', 'screens'], 'AUDIO and SCHERMI from their plugins, tabs because their pages say "tab": true');
   const raw = config.defaultDock();
-  const tabs = function (os) { return config.normalizeDock(raw, {}, os).pages.filter(function (p) { return p.tab; }).map(function (p) { return p.id; }); };
-  assert.deepStrictEqual(tabs('windows'), ['main', 'media', 'apps', 'screens', 'audio']);
   assert.deepStrictEqual(tabs('linux'), ['main', 'media', 'apps', 'audio'], 'SCHERMI su Linux richiede KDE: la aggiungi tu');
   const apps = page(config.normalizeDock(raw, {}, 'windows'), 'apps');
   assert.deepStrictEqual(labels({ tiles: apps.tiles }), ['APPLE MUSIC', 'DISCORD', 'FILE', 'SCREENSHOT', 'DESKTOP', 'BLOCCA', 'SCHERMO OFF', 'VOL -', 'MUTE', 'VOL +']);

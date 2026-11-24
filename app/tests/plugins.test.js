@@ -8,6 +8,7 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dock-plugins-'));
 process.env.DOCK_CONFIG_DIR = path.join(tmp, 'config');
 process.env.DOCK_DATA_DIR = path.join(tmp, 'data');
 process.env.DOCK_PLUGINS_DIR = path.join(tmp, 'plugins');
+process.env.DOCK_OFFICIAL_PLUGINS_DIR = path.join(tmp, 'official');
 process.env.DOCK_TOKEN = 'TESTCODE';
 process.env.LOG_LEVEL = 'error';
 
@@ -126,17 +127,19 @@ test('npm run new:page crea una pagina valida', function () {
   assert.deepStrictEqual(errs, []);
 });
 
-test('widget del plugin nel catalogo della HOME: home.json (anche più versioni dello stesso widget)', function () {
+test('widget del plugin nel catalogo della HOME: home.json (anche più versioni dello stesso widget)', async function () {
   const home = require('../server/home');
+  await new Promise(setImmediate);
   let c = home.catalog().filter(function (x) { return x.plugin === 'meteo'; });
   assert.deepStrictEqual(c.map(function (x) { return x.id + ' ' + x.label + ' ' + x.w + 'x' + x.h + ' min ' + x.minW + 'x' + x.minH + ' ' + x.page; }),
     ['meteo METEO 2x2 min 2x1 PLUGIN METEO'], 'dal home.json del generatore');
   fs.writeFileSync(path.join(P, 'home.json'), '// prova\n{ "meteo": { "label": "Meteo", "icon": "meteo", "w": 3, "h": 2 },' +
     ' "meteo-roma": { "widget": "meteo", "label": "Meteo Roma", "props": { "citta": "Roma" } },' +
     ' "furbo": { "widget": "clock" } }');
+  await new Promise(setImmediate);
   c = home.catalog().filter(function (x) { return x.plugin === 'meteo'; });
   assert.deepStrictEqual(c.map(function (x) { return x.id + ':' + x.label; }), ['meteo:Meteo', 'meteo-roma:Meteo Roma']);
-  config.saveHome({ columns: 6, rows: 4, tiles: [{ id: 'meteo-roma', x: 0, y: 0, w: 2, h: 2 }, { id: 'todo', x: 2, y: 0, w: 2, h: 2 }] });
+  config.saveHome({ columns: 6, rows: 4, tiles: [{ id: 'meteo-roma', x: 0, y: 0, w: 2, h: 2 }, { id: 'clock', x: 2, y: 0, w: 2, h: 2 }] });
   const t = config.dock().pages.filter(function (p) { return p.id === 'main'; })[0].tiles[0];
   assert.strictEqual(t.widget, 'meteo');
   assert.strictEqual(t.citta, 'Roma', 'le props arrivano al widget');

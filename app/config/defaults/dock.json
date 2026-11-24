@@ -5,19 +5,6 @@
   "pages": [
     "main",
     "media",
-    "apps",
-    "dev",
-    "github",
-    "ollama",
-    "claude",
-    "discord",
-    "games",
-    "mail",
-    "screens",
-    "vdesk",
-    "audio",
-    "viber",
-    "blender",
-    "davinci"
+    "apps"
   ]
 }

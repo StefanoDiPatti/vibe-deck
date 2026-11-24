@@ -1,7 +1,0 @@
-{
-  "id": "audio",
-  "title": "AUDIO",
-  "icon": "volup",
-  "description": "Uscite e microfoni (predefinito, volume, mute) e volume di ogni app",
-  "tiles": [ { "widget": "audio", "w": 5, "h": 3 } ]
-}

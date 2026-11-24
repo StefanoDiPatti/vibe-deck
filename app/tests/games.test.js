@@ -9,7 +9,7 @@ process.env.DOCK_DATA_DIR = path.join(tmp, 'data');
 process.env.DOCK_CONFIG_DIR = path.join(tmp, 'config');
 process.env.LOG_LEVEL = 'error';
 
-const games = require('../server/services/games');
+const games = require('../official-plugins/games/lib/games');
 const config = require('../server/config');
 
 const EXE = path.join(tmp, process.platform === 'win32' ? 'MioGioco.exe' : 'miogioco.sh');
