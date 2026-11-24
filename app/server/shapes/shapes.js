@@ -51,6 +51,7 @@ class Shape {
       shape: this.name,
       label: v.text(show.label !== undefined ? show.label : def.name),
       icon: def.icon || '',
+      glyph: v.text(show.icon),
       tappable: !!def.tap
     }, this.fields(def, v, show));
   }
@@ -90,6 +91,7 @@ class ListShape extends Shape {
         const r = v.child(self.rowScope(v.data, row, index));
         const bar = item.bar !== undefined ? percent(r.number(item.bar)) : null;
         return {
+          icon: r.text(item.icon),
           title: r.text(item.title),
           sub: r.text(item.sub),
           right: r.text(item.right),

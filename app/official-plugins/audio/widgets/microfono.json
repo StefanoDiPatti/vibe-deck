@@ -6,6 +6,7 @@
   "source": { "type": "audio.mixer" },
   "every": 3,
   "show": {
+    "icon": "mic",
     "label": "MICROFONO",
     "value": "{{input.volume}}",
     "min": 0,

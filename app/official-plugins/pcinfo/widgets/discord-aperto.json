@@ -6,6 +6,7 @@
   "source": { "type": "pc" },
   "every": 5,
   "show": {
+    "icon": "headset",
     "label": "DISCORD",
     "on": "{{apps.discord}}",
     "onText": "Aperto",

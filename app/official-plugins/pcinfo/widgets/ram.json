@@ -6,6 +6,7 @@
   "source": { "type": "pc" },
   "every": 5,
   "show": {
+    "icon": "cpu",
     "label": "RAM",
     "value": "{{ram.usage}}",
     "unit": "%",

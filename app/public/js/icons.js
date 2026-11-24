@@ -87,21 +87,54 @@ var Icons = (function () {
   P.docker = P.cube;
   P.vscode = P.code;
 
+  P.disk = 'M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z';
+  P.drop = 'M12 2.5c-3.6 4.9-6 8.2-6 11.3a6 6 0 0 0 12 0c0-3.1-2.4-6.4-6-11.3z';
+  P.thermo = 'M15 13.2V5a3 3 0 0 0-6 0v8.2a5 5 0 1 0 6 0zM12 4a1 1 0 0 1 1 1v4h-2V5a1 1 0 0 1 1-1z';
+  P.clock = 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 10.4V6h-2v7.2l5.2 3.1 1-1.6z';
+
+  var SUN = 'M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM11 1h2v3.2h-2zM11 19.8h2V23h-2zM1 11h3.2v2H1zM19.8 11H23v2h-3.2z' +
+    'M4.22 5.64l1.42-1.42 2.26 2.26-1.42 1.42zM16.1 17.52l1.42-1.42 2.26 2.26-1.42 1.42zM4.22 18.36l2.26-2.26 1.42 1.42-2.26 2.26z' +
+    'M16.1 6.48l2.26-2.26 1.42 1.42-2.26 2.26z';
+  var CLOUD = 'M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z';
+  var HIGH = 'translate(1.5 -2.5) scale(.88)';
+  var G = {
+    sun: [['p-sun', SUN]],
+    moon: [['p-moon', 'M13.5 2.2A9.8 9.8 0 1 0 21.8 14 7.8 7.8 0 0 1 13.5 2.2z']],
+    partly: [['p-sun', SUN, 'scale(.72)'], ['p-cloud', CLOUD, 'translate(5 6.5) scale(.78)']],
+    cloudy: [['p-cloud2', CLOUD, 'translate(-1 -2.5) scale(.78)'], ['p-cloud', CLOUD, 'translate(4.5 5) scale(.8)']],
+    fog: [['p-cloud', CLOUD, HIGH], ['p-fog', 'M2 18.2h20v1.8H2zM5 21.4h14v1.8H5z']],
+    drizzle: [['p-cloud', CLOUD, HIGH], ['p-rain', 'M7 18.8a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6zM12 20a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6zM17 18.8a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6z']],
+    rain: [['p-cloud2', CLOUD, HIGH], ['p-rain', 'M6.6 18.2h1.9l-1.6 4.6H5zM11.6 18.2h1.9l-1.6 4.6H10zM16.6 18.2h1.9l-1.6 4.6H15z']],
+    showers: [['p-sun', SUN, 'translate(-1 -1) scale(.6)'], ['p-cloud', CLOUD, 'translate(4 3.5) scale(.82)'], ['p-rain', 'M9.6 19.4h1.8l-1.4 3.6H8.2zM14.6 19.4h1.8l-1.4 3.6h-1.8z']],
+    snow: [['p-cloud', CLOUD, HIGH], ['p-snow', 'M6.3 18h1.4v1.4h1.4v1.4H7.7v1.4H6.3v-1.4H4.9v-1.4h1.4zM11.3 19.4h1.4v1.4h1.4v1.4h-1.4v1.4h-1.4v-1.4H9.9v-1.4h1.4zM16.3 18h1.4v1.4h1.4v1.4h-1.4v1.4h-1.4v-1.4h-1.4v-1.4h1.4z']],
+    storm: [['p-cloud2', CLOUD, HIGH], ['p-bolt', 'M13.4 14.6L8.6 20.4h3.1l-1.1 3.6 4.9-6h-3.2l1.3-3.4z']]
+  };
+
   var svgOk = !!(document.createElementNS &&
     document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect);
 
+  function keyOf(name) { return String(name || '').replace(/\.(png|svg)$/i, ''); }
+
   function html(name, cls) {
-    var key = String(name || '').replace(/\.(png|svg)$/i, '');
-    if (!svgOk || !P[key]) return '';
-    return '<svg class="ic' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">' +
-      '<path fill-rule="evenodd" d="' + P[key] + '"/></svg>';
+    var key = keyOf(name);
+    if (!svgOk || (!P[key] && !G[key])) return '';
+    var body = '';
+    if (G[key]) {
+      for (var i = 0; i < G[key].length; i++) {
+        var layer = G[key][i];
+        body += '<path class="' + layer[0] + '" fill-rule="evenodd" d="' + layer[1] + '"' + (layer[2] ? ' transform="' + layer[2] + '"' : '') + '/>';
+      }
+    } else {
+      body = '<path fill-rule="evenodd" d="' + P[key] + '"/>';
+    }
+    return '<svg class="ic' + (G[key] ? ' pic' : '') + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">' + body + '</svg>';
   }
 
   function register(name, d) {
-    if (!name || typeof d !== 'string' || P.hasOwnProperty(name)) return false;
+    if (!name || typeof d !== 'string' || P.hasOwnProperty(name) || G.hasOwnProperty(name)) return false;
     P[name] = d;
     return true;
   }
 
-  return { html: html, register: register, has: function (n) { return svgOk && !!P[String(n || '').replace(/\.(png|svg)$/i, '')]; } };
+  return { html: html, register: register, has: function (n) { return svgOk && !!(P[keyOf(n)] || G[keyOf(n)]); } };
 })();

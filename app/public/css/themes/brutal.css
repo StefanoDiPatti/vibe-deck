@@ -76,6 +76,8 @@ svg.ic { fill: #111111; }
 .sh-vsend { background: #3d86e8; }
 .sh-said { color: #2b2b2b; }
 .sh-said.err { color: #c4271a; }
+svg.ic .p-snow { fill: #111111; }
+svg.ic .p-fog { fill: #2b2b2b; }
 .sh-row { background: #ffffff; }
 .sh-row.tap.pressed { background: #ffd23f; }
 .sh-row.ok { -webkit-box-shadow: inset 4px 0 0 #2bd96b; box-shadow: inset 4px 0 0 #2bd96b; }

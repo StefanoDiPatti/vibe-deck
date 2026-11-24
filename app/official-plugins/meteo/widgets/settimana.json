@@ -13,12 +13,24 @@
     "items": "{{daily|zip}}",
     "max": 7,
     "item": {
+      "icon": "{{item.weather_code|map:icone}}",
       "title": "{{item.time|date:day}} · {{item.weather_code|map:wmo}}",
       "sub": "pioggia {{item.precipitation_probability_max|default:0}}%",
       "right": "{{item.temperature_2m_max|round}}° / {{item.temperature_2m_min|round}}°"
     }
   },
   "maps": {
+    "icone": {
+      "0": "sun", "1": "partly", "2": "partly", "3": "cloudy",
+      "45": "fog", "48": "fog",
+      "51": "drizzle", "53": "drizzle", "55": "drizzle", "56": "drizzle", "57": "drizzle",
+      "61": "rain", "63": "rain", "65": "rain", "66": "rain", "67": "rain",
+      "71": "snow", "73": "snow", "75": "snow", "77": "snow",
+      "80": "showers", "81": "showers", "82": "showers",
+      "85": "snow", "86": "snow",
+      "95": "storm", "96": "storm", "99": "storm",
+      "*": "cloudy"
+    },
     "wmo": {
       "0": "Sereno", "1": "Poco nuvoloso", "2": "Parzialmente nuvoloso", "3": "Coperto",
       "45": "Nebbia", "48": "Nebbia con brina",

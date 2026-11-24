@@ -6,6 +6,7 @@
   "source": { "type": "pc" },
   "every": 3,
   "show": {
+    "icon": "cpu",
     "label": "CPU",
     "value": "{{cpu.usage|default:…}}",
     "unit": "%",

@@ -58,6 +58,7 @@
       "type": "object",
       "properties": {
         "label": { "$ref": "#/definitions/template" },
+        "icon": { "$ref": "#/definitions/template", "description": "value, text, status, slider: icon or picture (sun, partly, cloudy, fog, drizzle, rain, showers, snow, storm, moon, or any icon name); can change with the data, e.g. {{code|map:icons}}." },
         "value": { "$ref": "#/definitions/template" },
         "unit": { "$ref": "#/definitions/template" },
         "sub": { "$ref": "#/definitions/template" },
@@ -75,6 +76,7 @@
           "type": "object",
           "description": "list: what each row shows; use {{item.field}}, {{index}}, {{root.field}}.",
           "properties": {
+            "icon": { "$ref": "#/definitions/template", "description": "Icon on the left of the row." },
             "title": { "$ref": "#/definitions/template" },
             "sub": { "$ref": "#/definitions/template" },
             "right": { "$ref": "#/definitions/template" },

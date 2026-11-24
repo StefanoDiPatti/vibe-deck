@@ -10,6 +10,7 @@
     "label": "DISCHI",
     "items": "{{.}}",
     "item": {
+      "icon": "disk",
       "title": "{{item.name}} {{item.label}}",
       "sub": "{{item.freeGb}} GB liberi",
       "right": "{{item.usedGb}} / {{item.totalGb}} GB",

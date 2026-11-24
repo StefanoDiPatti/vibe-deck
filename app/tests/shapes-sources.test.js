@@ -101,14 +101,15 @@ test('http widget end to end: permissions from plugin.json, list from parallel a
   write('plugins/rete/plugin.json', { id: 'rete', name: 'Rete', version: '1.0.0', permissions: { http: [host] } });
   write('plugins/rete/widgets/giorni.json', {
     name: 'Giorni', shape: 'list', source: { type: 'http', url: 'http://' + host + '/meteo' }, every: 600,
-    show: { items: '{{daily|zip}}', item: { title: '{{item.time|date:day}} · {{item.code|map:cielo}}', right: '{{item.tmax|round}}°' } },
-    maps: { cielo: { '0': 'Sereno', '61': 'Pioggia' } }
+    show: { items: '{{daily|zip}}', item: { icon: '{{item.code|map:icone}}', title: '{{item.time|date:day}} · {{item.code|map:cielo}}', right: '{{item.tmax|round}}°' } },
+    maps: { cielo: { '0': 'Sereno', '61': 'Pioggia' }, icone: { '0': 'sun', '61': 'rain' } }
   });
   write('plugins/senza/widgets/giorni.json', { name: 'G', shape: 'text', source: { type: 'http', url: 'http://' + host + '/meteo' }, show: { text: 'x' } });
   await new Promise(setImmediate);
   const before = hits;
   const v = await facade.view('rete', 'giorni');
   assert.deepStrictEqual(v.items.map(function (i) { return i.title + ' ' + i.right; }), ['lun 23 · Sereno 15°', 'mar 24 · Pioggia 12°']);
+  assert.deepStrictEqual(v.items.map(function (i) { return i.icon; }), ['sun', 'rain'], 'icons can follow the data');
   await facade.view('rete', 'giorni');
   assert.strictEqual(hits - before, 1, 'one request per period');
   const bad = facade.report().filter(function (r) { return /senza/.test(r.where); })[0];
@@ -136,8 +137,8 @@ test('list: rows, bars, empty text; a tap runs the action for that row', async f
   assert.strictEqual(v.rowTap, true);
   assert.strictEqual(v.tappable, false);
   assert.deepStrictEqual(v.items, [
-    { title: 'BUILD', sub: '', right: '40%', bar: 40, level: 'ok' },
-    { title: 'TEST', sub: '', right: '100%', bar: 100, level: 'warn' }
+    { icon: '', title: 'BUILD', sub: '', right: '40%', bar: 40, level: 'ok' },
+    { icon: '', title: 'TEST', sub: '', right: '100%', bar: 100, level: 'warn' }
   ]);
   done.length = 0;
   assert.strictEqual((await facade.tap('locale', 'coda', 1)).message, 'apri test (1)');
