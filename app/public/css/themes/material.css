@@ -64,6 +64,7 @@ svg.ic { fill: #e9e9ee; }
 .sh-big.hot { color: #ffb4ab; }
 .sh-unit { color: #c4c6cf; }
 .sh-sub { color: #c4c6cf; }
+.sh-dot.hot { background: #ffb4ab; }
 .sh-dot.on { background: #7fd99a; -webkit-box-shadow: 0 0 8px rgba(127, 217, 154, 0.7); box-shadow: 0 0 8px rgba(127, 217, 154, 0.7); }
 .sh-btn { background: #32353a; }
 .sh-btn.pressed { background: #1f5a96; }

@@ -17,6 +17,20 @@ filters.register('round', function (v, digits) {
   const k = Math.pow(10, Math.max(0, Math.min(6, parseInt(digits, 10) || 0)));
   return Math.round(n * k) / k;
 });
+filters.register('div', function (v, by) {
+  const n = toNumber(v), d = toNumber(by);
+  return isNaN(n) || isNaN(d) || d === 0 ? v : n / d;
+});
+filters.register('mul', function (v, by) {
+  const n = toNumber(v), m = toNumber(by);
+  return isNaN(n) || isNaN(m) ? v : n * m;
+});
+filters.register('thousands', function (v) {
+  const n = toNumber(v);
+  if (isNaN(n)) return v;
+  const parts = String(Math.abs(Math.round(n * 100) / 100)).split('.');
+  return (n < 0 ? '-' : '') + parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (parts[1] ? ',' + parts[1] : '');
+});
 filters.register('percent', function (v) {
   const n = toNumber(v);
   return isNaN(n) ? v : Math.round(n) + '%';
@@ -88,11 +102,15 @@ filters.register('date', function (v, format) {
   if (format === 'time') return pad(d.getHours()) + ':' + pad(d.getMinutes());
   if (format === 'weekday') return DAYS[d.getDay()];
   if (format === 'day') return DAYS[d.getDay()] + ' ' + d.getDate();
+  if (format === 'year') return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
   return d.getDate() + ' ' + MONTHS[d.getMonth()];
 });
 
 const FILTER_INFO = {
   round: { label: 'Arrotonda', args: [{ label: 'Decimali', type: 'number', default: 0 }] },
+  div: { label: 'Dividi per', args: [{ label: 'Numero', type: 'number', default: 100 }] },
+  mul: { label: 'Moltiplica per', args: [{ label: 'Numero', type: 'number', default: 10 }] },
+  thousands: { label: 'Migliaia con il punto (1.234.567)', args: [] },
   percent: { label: 'Percentuale (62%)', args: [] },
   bytes: { label: 'Dimensione (KB, MB, GB)', args: [] },
   duration: { label: 'Durata da secondi (2 h 5 min)', args: [] },
@@ -107,7 +125,7 @@ const FILTER_INFO = {
   zip: { label: 'Colonne in righe', args: [] },
   first: { label: 'Il primo', args: [] },
   join: { label: 'Unisci una lista', args: [{ label: 'Separatore', type: 'text', default: ', ' }] },
-  date: { label: 'Data', args: [{ label: 'Formato', type: 'select', options: [{ value: '', label: '24 nov' }, { value: 'day', label: 'mar 24' }, { value: 'weekday', label: 'mar' }, { value: 'time', label: '14:05' }] }] }
+  date: { label: 'Data', args: [{ label: 'Formato', type: 'select', options: [{ value: '', label: '24 nov' }, { value: 'day', label: 'mar 24' }, { value: 'weekday', label: 'mar' }, { value: 'time', label: '14:05' }, { value: 'year', label: '24 nov 2026' }] }] }
 };
 
 function describeFilters() {

@@ -113,7 +113,7 @@ var Shapes = (function () {
         setText(title, v.label);
         setText(text, v.text);
         setText(sub, v.sub);
-        setClass(dot, 'sh-dot ' + (v.on ? 'on' : 'off'));
+        setClass(dot, 'sh-dot ' + (v.on ? 'on' : 'off') + (v.level ? ' ' + v.level : ''));
       },
       resize: function (w, h) {
         line.style.fontSize = clampNum(Math.round((h - 34) * 0.32), 16, 40) + 'px';
@@ -132,7 +132,8 @@ var Shapes = (function () {
       var withSub = lastH > 150 && !!sub.__text;
       sub.style.display = withSub ? '' : 'none';
       var len = Math.max(4, (text.__text || '').length);
-      var byWidth = (lastW - 24) / (len * 0.55);
+      var glyphRoom = D.hasClass(ctx.root, 'sh-has-glyph') && lastH >= COMPACT_BELOW ? 90 : 0;
+      var byWidth = (lastW - 24 - glyphRoom) / (len * 0.6);
       var byHeight = (lastH - 42 - (withSub ? 40 : 12)) * 0.85;
       text.style.fontSize = clampNum(Math.round(Math.min(byWidth, byHeight)), 14, 64) + 'px';
     }
@@ -436,6 +437,7 @@ var Shapes = (function () {
     if (v.shape !== this.shape || !this.painter) this.build(v.shape);
     if (this.painter) this.painter.paint(v);
     this.paintGlyph(v);
+    if (this.painter && this.size) this.painter.resize(this.size.w, this.size.h);
     var tappable = !!v.tappable;
     if (tappable !== !!this.tapBound) this.bindRoot(tappable);
   };

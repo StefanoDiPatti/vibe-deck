@@ -31,7 +31,7 @@ async function download(url, maxBytes) {
   const ctrl = new AbortController();
   const timer = setTimeout(function () { ctrl.abort(); }, TIMEOUT_MS);
   try {
-    const res = await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
+    const res = await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json', 'User-Agent': 'VibeDeck/' + require('../package.json').version + ' (+https://github.com/StefanoDiPatti/vibe-deck)' } });
     if (!res.ok) throw fail('Il market ha risposto ' + res.status, 'UNAVAILABLE');
     const text = await res.text();
     if (text.length > maxBytes) throw fail('File del market troppo grande', 'UNAVAILABLE');

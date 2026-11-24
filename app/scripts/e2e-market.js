@@ -13,6 +13,9 @@ const REG_PORT = 8795;
 const SITE_PORT = 8796;
 const INDEX = 'http://127.0.0.1:' + REG_PORT + '/index.json';
 
+const INDEXED = JSON.parse(fs.readFileSync(path.join(REGISTRY, 'index.json'), 'utf8')).plugins;
+const NEWS = INDEXED.filter(function (p) { return (p.tags || []).indexOf('news') >= 0; }).length;
+
 function b64url(text) { return Buffer.from(text, 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
 
 async function main() {
@@ -36,7 +39,7 @@ async function main() {
     report.group('Market nel pannello');
     await cdp.send('Page.navigate', { url: s.base + '/control' });
     const rows = await waitFor(function () { return cdp.eval('document.querySelectorAll("#mk-list .mk-row").length'); }, 15000, 'market').catch(function () { return 0; });
-    report.check('elenco del market', rows === 3, rows + ' plugin');
+    report.check('elenco del market', rows === INDEXED.length, rows + ' plugin');
     await hand.click('#mk-hacker-news [data-mk="install"]');
     const asked = await cdp.eval('(window.__asked||[]).join(" | ")');
     report.check('prima di installare dice da quali siti legge', /hn\.algolia\.com/.test(asked), asked);
@@ -87,17 +90,17 @@ async function main() {
       await cdp.send('Emulation.setDeviceMetricsOverride', { width: dev.w, height: dev.h, deviceScaleFactor: dev.mobile ? 2 : 1, mobile: dev.mobile });
       await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + SITE_PORT + '/index.html?index=' + encodeURIComponent(INDEX) });
       const cards = await waitFor(function () { return cdp.eval('document.querySelectorAll("#cards .card").length'); }, 10000, 'card').catch(function () { return 0; });
-      report.check('card del market', cards === 3, cards + ' card');
-      report.check('icone vere nelle card', await cdp.eval('document.querySelectorAll("#cards .card-ico svg").length===3'));
+      report.check('card del market', cards === INDEXED.length, cards + ' card');
+      report.check('icone vere nelle card', await cdp.eval('document.querySelectorAll("#cards .card-ico svg").length===' + INDEXED.length));
       const scroll = await cdp.eval('document.documentElement.scrollWidth<=window.innerWidth');
       report.check('niente scorrimento orizzontale', scroll);
       await hand.fill('#q', 'crypto');
-      report.check('ricerca', await cdp.eval('document.querySelectorAll("#cards .card").length===1&&document.querySelector("#cards .card").dataset.id==="crypto"'));
-      const href = await cdp.eval('document.querySelector("#cards .card .btn").getAttribute("href")');
+      report.check('ricerca', await cdp.eval('[].slice.call(document.querySelectorAll("#cards .card")).some(function(c){return c.dataset.id==="crypto";})&&document.querySelectorAll("#cards .card").length<' + INDEXED.length));
+      const href = await cdp.eval('document.querySelector("#cards .card[data-id=crypto] .btn").getAttribute("href")');
       report.check('"Install" porta al pannello sul plugin', href === 'http://127.0.0.1:8787/control#market-card&install=crypto', href);
       await cdp.eval('(function(){var q=document.getElementById("q");q.value="";q.dispatchEvent(new Event("input"));return true;})()');
       await hand.click('#tags [data-tag="news"]');
-      report.check('filtro per etichetta', await cdp.eval('document.querySelectorAll("#cards .card").length===2'));
+      report.check('filtro per etichetta', await cdp.eval('document.querySelectorAll("#cards .card").length===' + NEWS));
       await hand.click('#tags [data-tag=""]');
       await cdp.eval('window.scrollTo({top:0,behavior:"instant"});true');
       await sleep(400);
