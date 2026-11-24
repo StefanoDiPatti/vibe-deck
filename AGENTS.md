@@ -97,6 +97,10 @@ Everything new must be **described** for the editor: a shape in `SHAPE_INFO` (`s
 `FILTER_INFO` (`template.js`), a built-in action in `server/actions/descriptors.js`, a source through its `info`, a plugin
 action as `{ label, description, params, run }`. `tests/catalog.test.js` fails when something is not described.
 The catalog is built by `CatalogBuilder` (`server/shapes/catalog.js`); `fields.js` (`FieldWalker`) turns sampled data into fields.
+The widget editor is `control/editor.js` (`EditorState` observer, `Controls` factory per param type, `ActionEditor`,
+`Preview` through `public/shape-preview.html` with the tablet renderers); saving goes through `WidgetStore`
+(`server/shapes/store.js`, user plugins only, default `plugins/miei`). Try UI changes with `npm run e2e` (touch on tablet and
+phone, and the editor with mouse and keyboard): it starts the demo and a headless Edge/Chrome and saves screenshots.
 
 ### When you need code: a plugin
 

@@ -96,6 +96,47 @@
       </div>
     </section>
 
+    <section class="card wide" id="editor-card">
+      <div class="card-head">
+        <div>
+          <h2>Crea un widget</h2>
+          <p class="hint">Scegli la <b>forma</b>, da dove prende i <b>dati</b>, cosa <b>mostra</b> e cosa fa il <b>tocco</b>: l'anteprima a destra è disegnata come sul tablet. Salvato, lo trovi in <b>Aggiungi un widget</b> della HOME.</p>
+        </div>
+        <span id="ed-state" class="pill"></span>
+      </div>
+      <div class="ed-layout">
+        <div class="ed-main">
+          <div class="ed-titlebar"><h3 id="ed-title">Nuovo widget</h3><code id="ed-id"></code></div>
+          <div class="ed-step"><div class="ed-num">1</div><div class="ed-body"><h3>Che cosa vuoi mostrare?</h3><div id="ed-shapes" class="ed-shapes"></div></div></div>
+          <div class="ed-step"><div class="ed-num">2</div><div class="ed-body"><h3>Da dove prende i dati?</h3><div id="ed-source"></div></div></div>
+          <div class="ed-step"><div class="ed-num">3</div><div class="ed-body"><h3>Cosa mostra</h3><div id="ed-show" class="ed-grid"></div></div></div>
+          <div class="ed-step"><div class="ed-num">4</div><div class="ed-body"><h3>Cosa succede quando lo usi</h3><div id="ed-actions"></div></div></div>
+          <div class="ed-step"><div class="ed-num">5</div><div class="ed-body"><h3>Nome e misura</h3><div id="ed-meta"></div></div></div>
+          <div class="row-actions">
+            <button id="ed-save" class="btn primary" type="button" disabled>Salva widget</button>
+            <button id="ed-new" class="btn ghost" type="button">Nuovo widget</button>
+          </div>
+        </div>
+        <aside class="ed-side">
+          <div class="preview-label">Anteprima sul tablet</div>
+          <iframe id="ed-frame" class="ed-frame" title="Anteprima del widget"></iframe>
+          <ul id="ed-problems" class="ed-problems"></ul>
+          <details class="ed-details">
+            <summary>Dati di prova</summary>
+            <pre id="ed-sample" class="ed-pre"></pre>
+          </details>
+          <details class="ed-details">
+            <summary>JSON (per chi vuole scriverlo a mano)</summary>
+            <textarea id="ed-json" class="ed-json" spellcheck="false"></textarea>
+            <button id="ed-json-apply" class="btn ghost small-btn" type="button">Applica il JSON</button>
+          </details>
+          <h3 class="ed-mine-title">I tuoi widget</h3>
+          <div id="ed-mine"></div>
+        </aside>
+      </div>
+      <datalist id="ed-icons"></datalist>
+    </section>
+
     <section class="card wide" id="buttons-card" hidden>
       <div class="card-head">
         <div>
@@ -149,5 +190,6 @@
 
   <script src="/js/icons.js"></script>
   <script src="/control/control.js"></script>
+  <script src="/control/editor.js"></script>
 </body>
 </html>

@@ -384,9 +384,10 @@ var Shapes = (function () {
     };
   });
 
-  function Controller(root, tile, app) {
+  function Controller(root, tile, app, view) {
     this.root = root;
     this.app = app;
+    this.fixed = !!view;
     this.key = String(tile.def || '');
     this.url = '/api/shapes/' + this.key.split('/').map(encodeURIComponent).join('/');
     this.timer = null;
@@ -396,7 +397,8 @@ var Shapes = (function () {
     this.body = null;
     this.size = null;
     D.addClass(root, 'w-shape');
-    this.load();
+    if (view) this.apply(view);
+    else this.load();
   }
 
   Controller.prototype.context = function () {
@@ -405,8 +407,8 @@ var Shapes = (function () {
       root: self.body,
       app: self.app,
       tap: function (index, node) { self.tap(index, node); },
-      set: function (value, done) { D.api.post(self.url + '/set', { value: value }, done, 30000); },
-      say: function (text, done) { D.api.post(self.url + '/voice', { text: text }, done, 30000); }
+      set: function (value, done) { if (self.fixed) { done(null, { value: value }); return; } D.api.post(self.url + '/set', { value: value }, done, 30000); },
+      say: function (text, done) { if (self.fixed) { done(null, { message: text }); return; } D.api.post(self.url + '/voice', { text: text }, done, 30000); }
     };
   };
 
@@ -494,6 +496,7 @@ var Shapes = (function () {
 
   Controller.prototype.tap = function (index, node) {
     var self = this;
+    if (this.fixed) { flash(node, true); return; }
     D.api.post(this.url + '/tap', { index: index }, function (err, r) {
       flash(node, !err);
       if (err) { self.app.toast(err.message, 'err'); return; }
@@ -523,5 +526,15 @@ var Shapes = (function () {
     };
   }
 
-  return { create: create, register: register, renderers: renderers };
+  function show(root, view, app) {
+    var quiet = app || { toast: function () {}, rotated: false };
+    var c = new Controller(root, { def: '' }, quiet, view);
+    return {
+      update: function (v) { c.apply(v); },
+      resize: function (w, h) { c.resize(w, h); },
+      destroy: function () { c.destroy(); }
+    };
+  }
+
+  return { create: create, show: show, register: register, renderers: renderers };
 })();
