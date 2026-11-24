@@ -137,7 +137,7 @@ test('widget del plugin nel catalogo della HOME: home.json (anche più versioni 
     ' "furbo": { "widget": "clock" } }');
   c = home.catalog().filter(function (x) { return x.plugin === 'meteo'; });
   assert.deepStrictEqual(c.map(function (x) { return x.id + ':' + x.label; }), ['meteo:Meteo', 'meteo-roma:Meteo Roma']);
-  config.saveHome({ columns: 6, rows: 4, tiles: [{ id: 'meteo-roma', x: 0, y: 0, w: 2, h: 2 }, { id: 'todo', x: 2, y: 0, w: 2, h: 2 }] });
+  config.saveHome({ columns: 6, rows: 4, tiles: [{ id: 'meteo-roma', x: 0, y: 0, w: 2, h: 2 }, { id: 'clock', x: 2, y: 0, w: 2, h: 2 }] });
   const t = config.dock().pages.filter(function (p) { return p.id === 'main'; })[0].tiles[0];
   assert.strictEqual(t.widget, 'meteo');
   assert.strictEqual(t.citta, 'Roma', 'le props arrivano al widget');

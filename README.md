@@ -248,7 +248,7 @@ Customizations are made **one file at a time**: one page, app or command per fil
 | `config/services.json` | music, Claude, GitHub, Ollama, TODO, tablet timings ([reference](app/README.md#servicesjson)) | no |
 | `config/layout.json` | control panel choices (pages in the bar, button order) | no, the panel writes it |
 | `config/defaults/` | the project defaults: `pages/` (one page per file) and the other JSON files | yes |
-| `official-plugins/<id>/` | **official plugins** shipped with Vibe Deck (one per feature: `blender`, `davinci`, `unreal`, `android`, `browserdev`, `dev`, `claude`, `ollama`, `github`, `screens`, `audio`, `viber`) and **packs** that group them (`creative`: Blender, DaVinci, Unreal; `developer`: Dev, Claude, Ollama, GitHub, Android, Browser dev), each with its `plugin.json` | yes |
+| `official-plugins/<id>/` | **official plugins** shipped with Vibe Deck (one per feature: `blender`, `davinci`, `unreal`, `android`, `browserdev`, `dev`, `claude`, `ollama`, `github`, `screens`, `audio`, `mail`, `todo`, `discord`, `games`, `viber`) and **packs** that group them (`creative`: Blender, DaVinci, Unreal; `developer`: Dev, Claude, Ollama, GitHub, Android, Browser dev; `pc`: Screens, Audio, Email, TODO; `gaming`: Discord, Games), each with its `plugin.json` | yes |
 | `plugins/<name>/` | **your plugins** (and, later, the ones from the market): extra actions, routes, pages, widgets and icons (see [Plugins](#plugins-new-widgets-and-actions)) | your choice |
 | `schema/` | JSON schemas for the editor (suggestions and field checks) | yes |
 | `data/` | personal data: games, accounts to show, log, encrypted secrets | no |

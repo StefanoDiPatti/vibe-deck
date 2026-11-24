@@ -367,6 +367,15 @@ function defaultDock() {
   return Object.assign({}, d, { pages: pages });
 }
 
+function withPlugins(d) {
+  if (!Array.isArray(d.pages)) return d;
+  const active = require('./plugins').names();
+  const ok = function (t) { return !t || typeof t.plugin !== 'string' || active.indexOf(t.plugin) >= 0; };
+  return Object.assign({}, d, {
+    pages: d.pages.map(function (p) { return p && Array.isArray(p.tiles) && !p.tiles.every(ok) ? Object.assign({}, p, { tiles: p.tiles.filter(ok) }) : p; })
+  });
+}
+
 function withSources(d) {
   if (!Array.isArray(d.pages) || !d.pages.some(function (p) { return p && typeof p.source === 'string'; })) return d;
   const plugins = require('./plugins');
@@ -379,7 +388,7 @@ function withSources(d) {
   });
 }
 
-function dock() { return normalizeDock(withSources(mergedDock()), get('layout')); }
+function dock() { return normalizeDock(withSources(withPlugins(mergedDock())), get('layout')); }
 
 function tabletDock() {
   const d = dock();
@@ -449,7 +458,7 @@ function version() {
 }
 
 function saveLayout(tabs, home, tiles) {
-  const all = normalizeDock(withSources(mergedDock()), {});
+  const all = normalizeDock(withSources(withPlugins(mergedDock())), {});
   const ids = {};
   all.pages.forEach(function (p) { ids[p.id] = p; });
   tabs = (Array.isArray(tabs) ? tabs : []).map(String).filter(function (id, i, a) { return ids[id] && a.indexOf(id) === i; });

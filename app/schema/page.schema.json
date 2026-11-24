@@ -292,6 +292,10 @@
             "linux"
           ],
           "description": "Per i widget screens e vdesk: sistema della guida."
+        },
+        "plugin": {
+          "type": "string",
+          "description": "Plugin che serve a questo pulsante o widget: se il plugin non è installato, l'elemento non compare (senza errori)."
         }
       }
     },

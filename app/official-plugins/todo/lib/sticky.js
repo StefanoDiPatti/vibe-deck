@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const common = require('../platform/common');
+const common = require('../../../server/platform/common');
 
 const PACKAGE = 'Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe';
 const PROCESS = 'Microsoft.Notes.exe';

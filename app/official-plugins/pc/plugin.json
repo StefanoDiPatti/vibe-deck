@@ -1,0 +1,15 @@
+{
+  "id": "pc",
+  "name": "PC pack",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "Manage the PC from the tablet: screens and virtual desktops, audio, email and TODO",
+  "type": "pack",
+  "includes": [
+    "screens",
+    "audio",
+    "mail",
+    "todo"
+  ],
+  "engine": ">=2.1.1"
+}

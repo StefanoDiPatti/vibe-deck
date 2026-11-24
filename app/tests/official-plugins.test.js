@@ -110,3 +110,12 @@ test('the real official plugins have a valid manifest; packs only list existing 
     }
   });
 });
+
+test('a tile with "plugin" disappears without errors when that plugin is not installed', function () {
+  const dir = path.join(tmp, 'config', 'pages');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'needs.json'), JSON.stringify({ id: 'needs', tiles: [{ id: 'a', label: 'A' }, { widget: 'nope', plugin: 'ghost' }, { widget: 'studiow', plugin: 'studio' }] }));
+  const p = config.dock().pages.filter(function (x) { return x.id === 'needs'; })[0];
+  assert.deepStrictEqual(p.allTiles.map(function (t) { return t.widget || t.id; }), ['a', 'studiow']);
+  fs.unlinkSync(path.join(dir, 'needs.json'));
+});

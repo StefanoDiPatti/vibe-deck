@@ -106,10 +106,10 @@ demo.get('/api/media/art', function (req, res) { res.type('image/svg+xml').send(
 demo.get('/api/media/queue', function (req, res) {
   ok(res, { available: true, items: QUEUE.map(function (q, i) { return { id: 'q' + i, title: q[0], artist: q[1], duration: q[2], current: !!q[3] }; }) });
 });
-demo.get('/api/todo', function (req, res) {
+demo.get('/api/plugins/todo', function (req, res) {
   ok(res, { items: todo, source: 'memo', notes: NOTES, voiceServer: false, sync: { enabled: false, ok: null, at: 0, message: '' } });
 });
-demo.post('/api/todo/toggle', express.json(), function (req, res) {
+demo.post('/api/plugins/todo/toggle', express.json(), function (req, res) {
   todo.forEach(function (t) { if (t.id === (req.body || {}).id) t.done = !t.done; });
   ok(res, { items: todo, source: 'memo', notes: NOTES, voiceServer: false, sync: { enabled: false, ok: null, at: 0, message: '' } });
 });

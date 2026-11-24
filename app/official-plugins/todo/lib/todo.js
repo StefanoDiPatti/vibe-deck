@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const paths = require('../paths');
-const config = require('../config');
+const paths = require('../../../server/paths');
+const config = require('../../../server/config');
 const sticky = require('./sticky');
 
 const FILE = path.join(paths.DATA_DIR, 'todo.json');

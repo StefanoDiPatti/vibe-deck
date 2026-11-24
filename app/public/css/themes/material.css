@@ -75,27 +75,6 @@ svg.ic { fill: #e9e9ee; }
 .badge.pr { background: #2c3a4f; }
 .badge.good { background: #1f5135; }
 .badge.bad { background: #93000a; }
-.todo-mic { background: #32353a; }
-.todo-mic.on { background: #ffb4ab; }
-.todo-mic.pressed { background: #3a3d42; }
-.todo-mic.on.pressed { background: #b3261e; }
-.todo-input { background: #111318; color: #e9e9ee; border: 1px solid #3a3d42; }
-.todo-add { background: #174a7e; }
-.todo-add.pressed { background: #174a7e; }
-.todo-row { background: #272a2f; }
-.todo-row.pressed { background: #2c3a4f; }
-.todo-row.high { -webkit-box-shadow: inset 4px 0 0 #ffb4ab; box-shadow: inset 4px 0 0 #ffb4ab; }
-.todo-row.done .todo-text { color: #74777f; }
-.todo-box { border: 2px solid #5b5e66; }
-.todo-row.done .todo-box { background: #7fd99a; border-color: #7fd99a; }
-.todo-del svg.ic { fill: #c4c6cf; }
-.todo-text b { color: #e9e9ee; }
-.todo-row.done .todo-text b { color: #74777f; }
-.todo-group { color: #8e9099; }
-.todo-group.target { color: #a8c7fa; }
-.todo-group i { color: #a8c7fa; }
-.todo-group.pressed { background: #272a2f; }
-.w-todo.todo-busy .w-head .w-title { color: #a8c7fa; }
 .chat-model { background: #111318; color: #e9e9ee; border: 1px solid #3a3d42; }
 .chat-model-label { color: #8e9099; }
 .chat-log { background: #191c20; }
@@ -114,10 +93,6 @@ svg.ic { fill: #e9e9ee; }
 .q-artist { color: #c4c6cf; }
 .msg .tool { color: #8e9099; background: #111318; }
 .noav { color: #e9e9ee; }
-.todo-sync { background: #1d2024; color: #8e9099; }
-.todo-sync.ok { color: #7fd99a; }
-.todo-sync.err { color: #ffb4ab; background: #3b1c1c; }
-.todo-sync.pressed { background: #2c3a4f; }
 .gg-sec { color: #a8c7fa; }
 .gg-note { color: #8e9099; }
 .gg-row { background: #272a2f; border-left: 4px solid #a8c7fa; }

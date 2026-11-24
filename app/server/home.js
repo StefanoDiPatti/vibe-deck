@@ -2,7 +2,6 @@ const HOME_ID = 'main';
 
 const CATALOG = [
   { id: 'nowplaying', widget: 'nowplaying', label: 'Musica', icon: 'music', page: 'MUSICA', description: 'Brano in riproduzione, copertina e comandi', w: 3, h: 2, minW: 2, minH: 2 },
-  { id: 'todo', widget: 'todo', label: 'Note e TODO', icon: 'check', page: 'HOME', description: 'Le attività (Memo di Windows o lista della dock), con dettatura', w: 3, h: 4, minW: 2, minH: 2 },
   { id: 'system', widget: 'system', label: 'Diagnostica', icon: 'cpu', page: 'HOME', description: 'CPU, GPU e RAM con le temperature', w: 3, h: 2, minW: 2, minH: 2 },
   { id: 'clock', widget: 'clock', label: 'Orologio', icon: 'target', page: 'HOME', description: 'Ora e data grandi, nel font del tema', w: 2, h: 1, minW: 1, minH: 1 },
 ];

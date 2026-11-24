@@ -11,8 +11,6 @@ const platform = require('./platform');
 const actions = require('./actions');
 const system = require('./services/system');
 const media = require('./services/media');
-const todo = require('./services/todo');
-const todosync = require('./services/todosync');
 const bridge = require('./services/bridge');
 const voice = require('./services/voice');
 const appsState = require('./services/apps');
@@ -318,18 +316,6 @@ app.get('/api/media/art', function (req, res) {
   }).catch(function () { res.status(404).end(); });
 });
 
-function todoState() { return { items: todo.list(), source: todo.source(), notes: todo.notes(), voiceServer: voice.available(), sync: todosync.status() }; }
-app.get('/api/todo', route(todoState));
-app.post('/api/todo/add', route(async function (req) {
-  const b = req.body || {};
-  const item = await todo.add(b.text, b.priority, b.note ? String(b.note) : '');
-  return Object.assign(todoState(), { item: item });
-}));
-app.post('/api/todo/toggle', route(async function (req) { await todo.toggle((req.body || {}).id); return todoState(); }));
-app.post('/api/todo/remove', route(async function (req) { await todo.remove((req.body || {}).id); return todoState(); }));
-app.post('/api/todo/sync', route(async function () { await todosync.sync(); return todoState(); }));
-app.post('/api/todo/clear', route(async function () { const removed = await todo.clearDone(); return Object.assign(todoState(), { removed: removed }); }));
-
 app.post('/api/remote/type', route(async function (req) {
   const b = req.body || {};
   const text = String(b.text || '');
@@ -405,7 +391,7 @@ function start() {
   }).then(function () {
     return new Promise(function (resolve, reject) {
       const server = app.listen(PORT, HOST, function () {
-        banner(); todosync.start();
+        banner();
         safeCheck().filter(function (x) { return x.level === 'error'; }).forEach(function (x) { log.warn('config', x.where + ': ' + x.message); });
         plugins.hook('start');
         resolve(server);
@@ -422,7 +408,7 @@ function start() {
 
 function shutdown() {
   system.stop();
-  todosync.stop();
+  plugins.hook('stop');
   platform.shutdown();
   process.exit(0);
 }

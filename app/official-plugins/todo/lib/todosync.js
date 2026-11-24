@@ -2,9 +2,9 @@ const { execFile } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const paths = require('../paths');
-const config = require('../config');
-const log = require('../log');
+const paths = require('../../../server/paths');
+const config = require('../../../server/config');
+const log = require('../../../server/log');
 const todo = require('./todo');
 
 const STATE = path.join(paths.DATA_DIR, 'todo-sync.json');
