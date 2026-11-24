@@ -117,7 +117,7 @@ test('the HOME catalog offers the same widgets as before the move to plugins', f
     Object.keys(h).forEach(function (id) { if (h[id] !== false && h[id].catalog !== false) offered.push(id); });
   });
   const core = require('../server/home').CATALOG.map(function (c) { return c.id; });
-  assert.deepStrictEqual(core.concat(offered).sort(), ['audio', 'claudeusage', 'clock', 'desks', 'discordmini', 'games', 'github', 'lol', 'mail', 'nowplaying', 'ollama', 'system', 'todo', 'viber-projects', 'viber-tasks']);
+  assert.deepStrictEqual(core.concat(offered).sort(), ['audio', 'claudeusage', 'clock', 'desks', 'discordmini', 'games', 'github', 'lol', 'mail', 'nowplaying', 'obs', 'ollama', 'system', 'todo', 'viber-projects', 'viber-tasks']);
 });
 
 test('every widget of an official plugin is in its home.json, offered or turned off with false', function () {

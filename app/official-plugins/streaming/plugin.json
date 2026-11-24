@@ -1,0 +1,12 @@
+{
+  "id": "streaming",
+  "name": "Streaming pack",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "description": "For streamers: OBS Studio on the tablet",
+  "type": "pack",
+  "includes": [
+    "obs"
+  ],
+  "engine": ">=2.2.0"
+}

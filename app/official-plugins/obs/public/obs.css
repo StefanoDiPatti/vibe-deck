@@ -1,0 +1,35 @@
+.w-obs { padding: 0 !important; }
+.obs-head { position: absolute; left: 12px; right: 12px; top: 10px; height: 34px; white-space: nowrap; overflow: hidden; }
+.obs-pill { display: inline-block; height: 30px; line-height: 30px; padding: 0 12px; margin-right: 8px; border-radius: 15px; background: #243142; color: #c9d6e3; font-weight: bold; font-size: 13px; letter-spacing: 1px; }
+.obs-pill.live { background: #b62324; color: #fff; }
+.obs-pill.rec { background: #8b1d1d; color: #fff; }
+.obs-stats { position: absolute; right: 0; top: 0; line-height: 30px; font-size: 13px; color: #9fb3c8; }
+.obs-shot { position: absolute; left: 12px; top: 50px; bottom: 12px; width: 55%; border-radius: 10px; background: #05080c; overflow: hidden; }
+.obs-shot img { width: 100%; height: auto; display: block; }
+.obs-side { position: absolute; left: 57%; right: 12px; top: 50px; bottom: 12px; margin-left: 8px; overflow: auto; -webkit-overflow-scrolling: touch; }
+.obs-actions { font-size: 0; }
+.obs-btn { display: inline-block; width: 48%; margin: 0 2% 8px 0; height: 52px; border-radius: 10px; background: #243142; text-align: center; padding-top: 6px; font-size: 12px; font-weight: bold; letter-spacing: 1px; vertical-align: top; overflow: hidden; }
+.obs-btn svg.ic { display: block; width: 22px; height: 22px; margin: 0 auto 2px; }
+.obs-btn span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+.obs-btn.go { background: #1e5631; }
+.obs-btn.danger { background: #8b1d1d; }
+.obs-btn.on { background: #1f4f8f; }
+.obs-btn.pressed { background: #3d8bfd; }
+.obs-btn.holding { background: #b62324; }
+.obs-btn.ok { -webkit-box-shadow: inset 0 0 0 2px #3fb950; box-shadow: inset 0 0 0 2px #3fb950; }
+.obs-btn.err { -webkit-box-shadow: inset 0 0 0 2px #e5534b; box-shadow: inset 0 0 0 2px #e5534b; }
+.obs-title { font-size: 12px; font-weight: bold; letter-spacing: 2px; color: #9fb3c8; margin: 4px 0 6px; }
+.obs-audio { font-size: 0; }
+.obs-btn.obs-chip { width: auto; height: 38px; padding: 0 12px; margin: 0 6px 6px 0; line-height: 38px; text-align: left; }
+.obs-btn.obs-chip svg.ic { display: inline-block; width: 18px; height: 18px; margin: -3px 6px 0 0; vertical-align: middle; }
+.obs-btn.obs-chip span { display: inline; }
+.obs-btn.muted { background: #8b1d1d; }
+.obs-scenes { font-size: 0; }
+.obs-scene { display: inline-block; width: 48%; margin: 0 2% 8px 0; height: 46px; line-height: 46px; border-radius: 10px; background: #1d2835; text-align: center; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 6px; vertical-align: top; }
+.obs-scene.on { background: #1f4f8f; -webkit-box-shadow: inset 0 0 0 2px #3d8bfd; box-shadow: inset 0 0 0 2px #3d8bfd; }
+.obs-scene.pressed { background: #26354a; }
+.obs-scene.ok { -webkit-box-shadow: inset 0 0 0 2px #3fb950; box-shadow: inset 0 0 0 2px #3fb950; }
+.w-obs .empty { position: absolute; left: 12px; right: 12px; top: 40%; }
+.obs-compact .obs-side { left: 12px; margin-left: 0; }
+.obs-compact .obs-stats { display: none; }
+.obs-compact .obs-btn { width: 31%; }
