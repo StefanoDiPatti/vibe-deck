@@ -80,7 +80,18 @@ breaking anything. The guide for people is in the [README](README.md), section *
 
 ## Adding a widget
 
-### The recommended way: a plugin
+### First choice: a JSON widget
+
+If a shape (`value`, `bars`, `status`, `text`, `buttons`, `voice`) and a source (`pc`, `static`) are enough, write only
+`<plugin>/widgets/<name>.json` (see "JSON widgets" in the README and `app/schema/widget.schema.json`; examples in
+`app/official-plugins/pcinfo/`). No JS, no server code: it is checked by `tests/shapes.test.js` and by the configuration
+check. Translations go in `<plugin>/lang/en.json`.
+
+Code map: `server/shapes/` (Registry of shapes, sources and filters; `Shape` base class with a template method per shape;
+`SourceCache`; `index.js` is the facade used by routes, HOME catalog and checks) and `public/js/shapes.js` (renderer
+registry + a controller per tile). A new shape = a `Shape` subclass on the server + a renderer on the tablet.
+
+### When you need code: a plugin
 
 ```bash
 cd app

@@ -41,8 +41,16 @@ var I18n = (function () {
   }
 
   var ATTRS = ['placeholder', 'title'];
+  var NOTR_DEPTH = 4;
+  function keptAsIs(n) {
+    for (var p = n.parentNode, i = 0; p && p.nodeType === 1 && i < NOTR_DEPTH; p = p.parentNode, i++) {
+      if (typeof p.className === 'string' && (' ' + p.className + ' ').indexOf(' notr ') >= 0) return true;
+    }
+    return false;
+  }
   function node(n) {
     if (n.nodeType === 3) {
+      if (keptAsIs(n)) return;
       var v = n.nodeValue;
       if (v && /[A-Za-zÀ-ú]/.test(v)) { var x = t(v); if (x !== v) n.nodeValue = x; }
       return;

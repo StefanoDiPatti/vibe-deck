@@ -2,6 +2,7 @@
   'use strict';
 
   I18n.add({
+    'Fatto': 'Done', "Di' un comando…": 'Say a command…', 'Scrivi o detta…': 'Type or dictate…', 'Non ho sentito niente': 'I heard nothing', 'Testo troppo lungo': 'Text too long',
     'Musica': 'Music', 'App': 'Apps', 'Desktop virtuali': 'Virtual desktops',
     'Email': 'Email', 'Note': 'Notes', 'Diagnostica': 'Diagnostics', 'Rete': 'Network',
     'Apri': 'Open', 'Salva': 'Save',
@@ -145,6 +146,7 @@
     [/^Macro interrotta al passo (\d+): (.+)$/, 'Macro stopped at step $1: $2'],
     [/^App "(.+)" non trovata(.*)$/, 'App "$1" not found$2'], [/^Comando "(.+)" non consentito(.*)$/, 'Command "$1" not allowed$2'],
     [/^Sincronizzazione: (.+)$/, 'Sync: $1'], [/^Desktop virtuali · (.+)$/i, 'VIRTUAL DESKTOPS · $1'],
+    [/^(\d+) g fa$/, '$1 d ago'], [/^(\d+) g (\d+) h$/, '$1 d $2 h'], [/^Forma sconosciuta: (.+)$/, 'Unknown shape: $1'], [/^Comando non riconosciuto: (.+)$/, 'Command not recognized: $1'],
     [/^(\d+) min fa$/, '$1 min ago'], [/^(\d+) h fa$/, '$1 h ago'], [/^(\d+) giorni fa$/, '$1 days ago'],
     [/^tocca una zona del monitor (\d+)$/, 'tap a zone of monitor $1'],
     [/^(.+): fatto$/, function (m, a) { return I18n.t(a) + ': done'; }],

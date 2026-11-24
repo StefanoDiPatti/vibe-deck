@@ -455,7 +455,9 @@ var Widgets = (function () {
   }
 
 
-  var TYPES = { system: system, nowplaying: nowplaying, queue: queue, clock: clock };
+  function shape(root, tile, app) { return Shapes.create(root, tile, app); }
+
+  var TYPES = { system: system, nowplaying: nowplaying, queue: queue, clock: clock, shape: shape };
 
   function create(type, root, tile, app) {
     var fn = TYPES[type];

@@ -36,6 +36,13 @@
         "app/official-plugins/*/plugin.json"
       ],
       "url": "./app/schema/plugin.schema.json"
+    },
+    {
+      "fileMatch": [
+        "app/plugins/*/widgets/*.json",
+        "app/official-plugins/*/widgets/*.json"
+      ],
+      "url": "./app/schema/widget.schema.json"
     }
   ]
 }

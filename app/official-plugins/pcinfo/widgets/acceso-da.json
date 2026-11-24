@@ -1,0 +1,14 @@
+{
+  "name": "Acceso da",
+  "description": "Da quanto tempo è acceso il PC",
+  "icon": "power",
+  "shape": "text",
+  "source": { "type": "pc" },
+  "every": 60,
+  "show": {
+    "label": "ACCESO DA",
+    "text": "{{uptimeSeconds|duration}}",
+    "sub": "{{hostname}}"
+  },
+  "size": { "w": 2, "h": 1 }
+}

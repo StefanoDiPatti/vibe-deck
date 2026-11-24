@@ -396,9 +396,26 @@ function readHomeWidgets() {
     });
   });
   homeNames = labels;
-  return out;
+  return out.concat(require('./shapes').catalog());
 }
 function icons() { return registered('Icons'); }
+
+function dictionary(lang) {
+  return remembered('lang:' + lang, function () {
+    const out = {};
+    const parse = require('./config').parseJson;
+    names().forEach(function (name) {
+      let data = null;
+      try { data = parse(fs.readFileSync(path.join(dirOf(name), 'lang', lang + '.json'), 'utf8')); } catch (e) {
+        if (e.code !== 'ENOENT') log.warn('plugin', name + '/lang/' + lang + '.json non valido: ' + e.message);
+        return;
+      }
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return;
+      Object.keys(data).forEach(function (k) { if (typeof data[k] === 'string') out[k] = data[k]; });
+    });
+    return out;
+  });
+}
 
 function info() {
   const all = load();
@@ -461,5 +478,5 @@ module.exports = {
   registerActions: registerActions, mountRoutes: mountRoutes, hook: hook,
   setControl: setControl, controlInfo: controlInfo, controlPrepare: controlPrepare, mountControl: mountControl, sourceTiles: sourceTiles,
   controlScripts: controlScripts, controlStyles: controlStyles,
-  scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, widgetLabels: widgetLabels, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
+  remembered: remembered, dictionary: dictionary, scripts: scripts, styles: styles, widgets: widgets, homeWidgets: homeWidgets, widgetLabels: widgetLabels, icons: icons, info: info, reset: reset, NAME_RE: NAME_RE
 };

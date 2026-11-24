@@ -262,7 +262,8 @@
                 "mail",
                 "audio",
                 "vdesk",
-                "viber"
+                "viber",
+                "shape"
               ]
             },
             {
@@ -278,6 +279,11 @@
             "tasks"
           ],
           "description": "Per il widget viber: solo la colonna dei progetti o delle task."
+        },
+        "def": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*/[a-z0-9][a-z0-9_-]*$",
+          "description": "Per il widget shape: il widget JSON da mostrare, come plugin/nome (es. pcinfo/cpu = official-plugins/pcinfo/widgets/cpu.json)."
         },
         "provider": {
           "enum": [

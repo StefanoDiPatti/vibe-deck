@@ -60,6 +60,22 @@ svg.ic { fill: #111111; }
 .bar.ok i { background: #2bd96b; }
 .bar.warn i { background: #ffd23f; }
 .bar.hot i { background: #ff6b5b; }
+.w-shape.sh-tap.pressed { border-color: #111111; }
+.w-shape.ok { border-color: #2bd96b; }
+.w-shape.err { border-color: #ff6b5b; }
+.sh-big.hot { color: #c4271a; }
+.sh-unit { color: #2b2b2b; }
+.sh-sub { color: #2b2b2b; }
+.sh-dot.on { background: #2bd96b; -webkit-box-shadow: 0 0 8px rgba(43, 217, 107, 0.7); box-shadow: 0 0 8px rgba(43, 217, 107, 0.7); }
+.sh-btn { background: #efe8d8; }
+.sh-btn.pressed { background: #4d9dff; }
+.sh-btn.ok { -webkit-box-shadow: inset 0 0 0 2px #2bd96b; box-shadow: inset 0 0 0 2px #2bd96b; }
+.sh-btn.err { -webkit-box-shadow: inset 0 0 0 2px #ff6b5b; box-shadow: inset 0 0 0 2px #ff6b5b; }
+.sh-vin { background: #f4efe3; color: #111111; border: 1px solid #111111; }
+.sh-vmic { background: #efe8d8; }
+.sh-vsend { background: #3d86e8; }
+.sh-said { color: #2b2b2b; }
+.sh-said.err { color: #c4271a; }
 .np-art { background: #f4efe3; }
 .np-src { color: #5a5446; }
 .np-artist { color: #2b2b2b; }

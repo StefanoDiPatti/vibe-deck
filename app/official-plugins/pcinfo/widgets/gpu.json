@@ -1,0 +1,18 @@
+{
+  "name": "GPU",
+  "description": "Uso della scheda video e temperatura (serve nvidia-smi)",
+  "icon": "cpu",
+  "shape": "value",
+  "source": { "type": "pc" },
+  "every": 3,
+  "show": {
+    "label": "GPU",
+    "value": "{{gpu.usage|default:N/D}}",
+    "unit": "%",
+    "sub": "{{gpu.temp|default:–}}° · {{gpu.memUsedGb|default:–}} / {{gpu.memTotalGb|default:–}} GB",
+    "bar": "{{gpu.usage}}",
+    "warn": 65,
+    "hot": 85
+  },
+  "size": { "w": 2, "h": 1 }
+}
