@@ -7,3 +7,5 @@ config/commands/
 data/
 .dock-setup.json
 *.log
+plugins/*
+!plugins/README.md

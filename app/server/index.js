@@ -168,7 +168,7 @@ app.get(['/control', '/control/'], localPage, function (req, res) {
   res.setHeader('Cache-Control', 'no-store');
   const list = plugins.scripts();
   let html = require('fs').readFileSync(path.join(paths.CONTROL_DIR, 'index.html'), 'utf8');
-  const before = list.length ? '<script>window.Widgets = window.Widgets || { register: function () {}, helpers: {} };</script>\n  ' +
+  const before = list.length ? '<script src="/js/core.js"></script>\n  <script>window.Widgets = window.Widgets || { register: function () {}, helpers: {} }; window.I18n = window.I18n || { add: function () {}, rules: function () {}, t: function (s) { return s; }, lang: function () { return "it"; } };</script>\n  ' +
     list.map(function (s) { return '<script src="' + assetUrl(s) + '"></script>\n  '; }).join('') : '';
   const after = plugins.controlScripts().map(function (s) { return '\n  <script src="' + assetUrl(s) + '"></script>'; }).join('');
   const css = plugins.controlStyles().map(function (s) { return '  <link rel="stylesheet" href="' + assetUrl(s) + '">\n'; }).join('');
@@ -258,11 +258,20 @@ app.get('/api/control/info', controlOnly, route(async function () { await plugin
 app.get('/api/control/catalog', controlOnly, route(function () { return require('./shapes/catalog').catalog(); }));
 app.post('/api/control/shapes/sample', controlOnly, route(function (req) {
   const b = req.body || {};
-  return shapes.sample(b.plugin, b.source);
+  return shapes.sample(b.plugin, b.source, { allowHost: b.allowHost === true });
 }));
 app.post('/api/control/shapes/preview', controlOnly, route(function (req) {
   const b = req.body || {};
-  return shapes.preview(b.plugin, b.def, b.id);
+  return shapes.preview(b.plugin, b.def, b.id, { allowHost: b.allowHost === true });
+}));
+const widgetStore = require('./shapes/store').store;
+app.get('/api/control/widgets', controlOnly, route(function () { return widgetStore.list(); }));
+app.post('/api/control/widgets', controlOnly, route(function (req) {
+  const b = req.body || {};
+  return widgetStore.save(b.plugin, b.id, b.def, { allowHost: b.allowHost === true, overwrite: b.overwrite === true });
+}));
+app.delete('/api/control/widgets/:plugin/:id', controlOnly, route(function (req) {
+  return widgetStore.remove(req.params.plugin, req.params.id);
 }));
 app.post('/api/control/layout', controlOnly, route(function (req) {
   const b = req.body || {};

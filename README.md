@@ -371,6 +371,22 @@ The tablet cannot run arbitrary commands: only allowed ones. Create `config/comm
 
 Then the button: `{ "label": "IP", "icon": "link", "action": { "type": "command", "id": "ip_addresses" } }`: the output shows up on the tablet.
 
+## Create a widget from the control panel
+
+No files to write: open the control panel on the PC (`/control`), card **Crea un widget**:
+
+1. **What to show**: pick a shape (big number, bars, on/off, text, buttons, voice commands, list, slider).
+2. **Where the data comes from**: the PC, data written by hand, an internet address without keys (tick "allow this site"),
+   a file in `data/`, an allowed command. Press **Prova la fonte**: the data found become buttons; tap a text field, then a
+   data button, and `{{field}}` is written for you.
+3. **What it shows**: title, value, icon or weather picture, rows of a list…
+4. **What a tap does**: pick an action from the menu (apps and commands come from your setup).
+5. **Name and size**, then **Salva widget**.
+
+The preview on the right is drawn with the tablet's own code, in the panel theme. Saved widgets go to
+`plugins/miei/widgets/` (your files, not in git), show up at once in **Aggiungi un widget** of the HOME card, and can be
+edited or deleted from **I tuoi widget**. The JSON is there too, for whoever prefers writing it.
+
 ## JSON widgets: no code needed
 
 A widget can be **a single JSON file** in the `widgets/` folder of a plugin: a **shape**, **where the data comes from**,

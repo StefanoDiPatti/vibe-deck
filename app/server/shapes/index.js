@@ -191,14 +191,20 @@ function keys() { return all().filter(function (e) { return e.def; }).map(functi
 
 const PREVIEW_MAX = 4000;
 
-function checkPlugin(plugin) {
+function checkPlugin(plugin, src, opts) {
   const p = String(plugin || '');
   if (!FILE_RE.test(p)) throw fail('Nome del plugin non valido', 'BAD_REQUEST');
-  return pluginContext(p);
+  const ctx = pluginContext(p);
+  if (!(opts && opts.allowHost && isObject(src) && src.type === 'http')) return ctx;
+  let host = '';
+  try { const u = new URL(src.url); host = /^https?:$/.test(u.protocol) ? u.host.toLowerCase() : ''; } catch (e) { host = ''; }
+  if (!host) return ctx;
+  const http = (Array.isArray(ctx.permissions.http) ? ctx.permissions.http : []).concat([host]);
+  return { plugin: ctx.plugin, permissions: Object.assign({}, ctx.permissions, { http: http }) };
 }
 
-async function sample(plugin, src) {
-  const ctx = checkPlugin(plugin);
+async function sample(plugin, src, opts) {
+  const ctx = checkPlugin(plugin, src, opts);
   if (!isObject(src) || typeof src.type !== 'string') throw fail('Manca la fonte da provare', 'BAD_REQUEST');
   const problems = sourceProblems(src, ctx);
   if (problems.length) throw fail(problems[0], 'BAD_REQUEST');
@@ -210,8 +216,8 @@ async function sample(plugin, src) {
   };
 }
 
-async function preview(plugin, def, id) {
-  const ctx = checkPlugin(plugin);
+async function preview(plugin, def, id, opts) {
+  const ctx = checkPlugin(plugin, def && def.source, opts);
   const name = FILE_RE.test(String(id || '')) ? String(id) : 'anteprima';
   const problems = validate(def, name, ctx);
   if (problems.length) return { problems: problems, view: null };
