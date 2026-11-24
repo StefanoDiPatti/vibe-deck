@@ -87,8 +87,9 @@ test('a plugin page is a tab of the bar only when its file says "tab": true', fu
   fs.unlinkSync(path.join(dir, 'studiotab.json'));
 });
 
-test('a new plugin folder is picked up without a restart', function () {
+test('a new plugin folder is picked up without a restart', async function () {
   plugin('plugins', 'late', null, ['latepage']);
+  await new Promise(setImmediate);
   assert.ok(plugins.names().indexOf('late') >= 0);
 });
 
