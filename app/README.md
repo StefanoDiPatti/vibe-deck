@@ -80,6 +80,8 @@ At the top right you see the PC network (Wi-Fi name and signal, or Ethernet), do
 
 **Battery:** after a minute without touches the deck refreshes data more slowly (PC status every 15 seconds instead of 2); after 10 minutes the screensaver starts, black with a dim clock, and it stops calling the PC entirely. One tap wakes it up, without pressing the button underneath. Timings in `services.json` → `tablet`; to never start the screensaver on a tablet: gear at the top → *Always on*. The screen is still the biggest drain: lower the Android brightness, and if the tablet stays on charge use *Stay awake* only when needed.
 
+**Swipe** left or right on the page to go to the next or previous page of the bottom bar (on a phone held in portrait, swipe along the rotated page). Swipes that start on a slider, a text field or something you can drag do not change the page; at the first and last page the page bounces.
+
 Buttons with an orange bar at the bottom (e.g. LOCK) must be **held** for about 1 second.
 Volume and undo buttons repeat while you hold them.
 
@@ -612,6 +614,8 @@ The guide to customize pages, buttons, actions and widgets is in the [main READM
 **Adding a feature without touching the project:** a plugin (`npm run new:widget -- <name>`), see *Plugins* in the main README.
 
 **Adding an action type to the project:** add a function to `HANDLERS` in `server/actions/index.js`. If it needs the operating system, add the method to both `server/platform/windows.js` and `server/platform/linux.js`.
+
+**Swipe and plugin widgets:** a widget that uses horizontal drags of its own puts `data-noswipe` on that element (or adds a function to `ctx.app.swipeGuards` that returns `true` for the element where the finger starts), so the swipe does not change page.
 
 The client must stay ES5 with no flexbox/grid: `tests/client-es5.test.js` checks it. The repository has **zero comments**: `tests/no-comments.test.js` checks it.
 
