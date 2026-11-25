@@ -167,6 +167,9 @@ body.phone #tabs, body.phone .tab { height: 48px; }
 body.phone .tab { padding-top: 5px; font-size: 10px; letter-spacing: 0; }
 body.phone .tab svg.ic { width: 20px; height: 20px; margin-bottom: 2px; }
 body.phone #toast { bottom: 60px; }
+body.phone .theme-opt { height: 44px; line-height: 44px; }
+body.phone .set-tog { top: 9px; }
+body.phone .theme-menu { top: 44px; }
 body.phone .tile.btn.short .t-label { letter-spacing: 0; }
 
 #toast {
