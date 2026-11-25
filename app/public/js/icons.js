@@ -136,5 +136,12 @@ var Icons = (function () {
     return true;
   }
 
-  return { html: html, register: register, has: function (n) { return svgOk && !!(P[keyOf(n)] || G[keyOf(n)]); } };
+  function names() {
+    var out = [], k;
+    for (k in P) if (P.hasOwnProperty(k)) out.push(k);
+    for (k in G) if (G.hasOwnProperty(k) && !P.hasOwnProperty(k)) out.push(k);
+    return out;
+  }
+
+  return { html: html, register: register, names: names, has: function (n) { return svgOk && !!(P[keyOf(n)] || G[keyOf(n)]); } };
 })();

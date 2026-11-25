@@ -57,7 +57,8 @@ function pack(tiles, cols, rows) {
   return { placed: placed, left: left };
 }
 
-function clean(input) {
+function clean(input, what) {
+  what = what || { name: 'la HOME', title: 'La HOME', in: 'nella HOME', for: 'per la HOME' };
   const bad = function (m) { return Object.assign(new Error(m), { code: 'BAD_REQUEST' }); };
   input = input || {};
   const columns = clamp(input.columns, LIMITS.minCols, LIMITS.maxCols, 6);
@@ -65,11 +66,11 @@ function clean(input) {
   const known = {};
   catalog().forEach(function (c) { known[c.id] = c; });
   const list = Array.isArray(input.tiles) ? input.tiles : [];
-  if (!list.length) throw bad('La HOME deve avere almeno un widget');
-  if (list.length > LIMITS.maxTiles) throw bad('Al massimo ' + LIMITS.maxTiles + ' widget nella HOME');
+  if (!list.length) throw bad(what.title + ' deve avere almeno un widget');
+  if (list.length > LIMITS.maxTiles) throw bad('Al massimo ' + LIMITS.maxTiles + ' widget ' + what.in);
   const tiles = list.map(function (t) {
     const c = known[t && (t.id || t.widget)];
-    if (!c) throw bad('Widget non disponibile per la HOME: ' + (t && (t.id || t.widget)));
+    if (!c) throw bad('Widget non disponibile ' + what.for + ': ' + (t && (t.id || t.widget)));
     if (c.minW > columns || c.minH > rows) throw bad(c.label + ' ha bisogno di almeno ' + c.minW + ' colonne e ' + c.minH + ' righe');
     const out = {
       id: c.id,
@@ -100,20 +101,24 @@ function fromLayout(layout) {
   try { return clean(Object.assign({}, h, { tiles: tiles })); } catch (e) { return null; }
 }
 
-function apply(page, layout) {
-  const h = fromLayout(layout);
-  if (!h || !page || page.id !== HOME_ID) return page;
+function expand(page, h, prefix) {
   const known = {};
   catalog().forEach(function (c) { known[c.id] = c; });
   return Object.assign({}, page, {
     columns: h.columns,
     rows: h.rows,
     autoGrid: false,
-    tiles: h.tiles.map(function (t, i) {
+    tiles: h.tiles.filter(function (t) { return known[t.id]; }).map(function (t, i) {
       const c = known[t.id];
-      return Object.assign({}, c.props || {}, { id: 'home-' + (i + 1) + '-' + t.id, widget: c.widget, x: t.x, y: t.y, w: t.w, h: t.h });
+      return Object.assign({}, c.props || {}, { id: prefix + '-' + (i + 1) + '-' + t.id, widget: c.widget, x: t.x, y: t.y, w: t.w, h: t.h });
     })
   });
+}
+
+function apply(page, layout) {
+  const h = fromLayout(layout);
+  if (!h || !page || page.id !== HOME_ID) return page;
+  return expand(page, h, 'home');
 }
 
 function catalogId(tile) {
@@ -124,4 +129,4 @@ function catalogId(tile) {
   return hit ? hit.id : null;
 }
 
-module.exports = { HOME_ID: HOME_ID, CATALOG: CATALOG, LIMITS: LIMITS, catalog: catalog, pack: pack, clean: clean, fromLayout: fromLayout, apply: apply, catalogId: catalogId };
+module.exports = { expand: expand, HOME_ID: HOME_ID, CATALOG: CATALOG, LIMITS: LIMITS, catalog: catalog, pack: pack, clean: clean, fromLayout: fromLayout, apply: apply, catalogId: catalogId };

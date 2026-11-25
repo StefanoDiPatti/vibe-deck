@@ -172,6 +172,10 @@ Double-click the **Vibe Deck** icon (desktop or next to the clock): a page opens
 - ***Salva sul tablet*** (save to tablet): the tablet updates by itself. *Predefinite* (defaults) goes back to the pages and buttons of `dock.json`.
 - **Theme** (top right): Classic, Material, Neon Elgato or Neo-brutalist, the same as the tablet. The choice stays on this PC and is separate from the tablet's; `/control?theme=neon` opens the panel with a theme without remembering it.
 
+### Your own pages with widgets
+
+Card **Pages with widgets** in the control panel: next to **HOME** there is **+ New page**. Give it a **name**, an **icon** (from the icon grid) and a **description**, choose columns and rows, then add widgets from the list on the right and drag them or their edges like for the HOME. **Create page**: the page shows up among the **available** pages (tag *TUA*), ready to be added to the tablet bar. The gear button next to a page in the list, or its chip above the grid, opens it again to change it; **Delete page** removes it from the PC and the tablet. Your pages are saved as `config/pages/u-<name>.json` (personal, not in git).
+
 The choices go to `config/layout.json`, including the **HOME** built in the panel (widgets of the other pages, sizes and order: *HOME* tab). Buttons added later to the pages appear at the end of the page. The panel only answers from this PC (`http://127.0.0.1:8787/control`), not from the tablet or the network. Available pages are reached only through buttons that open them (`{ "type": "page" }`): for the Blender and DaVinci shortcuts add their pages to the bar. Page content is always edited in the page files (`config/pages/`).
 
 ### Connecting a phone or a tablet (QR)

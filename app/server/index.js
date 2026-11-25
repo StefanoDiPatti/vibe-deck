@@ -18,6 +18,7 @@ const pairing = require('./services/pairing');
 const configCheck = require('./check');
 const plugins = require('./plugins');
 const home = require('./home');
+const customPages = require('./custom-pages');
 const shapes = require('./shapes');
 const pkg = require('../package.json');
 
@@ -203,7 +204,7 @@ function pageSummary(p) {
   let auto = '';
   if (widgets.length) auto = widgets.join(', ');
   if (buttons.length) auto += (auto ? ' + ' : '') + buttons.length + ' pulsanti (' + buttons.slice(0, 4).join(', ') + (buttons.length > 4 ? '…' : '') + ')';
-  return { id: p.id, title: p.title, icon: p.icon, tab: p.tab, description: p.description || auto, contents: auto };
+  return { id: p.id, title: p.title, icon: p.icon, tab: p.tab, custom: customPages.ID_RE.test(p.id), description: p.description || auto, contents: auto };
 }
 function pageButtons(p) {
   const btn = function (t) { return { id: t.id, label: t.label || '', sub: t.sub || '', icon: t.icon || null, color: t.color || null, w: t.w || 1, h: t.h || 1 }; };
@@ -246,6 +247,7 @@ function controlInfo() {
     tabs: d.pages.filter(function (p) { return p.tab; }).map(function (p) { return p.id; }),
     plugins: plugins.info(),
     homeEditor: homeEditor(d),
+    customPages: customPages.shared.forEditor(),
     home: d.home,
     custom: !!(config.get('layout') || {}).tabs,
     tablet: urls,
@@ -323,6 +325,17 @@ app.post('/api/control/layout/reset', controlOnly, route(function () { config.re
 app.post('/api/control/home', controlOnly, route(function (req) {
   config.saveHome(req.body || {});
   log.info('control', 'HOME: ' + (req.body.tiles || []).map(function (t) { return (t.id || t.widget) + ' ' + t.w + 'x' + t.h; }).join(', '));
+  return controlInfo();
+}));
+app.post('/api/control/pages/save', controlOnly, route(function (req) {
+  const page = customPages.shared.save(req.body || {}, config.dock().pages.map(function (p) { return p.id; }));
+  log.info('control', 'pagina ' + page.id + ' (' + page.title + '): ' + page.tiles.map(function (t) { return t.id + ' ' + t.w + 'x' + t.h; }).join(', '));
+  return Object.assign(controlInfo(), { savedPage: page.id });
+}));
+app.post('/api/control/pages/remove', controlOnly, route(function (req) {
+  const id = String((req.body || {}).id || '');
+  customPages.shared.remove(id);
+  log.info('control', 'pagina tolta: ' + id);
   return controlInfo();
 }));
 app.post('/api/control/home/reset', controlOnly, route(function () { config.saveHome(null); return controlInfo(); }));

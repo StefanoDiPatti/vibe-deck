@@ -289,6 +289,26 @@ button.mk-tag.sw:hover { border-color: var(--accent); }
 .confirm-dlg button[hidden] { display: none; }
 .top-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
+.hm-targets { margin: -4px 0 14px; }
+.hm-targets .chip svg.ic { width: 18px; height: 18px; }
+.hm-new { border-style: dashed; }
+.hm-meta { display: grid; grid-template-columns: 200px minmax(0, 1fr) auto; gap: 12px; align-items: end; margin-bottom: 14px; }
+.hm-meta[hidden] { display: none; }
+.hm-iconf { font-size: 12px; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); }
+.hm-field { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+.hm-field input[type=text] { height: 38px; font-family: inherit; }
+.hm-icon-btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: var(--r-ctl); border: 1px solid var(--line); background: var(--field); color: var(--strong); font: inherit; font-size: 13px; cursor: pointer; text-transform: none; letter-spacing: 0; }
+.hm-icon-btn svg.ic { width: 22px; height: 22px; color: var(--accent-2); fill: currentColor; }
+.hm-icons { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 6px; max-height: 220px; overflow: auto; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunken-2); }
+.hm-icons[hidden] { display: none; }
+.hm-ic { height: 42px; border-radius: 8px; border: 1px solid transparent; background: var(--panel-2); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.hm-ic svg.ic { width: 22px; height: 22px; fill: currentColor; }
+.hm-ic:hover { border-color: var(--line-2); }
+.hm-ic.on { border-color: var(--accent); color: var(--accent-2); background: var(--accent-tint); }
+.tag.mine { margin-left: 6px; background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+.btn.danger { color: var(--bad-text); }
+.btn.danger:hover { border-color: var(--bad); }
+@media (max-width: 760px) { .hm-meta { grid-template-columns: 1fr; } }
 .th-layout { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(300px, 1.15fr); gap: 24px; align-items: start; }
 .th-row[hidden] { display: none; }
 .th-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 12px; }
