@@ -676,6 +676,14 @@
       '<path d="M30,0 V40 M0,20 H60" stroke="#fff" stroke-width="12"/><path d="M30,0 V40 M0,20 H60" stroke="#c8102e" stroke-width="7"/></svg>'
   };
   var LANGS = [{ code: 'it', name: 'Italiano' }, { code: 'en', name: 'English' }];
+  var refreshBtn = D.$('refresh-btn');
+  refreshBtn.innerHTML = Icons.html('refresh');
+  refreshBtn.setAttribute('title', 'Aggiorna');
+  D.bindTap(refreshBtn, { onTap: function () {
+    D.addClass(refreshBtn, 'spin');
+    setTimeout(function () { window.location.reload(true); }, 150);
+  } });
+
   var setBtn = D.$('settings-btn');
   setBtn.innerHTML = Icons.html('settings');
   setBtn.setAttribute('title', 'Impostazioni');
