@@ -29,7 +29,6 @@ svg.ic { fill: #ffffff; display: inline-block; vertical-align: middle; }
 }
 .tb-right { position: absolute; right: 12px; top: 0; height: 44px; }
 #mini { color: #8b9bab; font-size: 14px; margin-right: 16px; }
-#clock { font-weight: bold; font-size: 18px; padding: 0 4px; }
 #settings-btn { display: inline-block; width: 40px; height: 44px; text-align: center; margin-right: 6px; vertical-align: top; }
 #settings-btn svg.ic { width: 24px; height: 24px; fill: #9fb3c8; margin-top: -3px; }
 #settings-btn.pressed svg.ic { fill: #3d8bfd; }
@@ -58,6 +57,8 @@ svg.ic { fill: #ffffff; display: inline-block; vertical-align: middle; }
 .set-tog i { position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 10px; background: #e8eef4; }
 .set-awake.on .set-tog { background: #3d8bfd; }
 .set-awake.on .set-tog i { left: 23px; }
+.set-full { margin-top: 8px; }
+.set-full svg.ic { width: 22px; height: 22px; fill: #9fb3c8; margin: -3px 10px 0 0; }
 .set-desc { font-size: 12px; line-height: 16px; color: #8b9bab; padding: 6px 6px 0; }
 
 #banner {

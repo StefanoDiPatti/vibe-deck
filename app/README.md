@@ -73,7 +73,7 @@ That is: the address to open on the tablet, the access code, the direct link (wh
    The tablet remembers every code it connected with (up to 6): if on the same PC you switch between Windows and Linux, each with its own code, you enter it once per system and then it switches by itself.
 3. Chrome: menu > *Add to Home screen*. From that icon the deck opens full screen.
 4. To keep the screen on: *Developer options > Stay awake* (with the tablet charging).
-5. Tap the clock at the top right for full screen, if the browser supports it.
+5. Gear at the top right > *Full screen*, if the browser supports it.
 6. To open a page directly add its id to the address: `http://IP:8787/#media`, `#claude`, `#blender`.
 
 At the top right you see the PC network (Wi-Fi name and signal, or Ethernet), download/upload speed and RAM, then the **settings gear**: theme, language (IT / EN) and **Always on**.
@@ -133,7 +133,7 @@ This applies to screens whose short side is under 600 px; the tablet does not ch
 
 ## Tablet themes
 
-The **gear** in the top bar, next to the clock, opens the settings menu: theme, language (IT / EN) and *Always on*. The themes:
+The **gear** at the top right opens the settings menu: theme, language (IT / EN), *Always on* and *Full screen*. The **refresh** icon at the top left, next to the PC name, reloads the tablet page. The themes:
 
 | Theme | Look |
 |---|---|
