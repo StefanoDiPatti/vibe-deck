@@ -130,7 +130,7 @@
       <div class="card-head">
         <div>
           <h2>Temi del tablet</h2>
-          <p class="hint">Ogni tema ha uno <b>stile</b> (forme e caratteri) e una <b>palette</b> di 10 colori. Parti da un preset o cambia i colori uno per uno: l'anteprima a destra è il tablet vero. Salvato il tema, sul tablet lo scegli dalla rotella accanto all'orario.</p>
+          <p class="hint">Ogni tema ha uno <b>stile</b> (forme e caratteri) e una <b>palette</b> di 10 colori. Parti da un preset o cambia i colori uno per uno: l'anteprima a destra è il tablet vero. Sul tablet, nel menu della rotella, ci sono il tema <b>predefinito</b> e fino a <b>3 temi</b> che mandi con <b>Mostra sul tablet</b>.</p>
         </div>
         <span id="th-state" class="pill"></span>
       </div>
@@ -139,6 +139,11 @@
           <div class="th-row">
             <label class="th-field">Tema <select id="th-pick"></select></label>
             <button id="th-new" class="btn ghost small-btn" type="button" title="Nuovo tema a partire dai colori che vedi">Nuovo tema</button>
+          </div>
+          <div class="th-tablet">
+            <div class="th-tablet-h"><b>Sul tablet</b> <span id="th-tablet-count" class="count"></span><span class="hint small">Nel menu della rotella del tablet: il predefinito e fino a 3 temi scelti qui.</span></div>
+            <div id="th-tablet-list" class="chips th-tablet-list"></div>
+            <button id="th-send" class="btn ghost small-btn" type="button"></button>
           </div>
           <div id="th-meta" class="th-row" hidden>
             <label class="th-field">Nome <input id="th-name" type="text" maxlength="40" spellcheck="false"></label>

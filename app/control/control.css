@@ -342,3 +342,11 @@ button.mk-tag.sw:hover { border-color: var(--accent); }
 .th-frame-box { position: relative; overflow: hidden; border-radius: 12px; border: 1px solid var(--line); background: #000; }
 .th-frame-box iframe { position: absolute; left: 0; top: 0; width: 1280px; height: 800px; border: 0; transform-origin: 0 0; pointer-events: none; }
 @media (max-width: 900px) { .th-layout { grid-template-columns: 1fr; } .th-preview { position: static; } }
+.th-tablet { margin: 4px 0 14px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); }
+.th-tablet-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.th-tablet-h .hint.small { margin: 0; flex-basis: 100%; }
+.th-tablet-list { margin-bottom: 8px; }
+.th-tablet-list .chip { cursor: default; padding-right: 8px; }
+.th-fixed { border-style: dashed; }
+.th-unsend { margin-left: 4px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: transparent; color: inherit; font-size: 16px; line-height: 1; cursor: pointer; }
+.th-unsend:hover { background: var(--bad); color: var(--on-accent); }
