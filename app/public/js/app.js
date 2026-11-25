@@ -184,6 +184,76 @@
     D.toggleClass(document.body, 'no-tabs', !list.length);
   }
 
+  function tabPages() {
+    var pages = app.cfg ? app.cfg.dock.pages : [], list = [];
+    for (var i = 0; i < pages.length; i++) if (pages[i].tab) list.push(pages[i].id);
+    return list;
+  }
+
+  app.swipeGuards = [
+    function (t) { return !!D.closestAttr(t, 'data-noswipe', stage); },
+    function (t) { return !!D.closestClass(t, 'sh-track', stage); },
+    function (t) { return !!D.closestAttr(t, 'data-win', stage); },
+    function (t) { return /INPUT|TEXTAREA|SELECT/.test(t.tagName || ''); },
+    function (t) {
+      for (var n = t; n && n !== stage && n.nodeType === 1; n = n.parentNode) {
+        if (n.scrollWidth > n.clientWidth + 4 && D.hasClass(n, 'scroll')) return true;
+      }
+      return false;
+    }
+  ];
+  function swipeVetoed(t) {
+    for (var i = 0; i < app.swipeGuards.length; i++) {
+      try { if (app.swipeGuards[i](t)) return true; } catch (e) { }
+    }
+    return false;
+  }
+  function animateStage(cls) {
+    D.removeClass(stage, 'sw-next'); D.removeClass(stage, 'sw-prev');
+    D.removeClass(stage, 'sw-end-l'); D.removeClass(stage, 'sw-end-r');
+    void stage.offsetWidth;
+    D.addClass(stage, cls);
+    clearTimeout(app.swipeAnim);
+    app.swipeAnim = setTimeout(function () { D.removeClass(stage, cls); }, 400);
+  }
+  app.swipePage = function (dir) {
+    var list = tabPages(), i = app.page ? list.indexOf(app.page.id) : -1;
+    if (i < 0) return false;
+    var j = i + dir;
+    if (j < 0 || j >= list.length) { animateStage(dir > 0 ? 'sw-end-l' : 'sw-end-r'); return false; }
+    showPage(list[j]);
+    animateStage(dir > 0 ? 'sw-next' : 'sw-prev');
+    return true;
+  };
+  (function () {
+    var sw = null;
+    function pt(e) {
+      var t = e.changedTouches ? e.changedTouches[0] : e;
+      return app.rotated ? { x: t.clientY, y: -t.clientX } : { x: t.clientX, y: t.clientY };
+    }
+    stage.addEventListener('touchstart', function (e) {
+      sw = null;
+      if (e.touches.length !== 1 || swipeVetoed(e.target)) return;
+      var p = pt(e);
+      sw = { x: p.x, y: p.y, t: new Date().getTime() };
+    }, false);
+    stage.addEventListener('touchmove', function (e) {
+      if (!sw) return;
+      if (e.touches.length > 1) { sw = null; return; }
+      var p = pt(e.touches[0] ? { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY } : e);
+      if (Math.abs(p.x - sw.x) > 10 && Math.abs(p.x - sw.x) > Math.abs(p.y - sw.y)) e.preventDefault();
+    }, false);
+    stage.addEventListener('touchcancel', function () { sw = null; }, false);
+    stage.addEventListener('touchend', function (e) {
+      if (!sw) return;
+      var p = pt(e), dx = p.x - sw.x, dy = p.y - sw.y, dt = new Date().getTime() - sw.t;
+      sw = null;
+      var min = Math.max(60, Math.min(140, stage.clientWidth * 0.12));
+      if (dt > 900 || Math.abs(dx) < min || Math.abs(dx) < Math.abs(dy) * 1.8) return;
+      app.swipePage(dx < 0 ? 1 : -1);
+    }, false);
+  })();
+
   function markTab() {
     var all = tabs.childNodes;
     for (var i = 0; i < all.length; i++) D.toggleClass(all[i], 'active', all[i].getAttribute('data-page') === app.page.id);
@@ -346,7 +416,7 @@
       setOnline(true);
       D.setText(D.$('mini'), fmtTop(s));
       if (s.build && BUILD && s.build !== BUILD) { reloadPage(); return; }
-      if (s.version !== app.version) { loadConfig(); return; }
+      if (s.version !== app.version || (s.themesV && app.cfg && s.themesV !== app.cfg.themesV)) { loadConfig(); return; }
       if (app.page && stage.clientWidth + 'x' + stage.clientHeight !== app.lastSize) layout();
       paintTiles(s);
       schedulePoll();
@@ -416,6 +486,7 @@
       D.power.configure(cfg.power);
       app.version = cfg.version;
       document.title = cfg.dock.title;
+      syncTheme();
       buildTabs();
       var fromHash = window.location.hash ? window.location.hash.replace(/^#\/?/, '') : '';
       showPage(app.page ? app.page.id : (fromHash && findPage(fromHash) ? fromHash : D.store.get('page', cfg.dock.home)));
@@ -496,16 +567,24 @@
   D.bindTap(D.$('pair-go'), { onTap: submitPair });
   D.$('pair-code').addEventListener('keydown', function (e) { if (e.keyCode === 13) submitPair(); }, false);
 
-  var THEMES = [
-    { id: 'classic', name: 'Classico', sw: ['#0b0f14', '#18212c', '#3d8bfd'] },
-    { id: 'material', name: 'Material', sw: ['#111318', '#272a2f', '#a8c7fa'] },
-    { id: 'neon', name: 'Neon Elgato', sw: ['#050505', '#41d1ff', '#ff5c7a'] },
-    { id: 'brutal', name: 'Neo-brutalista', sw: ['#f4efe3', '#ffd23f', '#111111'] }
+  var BUILTIN = [
+    { id: 'classic', name: 'Classico', style: 'classic', v: '', sw: ['#0b0f14', '#18212c', '#3d8bfd'] },
+    { id: 'material', name: 'Material', style: 'material', v: '', sw: ['#111318', '#272a2f', '#a8c7fa'] },
+    { id: 'neon', name: 'Neon Elgato', style: 'neon', v: '', sw: ['#050505', '#41d1ff', '#ff5c7a'] },
+    { id: 'brutal', name: 'Neo-brutalista', style: 'brutal', v: '', sw: ['#f4efe3', '#ffd23f', '#111111'] }
   ];
-  function themeOk(id) { for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === id) return true; return false; }
+  var STYLES = { classic: 1, material: 1, neon: 1, brutal: 1 };
+  function themeList() { return app.cfg && app.cfg.themes && app.cfg.themes.length ? app.cfg.themes : BUILTIN; }
+  function findTheme(id) {
+    var list = themeList();
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
   app.theme = D.store.get('theme', 'classic');
-  if (!themeOk(app.theme)) app.theme = 'classic';
-  document.body.className += ' th-' + app.theme;
+  app.style = D.store.get('themeStyle', app.theme);
+  app.themeV = D.store.get('themeV', '');
+  if (!STYLES[app.style]) { app.theme = 'classic'; app.style = 'classic'; app.themeV = ''; }
+  document.body.className += ' th-' + app.style;
 
   function mixHex(a, b, t) {
     function ch(h, i) { return parseInt(h.substr(1 + i * 2, 2), 16); }
@@ -518,12 +597,12 @@
     return out;
   }
   function tint(b, color) {
-    if (app.theme === 'neon') {
+    if (app.style === 'neon') {
       var light = mixHex(color, '#ffffff', 0.45);
       var svg = b.querySelector && b.querySelector('.t-icon svg');
       b.setAttribute('data-tint', light);
       if (svg) { svg.style.fill = light; svg.style.color = light; }
-    } else if (app.theme === 'brutal') {
+    } else if (app.style === 'brutal') {
       b.style.backgroundColor = mixHex(color, '#ffffff', 0.55);
     } else {
       b.style.backgroundColor = color;
@@ -531,26 +610,64 @@
   }
 
   function themeLink(linkId, href) {
-    var link = D.$(linkId);
+    var link = D.$(linkId), head = document.getElementsByTagName('head')[0];
     if (!href) { if (link) link.parentNode.removeChild(link); return; }
     if (!link) {
       link = document.createElement('link');
       link.id = linkId; link.rel = 'stylesheet';
-      document.getElementsByTagName('head')[0].appendChild(link);
     }
-    link.href = href;
+    if (link.getAttribute('href') !== href) link.href = href;
+    head.appendChild(link);
   }
-
+  function applyStyle(style) {
+    themeLink('plugin-theme-css', style === 'classic' ? '' : 'plugins-theme/' + style + '.css');
+    themeLink('theme-css', style === 'classic' ? '' : 'css/themes/' + style + '.css');
+    if (style !== app.style) {
+      D.removeClass(document.body, 'th-' + app.style);
+      D.addClass(document.body, 'th-' + style);
+      app.style = style;
+    }
+  }
+  function applyTheme(t) {
+    applyStyle(t.style);
+    themeLink('custom-theme-css', t.v ? 'theme-css/' + t.id + '.css?v=' + t.v : '');
+    var draft = D.$('theme-draft');
+    if (draft) draft.parentNode.removeChild(draft);
+    var changed = app.theme !== t.id || app.themeV !== (t.v || '');
+    app.theme = t.id;
+    app.themeV = t.v || '';
+    D.store.set('theme', t.id);
+    D.store.set('themeStyle', t.style);
+    D.store.set('themeV', app.themeV);
+    return changed;
+  }
   function setTheme(id) {
-    if (!themeOk(id) || id === app.theme) return;
-    themeLink('plugin-theme-css', id === 'classic' ? '' : 'plugins-theme/' + id + '.css');
-    themeLink('theme-css', id === 'classic' ? '' : 'css/themes/' + id + '.css');
-    D.removeClass(document.body, 'th-' + app.theme);
-    D.addClass(document.body, 'th-' + id);
-    app.theme = id;
-    D.store.set('theme', id);
+    var t = findTheme(id);
+    if (!t || (id === app.theme && (t.v || '') === app.themeV)) return;
+    applyTheme(t);
     if (app.cfg && app.page) showPage(app.page.id);
   }
+  function syncTheme() {
+    if (app.previewing) return;
+    var t = findTheme(app.theme) || findTheme(STYLES[app.style] ? app.style : 'classic') || BUILTIN[0];
+    var before = app.style;
+    if (applyTheme(t) && before !== app.style && app.cfg && app.page) showPage(app.page.id);
+  }
+  window.VibeTheme = {
+    preview: function (style, css) {
+      if (!STYLES[style]) return false;
+      app.previewing = true;
+      var before = app.style;
+      applyStyle(style);
+      themeLink('custom-theme-css', '');
+      var el = D.$('theme-draft');
+      if (!el) { el = document.createElement('style'); el.id = 'theme-draft'; }
+      document.getElementsByTagName('head')[0].appendChild(el);
+      if (el.styleSheet) el.styleSheet.cssText = css || ''; else el.textContent = css || '';
+      if (before !== style && app.cfg && app.page) showPage(app.page.id);
+      return true;
+    }
+  };
 
   var FLAGS = {
     it: '<svg class="flag" viewBox="0 0 3 2" width="30" height="20"><rect width="1" height="2" fill="#009246"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#ce2b37"/></svg>',
@@ -567,13 +684,14 @@
   function openSettings() {
     closeSettings();
     setMenu = D.el('div', 'theme-layer');
-    var i, html = '<div class="theme-menu set-menu"><div class="set-col"><div class="theme-h">TEMA</div>';
-    for (i = 0; i < THEMES.length; i++) {
-      var t = THEMES[i], sw = '';
+    var i, html = '<div class="theme-menu set-menu"><div class="set-col"><div class="theme-h">TEMA</div><div class="set-themes scroll">';
+    var tl = themeList();
+    for (i = 0; i < tl.length; i++) {
+      var t = tl[i], sw = '';
       for (var k = 0; k < t.sw.length; k++) sw += '<i style="background:' + t.sw[k] + '"></i>';
-      html += '<div class="theme-opt' + (t.id === app.theme ? ' on' : '') + '" data-theme="' + t.id + '"><span class="theme-sw">' + sw + '</span>' + D.esc(t.name) + '</div>';
+      html += '<div class="theme-opt' + (t.custom ? ' notr' : '') + (t.id === app.theme ? ' on' : '') + '" data-theme="' + t.id + '"><span class="theme-sw">' + sw + '</span>' + D.esc(t.name) + '</div>';
     }
-    html += '</div><div class="set-col set-col2"><div class="theme-h">LINGUA</div>';
+    html += '</div></div><div class="set-col set-col2"><div class="theme-h">LINGUA</div>';
     var now = I18n.lang() === 'en' ? 'en' : 'it';
     for (i = 0; i < LANGS.length; i++) {
       var l = LANGS[i];
@@ -585,7 +703,10 @@
       '<div class="set-desc">Niente schermata con l\'ora per il risparmio energetico.</div>';
     setMenu.innerHTML = html + '</div></div>';
     document.body.appendChild(setMenu);
+    var lst = setMenu.querySelector('.set-themes');
+    if (lst) lst.style.maxHeight = Math.max(120, Math.min(344, viewport().h - setMenu.firstChild.offsetTop - lst.offsetTop - 24)) + 'px';
     D.bindTap(setMenu, {
+      scrollable: true,
       onTap: function (t) {
         var aw = D.closestAttr(t, 'data-awake', setMenu);
         if (aw) {

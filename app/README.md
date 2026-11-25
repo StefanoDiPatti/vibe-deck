@@ -80,6 +80,8 @@ At the top right you see the PC network (Wi-Fi name and signal, or Ethernet), do
 
 **Battery:** after a minute without touches the deck refreshes data more slowly (PC status every 15 seconds instead of 2); after 10 minutes the screensaver starts, black with a dim clock, and it stops calling the PC entirely. One tap wakes it up, without pressing the button underneath. Timings in `services.json` → `tablet`; to never start the screensaver on a tablet: gear at the top → *Always on*. The screen is still the biggest drain: lower the Android brightness, and if the tablet stays on charge use *Stay awake* only when needed.
 
+**Swipe** left or right on the page to go to the next or previous page of the bottom bar (on a phone held in portrait, swipe along the rotated page). Swipes that start on a slider, a text field or something you can drag do not change the page; at the first and last page the page bounces.
+
 Buttons with an orange bar at the bottom (e.g. LOCK) must be **held** for about 1 second.
 Volume and undo buttons repeat while you hold them.
 
@@ -143,6 +145,20 @@ The **gear** in the top bar, next to the clock, opens the settings menu: theme, 
 The screensaver clock changes with the theme too: thin (Classic), rounded (Material), digital with a glow (Neon), heavy with a solid shadow (Neo-brutalist). The fonts are in `public/fonts`, reduced to digits only (licenses in `public/fonts/LICENSE.md`).
 
 The choice stays on that tablet. Buttons with `"color"` change with the theme: in Neon the color goes on the icon, in Neo-brutalist it becomes pastel.
+
+### Your colors (control panel → Tablet themes)
+
+Every theme is a **style** (shapes, corners, fonts: the four above) plus a **palette** of 10 colors: background, tiles, buttons, borders, text, secondary text, accent, OK, warning, error. In the control panel, card **Tablet themes**:
+
+- pick a theme and change its colors: a **preset** (the four originals plus Nordic, Dracula, Forest, Sunset, Solarized, Paper), each in a **Dark** and a **Light** version (the switch next to *Preset*: on a preset you picked it swaps to the other version), or **one color at a time** with the RGB picker or the hex code;
+- **New theme** makes a theme of your own: name, style and palette (for example the Neo-brutalist shapes with the Dracula colors);
+- the preview on the right is the real tablet, with live data; a note warns when text and background have too little contrast;
+- **Save**: on the tablet the theme shows up in the gear menu (a tablet already using it updates by itself). **Original colors** / **Delete theme** undo it;
+- **Export** / **Import** save and load a theme as a `.json` file (`{ "vibeDeckTheme": 1, "name", "style", "palette" }`), ready to share.
+
+The **control panel** uses the same themes: the picker at the top lists the four styles and your themes, and a theme with your colors restyles the panel too.
+
+Your themes are in `config/themes.json` (personal, not in git). The server builds the CSS of a palette on the fly (`/theme-css/<id>.css`): every color of `dock.css`, of the style and of the plugins is recomputed from the 10 colors of the palette, so plugin widgets follow your colors too.
 
 For style changes: the files in `public/css/themes/` are generated from `public/css/dock.css` and `scripts/themes/<theme>.js` (color tables and theme shapes). After a change to `dock.css` run `npm run themes`.
 
@@ -602,6 +618,7 @@ The guide to customize pages, buttons, actions and widgets is in the [main READM
 | `server/secrets.js` | encryption of sensitive data (key in the system keychain) |
 | `server/actions/` | action engine and macros |
 | `server/plugins.js` | plugin loader (`plugins/` folder) |
+| `server/themes/` | palettes: styles (registry), presets, recoloring of the CSS, `config/themes.json` |
 | `server/platform/` | `windows.js` (+ `windows-helper.ps1`), `linux.js`, `keys.js` |
 | `server/services/` | system, media, bridge, claude, claudecode, voice, github, ollama, todo, mail, pairing (QR) |
 | `public/` | tablet client (ES5, no framework) |
@@ -616,6 +633,8 @@ The guide to customize pages, buttons, actions and widgets is in the [main READM
 **Adding a feature without touching the project:** a plugin (`npm run new:widget -- <name>`), see *Plugins* in the main README.
 
 **Adding an action type to the project:** add a function to `HANDLERS` in `server/actions/index.js`. If it needs the operating system, add the method to both `server/platform/windows.js` and `server/platform/linux.js`.
+
+**Swipe and plugin widgets:** a widget that uses horizontal drags of its own puts `data-noswipe` on that element (or adds a function to `ctx.app.swipeGuards` that returns `true` for the element where the finger starts), so the swipe does not change page.
 
 The client must stay ES5 with no flexbox/grid: `tests/client-es5.test.js` checks it. The repository has **zero comments**: `tests/no-comments.test.js` checks it.
 

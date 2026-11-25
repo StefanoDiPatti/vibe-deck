@@ -57,6 +57,15 @@ async function main() {
     await hand.choose('#ed-actions .ed-action select', 'hotkey');
     await hand.fill(field('tap.keys'), 'CTRL+SHIFT+ESC');
     await hand.fill(field('name'), 'Mia CPU');
+    await hand.click(field('icon'));
+    const grid = await cdp.eval('(function(){var g=document.querySelector("#editor-card [data-path=icon] .ed-icongrid");if(!g||g.hidden)return null;var r=g.getBoundingClientRect();return {h:r.height,sh:g.scrollHeight,n:g.querySelectorAll(".ed-ic").length};})()');
+    report.check('icone: griglia con altezza massima (non una lista infinita)', grid && grid.h <= 260 && grid.n > 40 && grid.sh > grid.h, JSON.stringify(grid));
+    fs.writeFileSync(path.join(OUT, 'site-icon-picker.png'), Buffer.from((await cdp.send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+    await hand.type('cp');
+    const few = await cdp.eval('document.querySelectorAll("#editor-card [data-path=icon] .ed-ic").length');
+    report.check('icone: scrivere filtra la griglia', few >= 1 && few < 10, few + ' icone');
+    await hand.click('#editor-card [data-path="icon"] .ed-ic[data-icon="cpu"]');
+    report.check('icone: il tocco sceglie e chiude la griglia', await cdp.eval('document.querySelector(' + JSON.stringify(field('icon')) + ').value==="cpu"&&document.querySelector("#editor-card [data-path=icon] .ed-icongrid").hidden'));
     const ready = await waitFor(function () { return cdp.eval('document.getElementById("ed-state").textContent==="READY"&&!document.getElementById("fin-local").disabled'); }, 8000, 'pronto').catch(function () { return false; });
     report.check('nessun problema: "Add to my deck" attivo', ready, await cdp.eval('document.getElementById("ed-problems").textContent'));
     const shown = await waitFor(function () { return frame(cdp, 'var t=d.body.textContent;return /PROCESSORE/.test(t)&&/37/.test(t)&&t;'); }, 8000, 'anteprima').catch(function () { return ''; });

@@ -12,8 +12,10 @@
   <script id="theme-boot">
     (function () {
       try {
-        var t = JSON.parse(window.localStorage.getItem('dock:theme') || '"classic"');
-        if (/^(material|neon|brutal)$/.test(t)) document.write('<link id="plugin-theme-css" rel="stylesheet" href="plugins-theme/' + t + '.css"><link id="theme-css" rel="stylesheet" href="css/themes/' + t + '.css">');
+        var ls = window.localStorage, get = function (k, d) { var v = ls.getItem('dock:' + k); return v === null ? d : JSON.parse(v); };
+        var t = get('theme', 'classic'), st = get('themeStyle', t), v = get('themeV', '');
+        if (/^(material|neon|brutal)$/.test(st)) document.write('<link id="plugin-theme-css" rel="stylesheet" href="plugins-theme/' + st + '.css"><link id="theme-css" rel="stylesheet" href="css/themes/' + st + '.css">');
+        if (v && /^[a-z0-9-]+$/.test(t) && /^[a-z0-9]+$/.test(v)) document.write('<link id="custom-theme-css" rel="stylesheet" href="theme-css/' + t + '.css?v=' + v + '">');
       } catch (e) { }
     })();
   </script>
