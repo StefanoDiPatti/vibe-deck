@@ -11,6 +11,60 @@ function shot(cdp, name) {
   return cdp.send('Page.captureScreenshot', { format: 'png' }).then(function (r) { fs.writeFileSync(path.join(OUT, name), Buffer.from(r.data, 'base64')); });
 }
 
+async function singleGame(s, cdp, hand, report) {
+  report.group('Pannello: un gioco solo come widget');
+  const exe = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-e2e-game-')), 'stardew.sh');
+  fs.writeFileSync(exe, 'x');
+  await s.api('POST', '/api/control/games', { path: exe, label: 'Stardew Valley' }, CTRL);
+  await cdp.send('Page.navigate', { url: s.base + '/control' });
+  await waitFor(function () { return cdp.eval('document.querySelectorAll("#hm-targets [data-hmgo]").length>=2'); }, 20000, 'editor pagine');
+  report.check('il gioco è nel catalogo dei widget', await cdp.eval('!!document.querySelector("#hm-catalog [data-hmadd=game_stardew_valley]")'));
+  report.check('il widget generico "game" non è nel catalogo', await cdp.eval('!document.querySelector("#hm-catalog [data-hmadd=game]")'));
+  await hand.click('#hm-targets [data-hmgo="new"]');
+  await hand.fill('#hm-title', 'Play');
+  await hand.click('#hm-catalog [data-hmadd="game_stardew_valley"]');
+  await hand.click('#hm-catalog [data-hmadd="clock"]');
+  report.check('gioco e orologio nella griglia', await cdp.eval('document.querySelectorAll("#hm-board .hm-w").length===2'));
+  await cdp.eval('window.scrollTo(0, document.getElementById("home-card").offsetTop - 10);true');
+  await sleep(300);
+  await shot(cdp, 'pages-game-editor.png');
+  await hand.click('#hm-save');
+  const made = await waitFor(async function () {
+    const i = await s.api('GET', '/api/control/info', null, CTRL);
+    return (i.customPages || []).filter(function (p) { return p.id === 'u-play'; })[0];
+  }, 5000, 'salvataggio').catch(function () { return null; });
+  report.check('pagina con il gioco salvata', made && made.tiles.some(function (t) { return t.id === 'game_stardew_valley'; }), made ? JSON.stringify(made.tiles) : 'non trovata');
+  await waitFor(function () { return cdp.eval('!!document.querySelector("#off .item[data-id=u-play] .ibtn.add")'); }, 4000, 'disponibili');
+  await hand.click('#off .item[data-id="u-play"] .ibtn.add');
+  await hand.click('#save');
+  await waitFor(async function () { return (await s.api('GET', '/api/control/info', null, CTRL)).tabs.indexOf('u-play') >= 0; }, 5000, 'barra');
+
+  const sizes = [[1280, 800, 'tablet'], [1024, 600, 'tablet-small'], [740, 360, 'phone-land'], [360, 740, 'phone-port']];
+  for (let k = 0; k < sizes.length; k++) {
+    const z = sizes[k];
+    report.group('Tablet ' + z[0] + 'x' + z[1] + ': il widget del gioco');
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: z[0], height: z[1], deviceScaleFactor: 1, mobile: true });
+    await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+    await cdp.send('Page.navigate', { url: s.base + '/?t=' + s.token });
+    await waitFor(function () { return cdp.eval('!!(window.D&&document.querySelector("#tabs .tab[data-page=u-play]"))'); }, 20000, 'scheda');
+    await cdp.eval('window.__presses=[];(function(p){D.api.post=function(u,b,cb,t){if(u==="/api/press")window.__presses.push(b);return p.apply(this,arguments);};})(D.api.post);true');
+    const finger = new Finger(cdp);
+    const tab = await cdp.eval('(function(){var b=document.querySelector("#tabs .tab[data-page=u-play]").getBoundingClientRect();return {x:b.left+b.width/2,y:b.top+b.height/2,ok:b.width>0};})()');
+    if (!tab.ok) await cdp.eval('App&&App.go?App.go("u-play"):0;true');
+    else await finger.tap(tab.x, tab.y);
+    await sleep(1200);
+    report.check('nome e icona del gioco', await cdp.eval('(function(){var e=document.querySelector("#stage .w-game .gm-one span");return !!e&&e.textContent==="STARDEW VALLEY";})()'));
+    const b = await cdp.eval('(function(){var e=document.querySelector("#stage .w-game .gm-one");if(!e)return null;var r=e.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height};})()');
+    report.check('widget visibile e toccabile', !!b && b.w > 30 && b.h > 30, JSON.stringify(b));
+    if (b) await finger.tap(b.x, b.y);
+    const pressed = await waitFor(function () { return cdp.eval('window.__presses.length>0&&window.__presses[0].tile==="game_stardew_valley"&&window.__presses[0].page==="games"'); }, 4000, 'tocco').catch(function () { return false; });
+    report.check('il tocco avvia il gioco', pressed, JSON.stringify(await cdp.eval('window.__presses')));
+    report.check('nessun errore JavaScript sul tablet', (await cdp.eval('window.__errors.length')) === 0, JSON.stringify(await cdp.eval('window.__errors')));
+    await shot(cdp, 'pages-game-' + z[2] + '.png');
+  }
+  await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+}
+
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
   const report = new Report();
@@ -96,6 +150,8 @@ async function main() {
     const dbg = await s.api('GET', '/api/control/info', null, CTRL);
     report.check('eliminata (e tolta dalla barra)', gone, JSON.stringify({ pages: dbg.customPages, tabs: dbg.tabs, del: await cdp.eval('document.getElementById("hm-delete").hidden'), target: await cdp.eval('document.querySelector("#hm-targets .chip.on").dataset.hmgo') }));
     report.check('nessun errore JavaScript nel pannello', (await cdp.eval('window.__errors.length')) === 0, JSON.stringify(await cdp.eval('window.__errors')));
+
+    await singleGame(s, cdp, hand, report);
   } catch (e) {
     report.check('esecuzione', false, e.message);
   } finally {

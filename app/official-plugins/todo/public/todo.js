@@ -58,6 +58,7 @@
       list.innerHTML = '';
       var open = 0, group = null;
       var tn = targetNote();
+      var memo = state.source === 'memo';
       var groups = state.notes.length > 0;
       for (var i = 0; i < state.items.length; i++) {
         var it = state.items[i];

@@ -12,6 +12,7 @@ module.exports = {
   description: 'Your games on the tablet, picked in the control panel',
   hooks: {
     apps: function () { return games.apps(); },
+    homeWidgets: function () { return games.homeWidgets(); },
     stamp: function (payload, ctx) {
       try { return Math.round(fs.statSync(path.join(ctx.paths.DATA_DIR, 'games.json')).mtimeMs); } catch (e) { return 0; }
     }
