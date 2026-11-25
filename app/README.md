@@ -144,6 +144,18 @@ The screensaver clock changes with the theme too: thin (Classic), rounded (Mater
 
 The choice stays on that tablet. Buttons with `"color"` change with the theme: in Neon the color goes on the icon, in Neo-brutalist it becomes pastel.
 
+### Your colors (control panel → Tablet themes)
+
+Every theme is a **style** (shapes, corners, fonts: the four above) plus a **palette** of 10 colors: background, tiles, buttons, borders, text, secondary text, accent, OK, warning, error. In the control panel, card **Tablet themes**:
+
+- pick a theme and change its colors: a **preset** (the four originals plus Nordic, Dracula, Forest, Sunset, Solarized light, Paper) or **one color at a time** with the RGB picker or the hex code;
+- **New theme** makes a theme of your own: name, style and palette (for example the Neo-brutalist shapes with the Dracula colors);
+- the preview on the right is the real tablet, with live data; a note warns when text and background have too little contrast;
+- **Save**: on the tablet the theme shows up in the gear menu (a tablet already using it updates by itself). **Original colors** / **Delete theme** undo it;
+- **Export** / **Import** save and load a theme as a `.json` file (`{ "vibeDeckTheme": 1, "name", "style", "palette" }`), ready to share.
+
+Your themes are in `config/themes.json` (personal, not in git). The server builds the CSS of a palette on the fly (`/theme-css/<id>.css`): every color of `dock.css`, of the style and of the plugins is recomputed from the 10 colors of the palette, so plugin widgets follow your colors too.
+
 For style changes: the files in `public/css/themes/` are generated from `public/css/dock.css` and `scripts/themes/<theme>.js` (color tables and theme shapes). After a change to `dock.css` run `npm run themes`.
 
 ## Control panel (on the PC)
@@ -598,6 +610,7 @@ The guide to customize pages, buttons, actions and widgets is in the [main READM
 | `server/secrets.js` | encryption of sensitive data (key in the system keychain) |
 | `server/actions/` | action engine and macros |
 | `server/plugins.js` | plugin loader (`plugins/` folder) |
+| `server/themes/` | palettes: styles (registry), presets, recoloring of the CSS, `config/themes.json` |
 | `server/platform/` | `windows.js` (+ `windows-helper.ps1`), `linux.js`, `keys.js` |
 | `server/services/` | system, media, bridge, claude, claudecode, voice, github, ollama, todo, mail, pairing (QR) |
 | `public/` | tablet client (ES5, no framework) |

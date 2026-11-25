@@ -346,7 +346,7 @@
       setOnline(true);
       D.setText(D.$('mini'), fmtTop(s));
       if (s.build && BUILD && s.build !== BUILD) { reloadPage(); return; }
-      if (s.version !== app.version) { loadConfig(); return; }
+      if (s.version !== app.version || (s.themesV && app.cfg && s.themesV !== app.cfg.themesV)) { loadConfig(); return; }
       if (app.page && stage.clientWidth + 'x' + stage.clientHeight !== app.lastSize) layout();
       paintTiles(s);
       schedulePoll();
@@ -416,6 +416,7 @@
       D.power.configure(cfg.power);
       app.version = cfg.version;
       document.title = cfg.dock.title;
+      syncTheme();
       buildTabs();
       var fromHash = window.location.hash ? window.location.hash.replace(/^#\/?/, '') : '';
       showPage(app.page ? app.page.id : (fromHash && findPage(fromHash) ? fromHash : D.store.get('page', cfg.dock.home)));
@@ -496,16 +497,24 @@
   D.bindTap(D.$('pair-go'), { onTap: submitPair });
   D.$('pair-code').addEventListener('keydown', function (e) { if (e.keyCode === 13) submitPair(); }, false);
 
-  var THEMES = [
-    { id: 'classic', name: 'Classico', sw: ['#0b0f14', '#18212c', '#3d8bfd'] },
-    { id: 'material', name: 'Material', sw: ['#111318', '#272a2f', '#a8c7fa'] },
-    { id: 'neon', name: 'Neon Elgato', sw: ['#050505', '#41d1ff', '#ff5c7a'] },
-    { id: 'brutal', name: 'Neo-brutalista', sw: ['#f4efe3', '#ffd23f', '#111111'] }
+  var BUILTIN = [
+    { id: 'classic', name: 'Classico', style: 'classic', v: '', sw: ['#0b0f14', '#18212c', '#3d8bfd'] },
+    { id: 'material', name: 'Material', style: 'material', v: '', sw: ['#111318', '#272a2f', '#a8c7fa'] },
+    { id: 'neon', name: 'Neon Elgato', style: 'neon', v: '', sw: ['#050505', '#41d1ff', '#ff5c7a'] },
+    { id: 'brutal', name: 'Neo-brutalista', style: 'brutal', v: '', sw: ['#f4efe3', '#ffd23f', '#111111'] }
   ];
-  function themeOk(id) { for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === id) return true; return false; }
+  var STYLES = { classic: 1, material: 1, neon: 1, brutal: 1 };
+  function themeList() { return app.cfg && app.cfg.themes && app.cfg.themes.length ? app.cfg.themes : BUILTIN; }
+  function findTheme(id) {
+    var list = themeList();
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
   app.theme = D.store.get('theme', 'classic');
-  if (!themeOk(app.theme)) app.theme = 'classic';
-  document.body.className += ' th-' + app.theme;
+  app.style = D.store.get('themeStyle', app.theme);
+  app.themeV = D.store.get('themeV', '');
+  if (!STYLES[app.style]) { app.theme = 'classic'; app.style = 'classic'; app.themeV = ''; }
+  document.body.className += ' th-' + app.style;
 
   function mixHex(a, b, t) {
     function ch(h, i) { return parseInt(h.substr(1 + i * 2, 2), 16); }
@@ -518,12 +527,12 @@
     return out;
   }
   function tint(b, color) {
-    if (app.theme === 'neon') {
+    if (app.style === 'neon') {
       var light = mixHex(color, '#ffffff', 0.45);
       var svg = b.querySelector && b.querySelector('.t-icon svg');
       b.setAttribute('data-tint', light);
       if (svg) { svg.style.fill = light; svg.style.color = light; }
-    } else if (app.theme === 'brutal') {
+    } else if (app.style === 'brutal') {
       b.style.backgroundColor = mixHex(color, '#ffffff', 0.55);
     } else {
       b.style.backgroundColor = color;
@@ -531,26 +540,64 @@
   }
 
   function themeLink(linkId, href) {
-    var link = D.$(linkId);
+    var link = D.$(linkId), head = document.getElementsByTagName('head')[0];
     if (!href) { if (link) link.parentNode.removeChild(link); return; }
     if (!link) {
       link = document.createElement('link');
       link.id = linkId; link.rel = 'stylesheet';
-      document.getElementsByTagName('head')[0].appendChild(link);
     }
-    link.href = href;
+    if (link.getAttribute('href') !== href) link.href = href;
+    head.appendChild(link);
   }
-
+  function applyStyle(style) {
+    themeLink('plugin-theme-css', style === 'classic' ? '' : 'plugins-theme/' + style + '.css');
+    themeLink('theme-css', style === 'classic' ? '' : 'css/themes/' + style + '.css');
+    if (style !== app.style) {
+      D.removeClass(document.body, 'th-' + app.style);
+      D.addClass(document.body, 'th-' + style);
+      app.style = style;
+    }
+  }
+  function applyTheme(t) {
+    applyStyle(t.style);
+    themeLink('custom-theme-css', t.v ? 'theme-css/' + t.id + '.css?v=' + t.v : '');
+    var draft = D.$('theme-draft');
+    if (draft) draft.parentNode.removeChild(draft);
+    var changed = app.theme !== t.id || app.themeV !== (t.v || '');
+    app.theme = t.id;
+    app.themeV = t.v || '';
+    D.store.set('theme', t.id);
+    D.store.set('themeStyle', t.style);
+    D.store.set('themeV', app.themeV);
+    return changed;
+  }
   function setTheme(id) {
-    if (!themeOk(id) || id === app.theme) return;
-    themeLink('plugin-theme-css', id === 'classic' ? '' : 'plugins-theme/' + id + '.css');
-    themeLink('theme-css', id === 'classic' ? '' : 'css/themes/' + id + '.css');
-    D.removeClass(document.body, 'th-' + app.theme);
-    D.addClass(document.body, 'th-' + id);
-    app.theme = id;
-    D.store.set('theme', id);
+    var t = findTheme(id);
+    if (!t || (id === app.theme && (t.v || '') === app.themeV)) return;
+    applyTheme(t);
     if (app.cfg && app.page) showPage(app.page.id);
   }
+  function syncTheme() {
+    if (app.previewing) return;
+    var t = findTheme(app.theme) || findTheme(STYLES[app.style] ? app.style : 'classic') || BUILTIN[0];
+    var before = app.style;
+    if (applyTheme(t) && before !== app.style && app.cfg && app.page) showPage(app.page.id);
+  }
+  window.VibeTheme = {
+    preview: function (style, css) {
+      if (!STYLES[style]) return false;
+      app.previewing = true;
+      var before = app.style;
+      applyStyle(style);
+      themeLink('custom-theme-css', '');
+      var el = D.$('theme-draft');
+      if (!el) { el = document.createElement('style'); el.id = 'theme-draft'; }
+      document.getElementsByTagName('head')[0].appendChild(el);
+      if (el.styleSheet) el.styleSheet.cssText = css || ''; else el.textContent = css || '';
+      if (before !== style && app.cfg && app.page) showPage(app.page.id);
+      return true;
+    }
+  };
 
   var FLAGS = {
     it: '<svg class="flag" viewBox="0 0 3 2" width="30" height="20"><rect width="1" height="2" fill="#009246"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#ce2b37"/></svg>',
@@ -567,13 +614,14 @@
   function openSettings() {
     closeSettings();
     setMenu = D.el('div', 'theme-layer');
-    var i, html = '<div class="theme-menu set-menu"><div class="set-col"><div class="theme-h">TEMA</div>';
-    for (i = 0; i < THEMES.length; i++) {
-      var t = THEMES[i], sw = '';
+    var i, html = '<div class="theme-menu set-menu"><div class="set-col"><div class="theme-h">TEMA</div><div class="set-themes scroll">';
+    var tl = themeList();
+    for (i = 0; i < tl.length; i++) {
+      var t = tl[i], sw = '';
       for (var k = 0; k < t.sw.length; k++) sw += '<i style="background:' + t.sw[k] + '"></i>';
-      html += '<div class="theme-opt' + (t.id === app.theme ? ' on' : '') + '" data-theme="' + t.id + '"><span class="theme-sw">' + sw + '</span>' + D.esc(t.name) + '</div>';
+      html += '<div class="theme-opt' + (t.custom ? ' notr' : '') + (t.id === app.theme ? ' on' : '') + '" data-theme="' + t.id + '"><span class="theme-sw">' + sw + '</span>' + D.esc(t.name) + '</div>';
     }
-    html += '</div><div class="set-col set-col2"><div class="theme-h">LINGUA</div>';
+    html += '</div></div><div class="set-col set-col2"><div class="theme-h">LINGUA</div>';
     var now = I18n.lang() === 'en' ? 'en' : 'it';
     for (i = 0; i < LANGS.length; i++) {
       var l = LANGS[i];
@@ -585,7 +633,10 @@
       '<div class="set-desc">Niente schermata con l\'ora per il risparmio energetico.</div>';
     setMenu.innerHTML = html + '</div></div>';
     document.body.appendChild(setMenu);
+    var lst = setMenu.querySelector('.set-themes');
+    if (lst) lst.style.maxHeight = Math.max(120, Math.min(344, viewport().h - setMenu.firstChild.offsetTop - lst.offsetTop - 24)) + 'px';
     D.bindTap(setMenu, {
+      scrollable: true,
       onTap: function (t) {
         var aw = D.closestAttr(t, 'data-awake', setMenu);
         if (aw) {
