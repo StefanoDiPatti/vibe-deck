@@ -690,7 +690,10 @@ A **pack** groups plugins and contains nothing but its `plugin.json`:
 - **Hooks**: `hooks.launch({ app, processes })` in `index.js` runs before an app is started from the tablet and may return a
   function called right after it starts (the `screens` plugin uses it to move the new window to the chosen monitor).
 - **HOME**: every widget of a plugin is listed in its `home.json`, either offered in the HOME catalog or turned off with
-  `"<widget>": false` (for widgets that only make sense on their own page).
+  `"<widget>": false` (for widgets that only make sense on their own page). `hooks.homeWidgets()` in `index.js` may add
+  catalog entries computed at runtime, one per thing the user owns (same fields as `home.json` plus `id` and `widget`,
+  usually with `props`): the `games` plugin offers one 1×1 widget per game added in the panel. The widget used there must
+  be declared in `home.json` with `"catalog": false`, so the bare widget does not show up in the catalog.
 - **Control panel**: `control: { info, prepare, routes }` in `index.js` adds the plugin's data to the panel (under its name)
   and routes under `/api/control/<plugin>/` (local only, guard them with `ctx.controlOnly`); `control/*.js` and `*.css`
   add its card through `window.Panel` (`card`, `register`, `api`, `toast`, `update`). Without the plugin the card is gone.

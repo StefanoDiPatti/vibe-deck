@@ -47,6 +47,16 @@ function apps() {
   return out;
 }
 
+function homeWidgets() {
+  return load().games.filter(function (g) { return !g.os || g.os === osKey(); }).map(function (g) {
+    return {
+      id: 'game_' + g.id, widget: 'game', label: g.label, icon: 'gamepad',
+      description: 'Solo ' + g.label + ': tocco = avvia (o porta davanti se è aperto)',
+      w: 1, h: 1, minW: 1, minH: 1, props: { game: g.id }
+    };
+  });
+}
+
 function iconUrl(g) {
   return g.icon ? '/api/plugins/games/icon/' + encodeURIComponent(g.id) + '?v=' + encodeURIComponent(g.iconRev || '') : null;
 }
@@ -363,6 +373,7 @@ function icon(id) {
 module.exports = {
   apps: apps,
   tiles: tiles,
+  homeWidgets: homeWidgets,
   pickFile: pickFile,
   fileInfo: fileInfo,
   fileIcon: fileIcon,

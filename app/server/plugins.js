@@ -429,6 +429,29 @@ function widgetLabels() { homeWidgets(); return homeNames; }
 function homeWidgets() {
   return remembered('home', readHomeWidgets).map(function (w) { return Object.assign({}, w); });
 }
+function homeEntry(name, id, widget, d, int) {
+  const minW = int(d.minW, 1, 8, 1), minH = int(d.minH, 1, 6, 1);
+  return {
+    id: id, widget: widget, plugin: name, page: 'PLUGIN ' + name.toUpperCase(),
+    label: typeof d.label === 'string' && d.label ? d.label : id.toUpperCase(),
+    icon: typeof d.icon === 'string' && d.icon ? d.icon : 'apps',
+    description: typeof d.description === 'string' ? d.description : 'Widget del plugin ' + name,
+    w: Math.max(minW, int(d.w, 1, 8, 2)), h: Math.max(minH, int(d.h, 1, 6, 2)), minW: minW, minH: minH,
+    props: d.props && typeof d.props === 'object' && !Array.isArray(d.props) ? d.props : null
+  };
+}
+function dynamicHomeWidgets(name) {
+  const p = load()[name];
+  const h = p && p.module && p.module.hooks;
+  if (!h || typeof h.homeWidgets !== 'function') return [];
+  try {
+    const list = h.homeWidgets(null, context(name));
+    return Array.isArray(list) ? list : [];
+  } catch (e) {
+    log.warn('plugin', name + ': hook homeWidgets: ' + e.message);
+    return [];
+  }
+}
 function readHomeWidgets() {
   const out = [];
   const labels = {};
@@ -457,17 +480,19 @@ function readHomeWidgets() {
         }
         declared[widget] = true;
         if (!labels[widget]) labels[widget] = typeof d.name === 'string' ? d.name : typeof d.label === 'string' ? d.label : widget;
-        const minW = int(d.minW, 1, 8, 1), minH = int(d.minH, 1, 6, 1);
-        out.push({
-          id: id, widget: widget, plugin: name, page: 'PLUGIN ' + name.toUpperCase(),
-          label: typeof d.label === 'string' && d.label ? d.label : id.toUpperCase(),
-          icon: typeof d.icon === 'string' && d.icon ? d.icon : 'apps',
-          description: typeof d.description === 'string' ? d.description : 'Widget del plugin ' + name,
-          w: Math.max(minW, int(d.w, 1, 8, 2)), h: Math.max(minH, int(d.h, 1, 6, 2)), minW: minW, minH: minH,
-          props: d.props && typeof d.props === 'object' && !Array.isArray(d.props) ? d.props : null
-        });
+        out.push(homeEntry(name, id, widget, d, int));
       });
     }
+    dynamicHomeWidgets(name).forEach(function (d) {
+      const id = d && typeof d.id === 'string' ? d.id : '';
+      const widget = d && typeof d.widget === 'string' ? d.widget : '';
+      if (!NAME_RE.test(id) || reg[widget] !== name || out.some(function (o) { return o.id === id; })) {
+        log.warn('plugin', name + ': widget dinamico "' + id + '" ignorato');
+        return;
+      }
+      declared[widget] = true;
+      out.push(homeEntry(name, id, widget, d, int));
+    });
     Object.keys(reg).forEach(function (w) {
       if (reg[w] !== name || declared[w]) return;
       out.push({ id: w, widget: w, plugin: name, page: 'PLUGIN ' + name.toUpperCase(), label: w.toUpperCase(), icon: 'apps',

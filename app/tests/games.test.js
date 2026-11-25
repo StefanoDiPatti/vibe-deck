@@ -19,6 +19,8 @@ function gamesPage() {
   return config.dock().pages.filter(function (p) { return p.id === 'games'; })[0];
 }
 
+function tick() { return new Promise(function (resolve) { setImmediate(resolve); }); }
+
 test.before(function () { fs.writeFileSync(EXE, 'x'); });
 
 test('senza giochi: un pulsante che rimanda al pannello', function () {
@@ -64,6 +66,32 @@ test('icona: solo immagini vere, servita al tablet; ordine e rimozione', async f
   games.remove('mio_gioco');
   assert.strictEqual(gamesPage().tiles[0].id, 'games-empty');
   assert.throws(function () { games.remove('mio_gioco'); }, /sconosciuto/);
+});
+
+test('ogni gioco è anche un widget a sé, da mettere nelle pagine', async function () {
+  const home = require('../server/home');
+  const customPages = require('../server/custom-pages');
+  assert.ok(!home.catalog().some(function (c) { return c.widget === 'game'; }), 'senza giochi nessun widget singolo');
+  await games.add({ path: EXE, label: 'Solo Gioco' });
+  await tick();
+  const c = home.catalog().filter(function (x) { return x.id === 'game_solo_gioco'; })[0];
+  assert.ok(c, 'nel catalogo');
+  assert.strictEqual(c.widget, 'game');
+  assert.strictEqual(c.label, 'Solo Gioco');
+  assert.strictEqual(c.plugin, 'games');
+  assert.deepStrictEqual(c.props, { game: 'solo_gioco' });
+  assert.strictEqual(c.minW, 1);
+  assert.strictEqual(home.catalogId({ widget: 'game', game: 'solo_gioco' }), 'game_solo_gioco');
+  const store = new customPages.CustomPageStore(path.join(tmp, 'pages'));
+  const pages = new customPages.CustomPages(store);
+  const saved = pages.save({ title: 'Prova', columns: 4, rows: 2, tiles: [{ id: 'game_solo_gioco', w: 1, h: 1 }, { id: 'games', w: 2, h: 1 }] }, []);
+  const t = customPages.shared.expand(saved).tiles[0];
+  assert.strictEqual(t.widget, 'game');
+  assert.strictEqual(t.game, 'solo_gioco');
+  games.remove('solo_gioco');
+  await tick();
+  assert.ok(!home.catalog().some(function (x) { return x.id === 'game_solo_gioco'; }), 'tolto il gioco, sparisce dal catalogo');
+  assert.strictEqual(customPages.shared.expand(saved).tiles.length, 1, 'e dalla pagina resta solo il resto');
 });
 
 test('nome proposto: senza "Launcher", "Beta" e simili', function () {

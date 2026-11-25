@@ -5,3 +5,10 @@
 .gm-pic svg.ic { width: 40px; height: 40px; margin-top: 8px; fill: #8b9bab; }
 .gm-item span { display: block; margin-top: 5px; padding: 0 4px; font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gm-item.running:before { content: ""; position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 5px; background: #3fb950; }
+.gm-one { position: absolute; left: 6px; right: 6px; top: 6px; bottom: 6px; border-radius: 10px; background: #172029; text-align: center; overflow: hidden; }
+.gm-one.pressed, .gm-one.busy { background: #26354a; }
+.gm-one .gm-pic { position: absolute; left: 8px; right: 8px; top: 8px; bottom: 26px; width: auto; height: auto; margin: 0; }
+.gm-one .gm-pic svg.ic { position: absolute; left: 0; right: 0; top: 0; bottom: 0; width: 48px; height: 48px; max-width: 100%; max-height: 100%; margin: auto; }
+.gm-one span { position: absolute; left: 4px; right: 4px; bottom: 6px; font-size: 12px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gm-one .empty { padding: 10px; font-size: 11px; }
+.gm-one.running:before { content: ""; position: absolute; top: 8px; right: 8px; width: 12px; height: 12px; border-radius: 6px; background: #3fb950; z-index: 1; }
