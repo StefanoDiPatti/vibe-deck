@@ -88,8 +88,7 @@ function mapColor(theme, role, c) {
   return rgb ? 'rgba(' + rgb.join(', ') + ', ' + s.alpha + ')' : to;
 }
 
-function themeRules(css, name) {
-  const theme = require('./themes/' + name);
+function mapRules(css, fn, all) {
   const rules = parse(css);
   const lines = [];
   let media = null;
@@ -98,13 +97,14 @@ function themeRules(css, name) {
     decls(r.body).forEach(function (d) {
       const role = ROLE[d.prop];
       if (!role) return;
-      let changed = false;
+      let changed = false, found = false;
       const v = d.value.replace(COLOR_RE, function (c) {
-        const m = mapColor(theme, role, c);
+        found = true;
+        const m = fn(role, c);
         if (m && m !== norm(c)) { changed = true; return m; }
         return c;
       });
-      if (changed) out.push(d.prop + ': ' + v);
+      if (changed || (all && found)) out.push(d.prop + ': ' + v);
     });
     if (!out.length) return;
     if (r.media !== media) {
@@ -118,6 +118,11 @@ function themeRules(css, name) {
   return lines.join('\n');
 }
 
+function themeRules(css, name) {
+  const theme = require('./themes/' + name);
+  return mapRules(css, function (role, c) { return mapColor(theme, role, c); });
+}
+
 function build(name) {
   return themeRules(fs.readFileSync(CSS, 'utf8'), name) + '\n\n' + require('./themes/' + name).css.trim() + '\n';
 }
@@ -127,7 +132,7 @@ function buildAll() {
   THEMES.forEach(function (n) { fs.writeFileSync(path.join(OUT, n + '.css'), build(n)); });
 }
 
-module.exports = { build: build, themeRules: themeRules, THEMES: THEMES, parse: parse };
+module.exports = { build: build, themeRules: themeRules, mapRules: mapRules, mapColor: mapColor, THEMES: THEMES, parse: parse, CSS: CSS };
 
 if (require.main === module) {
   if (process.argv.indexOf('--report') >= 0) report();

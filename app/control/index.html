@@ -118,6 +118,52 @@
       <div id="in-mine" class="mk-list"></div>
     </section>
 
+    <section class="card wide" id="themes-card">
+      <div class="card-head">
+        <div>
+          <h2>Temi del tablet</h2>
+          <p class="hint">Ogni tema ha uno <b>stile</b> (forme e caratteri) e una <b>palette</b> di 10 colori. Parti da un preset o cambia i colori uno per uno: l'anteprima a destra è il tablet vero. Salvato il tema, sul tablet lo scegli dalla rotella accanto all'orario.</p>
+        </div>
+        <span id="th-state" class="pill"></span>
+      </div>
+      <div class="th-layout">
+        <div class="th-side">
+          <div class="th-row">
+            <label class="th-field">Tema <select id="th-pick"></select></label>
+            <button id="th-new" class="btn ghost small-btn" type="button" title="Nuovo tema a partire dai colori che vedi">Nuovo tema</button>
+          </div>
+          <div id="th-meta" class="th-row" hidden>
+            <label class="th-field">Nome <input id="th-name" type="text" maxlength="40" spellcheck="false"></label>
+            <label class="th-field">Stile <select id="th-style"></select></label>
+          </div>
+          <div class="th-hrow">
+            <h3 class="th-h">Preset</h3>
+            <div id="th-mode" class="th-mode" role="group" aria-label="Versione dei preset">
+              <button type="button" data-mode="dark" aria-pressed="true">Scuro</button>
+              <button type="button" data-mode="light" aria-pressed="false">Chiaro</button>
+            </div>
+          </div>
+          <div id="th-presets" class="chips th-presets"></div>
+          <h3 class="th-h">Colori</h3>
+          <div id="th-colors" class="th-colors"></div>
+          <div id="th-checks" class="th-checks"></div>
+          <div class="row-actions th-actions">
+            <button id="th-save" class="btn primary" type="button">Salva tema</button>
+            <button id="th-undo" class="btn ghost" type="button">Annulla modifiche</button>
+            <button id="th-reset" class="btn ghost" type="button" hidden></button>
+            <span class="th-gap"></span>
+            <button id="th-export" class="btn ghost small-btn" type="button" title="Salva il tema in un file .json da condividere">Esporta</button>
+            <button id="th-import" class="btn ghost small-btn" type="button" title="Aggiungi un tema da un file .json">Importa</button>
+            <input id="th-file" type="file" accept="application/json,.json" hidden>
+          </div>
+        </div>
+        <div class="th-preview">
+          <div class="preview-label">Anteprima dal vivo</div>
+          <div id="th-frame-box" class="th-frame-box"><iframe id="th-frame" title="Anteprima del tablet" tabindex="-1"></iframe></div>
+        </div>
+      </div>
+    </section>
+
     <section class="card wide" id="buttons-card" hidden>
       <div class="card-head">
         <div>
@@ -181,5 +227,6 @@
   <script src="/js/icons.js"></script>
   <script src="/control/control.js"></script>
   <script src="/control/installed.js"></script>
+  <script src="/control/themes-editor.js"></script>
 </body>
 </html>

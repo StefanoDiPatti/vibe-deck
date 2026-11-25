@@ -123,6 +123,15 @@ app.get('/plugins-theme/:file', function (req, res) {
   res.type('css').send(pluginThemeCss(m[1]));
 });
 
+const { ThemeService } = require('./themes');
+const themes = new ThemeService({ pluginStyles: function () { return plugins.styles(); } });
+app.get('/theme-css/:file', function (req, res) {
+  const m = /^([a-z0-9-]+).css$/.exec(req.params.file);
+  if (!m) return res.status(404).end();
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('css').send(themes.cssFor(m[1]));
+});
+
 app.get('/plugins-lang/:file', function (req, res) {
   const m = /^([a-z]{2})\.js$/.exec(req.params.file);
   if (!m) return res.status(404).end();
@@ -270,6 +279,12 @@ app.get('/api/control/market/entry', controlOnly, route(function (req) { return 
 app.post('/api/control/market/install', controlOnly, route(function (req) { return market.installAny(String((req.body || {}).id || '')); }));
 app.post('/api/control/market/remove', controlOnly, route(function (req) { return market.remove((req.body || {}).id); }));
 const widgetStore = require('./shapes/store').store;
+app.get('/api/control/themes', controlOnly, route(function () { return themes.forControl(); }));
+app.post('/api/control/themes/css', controlOnly, route(function (req) { const b = req.body || {}; return { css: themes.draftCss(b.style, b.palette) }; }));
+app.post('/api/control/themes/save', controlOnly, route(function (req) { const r = themes.save(req.body); return Object.assign(r, themes.forControl()); }));
+app.post('/api/control/themes/reset', controlOnly, route(function (req) { const r = themes.reset(String((req.body || {}).id || '')); return Object.assign(r, themes.forControl()); }));
+app.get('/api/control/themes/export', controlOnly, route(function (req) { return themes.exportTheme(String(req.query.id || '')); }));
+app.post('/api/control/themes/import', controlOnly, route(function (req) { const r = themes.importTheme(req.body); return Object.assign(r, themes.forControl()); }));
 app.get('/api/control/widgets', controlOnly, route(function () { return widgetStore.list(); }));
 app.post('/api/control/widgets', controlOnly, route(function (req) {
   const b = req.body || {};
@@ -335,13 +350,15 @@ app.get('/api/config', route(function () {
     power: tabletPower(),
     platform: platform.name,
     hostname: os.hostname(),
+    themes: themes.forTablet(),
+    themesV: themes.stamp(),
     errors: config.errors()
   };
 }));
 
 app.get('/api/state', route(async function () {
   const [now, running] = await Promise.all([media.nowPlaying(), appsState.running()]);
-  return { version: config.version(), build: clientBuild(), system: system.get(), media: now, apps: running, time: Date.now() };
+  return { version: config.version(), themesV: themes.stamp(), build: clientBuild(), system: system.get(), media: now, apps: running, time: Date.now() };
 }));
 
 app.get('/api/shapes/:plugin/:id', route(function (req) {

@@ -42,8 +42,10 @@ svg.ic { fill: #ffffff; display: inline-block; vertical-align: middle; }
 .theme-opt.on { background: #26354a; -webkit-box-shadow: inset 4px 0 0 #3d8bfd; box-shadow: inset 4px 0 0 #3d8bfd; }
 .theme-opt.pressed { background: #223041; }
 .theme-sw { display: inline-block; vertical-align: middle; margin: -4px 12px 0 0; height: 26px; width: 66px; border: 1px solid #000000; border-radius: 6px; overflow: hidden; }
-.theme-sw i { float: left; width: 22px; height: 26px; }
+.theme-sw i { float: left; width: 33.33%; height: 26px; }
 .set-menu { width: 540px; max-width: 94%; }
+.set-themes { max-height: 344px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.set-themes .theme-opt { overflow: hidden; text-overflow: ellipsis; }
 .set-menu:after { content: ""; display: block; clear: both; }
 .set-col { float: left; width: 50%; padding-right: 5px; -webkit-box-sizing: border-box; box-sizing: border-box; }
 .set-col2 { padding: 0 0 0 5px; }
