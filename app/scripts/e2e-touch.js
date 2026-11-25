@@ -87,11 +87,13 @@ class Cdp {
   }
   async eval(expr) {
     const r = await this.send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });
-    if (r.exceptionDetails) throw new Error(r.exceptionDetails.text + ' ' + expr);
+    if (r.exceptionDetails) throw new Error(r.exceptionDetails.text + ' ' + ((r.exceptionDetails.exception && r.exceptionDetails.exception.description) || '') + ' ' + expr.slice(0, 120));
     return r.result.value;
   }
   close() { try { this.ws.close(); } catch (e) { } }
 }
+
+function pageId(cdp) { return cdp.eval('typeof D==="undefined"?"NO-D "+location.href+" "+document.title:D.store.get("page","")'); }
 
 function tileExpr(label, inner) {
   return '(function(){var t=[].slice.call(document.querySelectorAll(".w-shape")).filter(function(n){var h=n.querySelector(".w-title");return h&&h.textContent.trim().toUpperCase()==="' + label + '";})[0];if(!t)return null;' + inner + '})()';
@@ -118,7 +120,8 @@ async function runDevice(cdp, dev) {
     check('scroll lista meteo', true, 'tutto visibile, niente da scorrere');
   } else {
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    const attempts = [[cx, box.y + box.h * 0.8, cx, box.y + box.h * 0.2], [box.x + box.w * 0.8, cy, box.x + box.w * 0.2, cy], [box.x + box.w * 0.2, cy, box.x + box.w * 0.8, cy]];
+    const vert = [cx, box.y + box.h * 0.8, cx, box.y + box.h * 0.2], rotUp = [box.x + box.w * 0.2, cy, box.x + box.w * 0.8, cy];
+    const attempts = dev.height > dev.width && dev.width < 600 ? [rotUp] : [vert];
     let top = 0;
     for (let i = 0; i < attempts.length && !top; i++) {
       await finger.drag(attempts[i][0], attempts[i][1], attempts[i][2], attempts[i][3]);
@@ -157,6 +160,33 @@ async function runDevice(cdp, dev) {
   const vol = await waitFor(async function () { const v = await api('GET', '/api/shapes/audio/volume'); return v.value >= 60 ? v.value : null; }, 4000, 'volume').catch(function () { return null; });
   const shown = await cdp.eval(tileExpr('VOLUME USCITA', 'return t.querySelector(".sh-sval").textContent;'));
   check('slider volume', vol !== null, 'PC=' + vol + ' tablet="' + shown + '"');
+
+  check('slider non cambia pagina', (await pageId(cdp)) === 'main', 'pagina=' + (await pageId(cdp)));
+
+  const tabs = await cdp.eval('[].map.call(document.querySelectorAll("#tabs .tab"),function(t){return t.getAttribute("data-page");})');
+  const st = await cdp.eval('(function(){var r=document.getElementById("stage").getBoundingClientRect();return {x:r.left,y:r.top,w:r.width,h:r.height};})()');
+  const rot = await cdp.eval('document.body.className.indexOf("rot")>=0');
+  const scx = st.x + st.w / 2, scy = st.y + st.h / 2;
+  const swipeNext = rot ? [scx, st.y + st.h * 0.8, scx, st.y + st.h * 0.2] : [st.x + st.w * 0.8, scy, st.x + st.w * 0.2, scy];
+  const swipePrev = [swipeNext[2], swipeNext[3], swipeNext[0], swipeNext[1]];
+  const i0 = tabs.indexOf('main');
+  await finger.drag(swipeNext[0], swipeNext[1], swipeNext[2], swipeNext[3], 8);
+  await sleep(500);
+  const afterNext = await pageId(cdp);
+  check('swipe: pagina successiva', afterNext === tabs[i0 + 1], 'da main a ' + afterNext + ' (attesa ' + tabs[i0 + 1] + ', rot=' + rot + ')');
+  const shotSwipe = await cdp.send('Page.captureScreenshot', { format: 'png' });
+  fs.writeFileSync(path.join(OUT, dev.name + '-swipe.png'), Buffer.from(shotSwipe.data, 'base64'));
+  await finger.drag(swipePrev[0], swipePrev[1], swipePrev[2], swipePrev[3], 8);
+  await sleep(500);
+  check('swipe: pagina precedente', (await pageId(cdp)) === 'main', 'tornata a ' + (await pageId(cdp)));
+  const nAct = (await api('GET', '/api/demo/actions')).length;
+  await finger.drag(swipePrev[0], swipePrev[1], swipePrev[2], swipePrev[3], 8);
+  await sleep(500);
+  const firstOk = i0 > 0 ? (await pageId(cdp)) === tabs[i0 - 1] : (await pageId(cdp)) === 'main';
+  check('swipe: prima pagina / nessun tocco', firstOk && (await api('GET', '/api/demo/actions')).length === nAct, 'pagina=' + (await pageId(cdp)));
+  await cdp.eval('location.hash="";D.store.set("page","main");location.reload();true');
+  await waitFor(function () { return cdp.eval(tileExpr('PROSSIMI GIORNI', 'return t.querySelectorAll(".sh-row").length>=7;')); }, 20000, 'ritorno a main');
+  await sleep(600);
 
   const glyphs = await cdp.eval('document.querySelectorAll(".w-shape svg.pic").length');
   check('illustrazioni meteo', glyphs >= 8, glyphs + ' illustrazioni');

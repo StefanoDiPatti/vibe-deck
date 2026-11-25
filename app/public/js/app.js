@@ -184,6 +184,76 @@
     D.toggleClass(document.body, 'no-tabs', !list.length);
   }
 
+  function tabPages() {
+    var pages = app.cfg ? app.cfg.dock.pages : [], list = [];
+    for (var i = 0; i < pages.length; i++) if (pages[i].tab) list.push(pages[i].id);
+    return list;
+  }
+
+  app.swipeGuards = [
+    function (t) { return !!D.closestAttr(t, 'data-noswipe', stage); },
+    function (t) { return !!D.closestClass(t, 'sh-track', stage); },
+    function (t) { return !!D.closestAttr(t, 'data-win', stage); },
+    function (t) { return /INPUT|TEXTAREA|SELECT/.test(t.tagName || ''); },
+    function (t) {
+      for (var n = t; n && n !== stage && n.nodeType === 1; n = n.parentNode) {
+        if (n.scrollWidth > n.clientWidth + 4 && D.hasClass(n, 'scroll')) return true;
+      }
+      return false;
+    }
+  ];
+  function swipeVetoed(t) {
+    for (var i = 0; i < app.swipeGuards.length; i++) {
+      try { if (app.swipeGuards[i](t)) return true; } catch (e) { }
+    }
+    return false;
+  }
+  function animateStage(cls) {
+    D.removeClass(stage, 'sw-next'); D.removeClass(stage, 'sw-prev');
+    D.removeClass(stage, 'sw-end-l'); D.removeClass(stage, 'sw-end-r');
+    void stage.offsetWidth;
+    D.addClass(stage, cls);
+    clearTimeout(app.swipeAnim);
+    app.swipeAnim = setTimeout(function () { D.removeClass(stage, cls); }, 400);
+  }
+  app.swipePage = function (dir) {
+    var list = tabPages(), i = app.page ? list.indexOf(app.page.id) : -1;
+    if (i < 0) return false;
+    var j = i + dir;
+    if (j < 0 || j >= list.length) { animateStage(dir > 0 ? 'sw-end-l' : 'sw-end-r'); return false; }
+    showPage(list[j]);
+    animateStage(dir > 0 ? 'sw-next' : 'sw-prev');
+    return true;
+  };
+  (function () {
+    var sw = null;
+    function pt(e) {
+      var t = e.changedTouches ? e.changedTouches[0] : e;
+      return app.rotated ? { x: t.clientY, y: -t.clientX } : { x: t.clientX, y: t.clientY };
+    }
+    stage.addEventListener('touchstart', function (e) {
+      sw = null;
+      if (e.touches.length !== 1 || swipeVetoed(e.target)) return;
+      var p = pt(e);
+      sw = { x: p.x, y: p.y, t: new Date().getTime() };
+    }, false);
+    stage.addEventListener('touchmove', function (e) {
+      if (!sw) return;
+      if (e.touches.length > 1) { sw = null; return; }
+      var p = pt(e.touches[0] ? { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY } : e);
+      if (Math.abs(p.x - sw.x) > 10 && Math.abs(p.x - sw.x) > Math.abs(p.y - sw.y)) e.preventDefault();
+    }, false);
+    stage.addEventListener('touchcancel', function () { sw = null; }, false);
+    stage.addEventListener('touchend', function (e) {
+      if (!sw) return;
+      var p = pt(e), dx = p.x - sw.x, dy = p.y - sw.y, dt = new Date().getTime() - sw.t;
+      sw = null;
+      var min = Math.max(60, Math.min(140, stage.clientWidth * 0.12));
+      if (dt > 900 || Math.abs(dx) < min || Math.abs(dx) < Math.abs(dy) * 1.8) return;
+      app.swipePage(dx < 0 ? 1 : -1);
+    }, false);
+  })();
+
   function markTab() {
     var all = tabs.childNodes;
     for (var i = 0; i < all.length; i++) D.toggleClass(all[i], 'active', all[i].getAttribute('data-page') === app.page.id);
