@@ -25,6 +25,7 @@ class ThemeStore {
       try { data = parseJson(fs.readFileSync(this.file, 'utf8')) || data; } catch (e) { data = this.cache || { themes: {} }; }
     }
     if (!data.themes || typeof data.themes !== 'object') data.themes = {};
+    if (!Array.isArray(data.tablet)) data.tablet = [];
     this.cache = data;
     this.mtime = m;
     return data;
@@ -34,10 +35,13 @@ class ThemeStore {
 
   entries() { return this.read().themes; }
 
-  write(themes) {
+  tablet() { return this.read().tablet.map(String); }
+
+  write(themes, tablet) {
+    if (tablet === undefined) tablet = this.tablet();
     fs.mkdirSync(path.dirname(this.file), { recursive: true });
     const tmp = this.file + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify({ themes: themes }, null, 2) + '\n');
+    fs.writeFileSync(tmp, JSON.stringify({ themes: themes, tablet: tablet }, null, 2) + '\n');
     fs.renameSync(tmp, this.file);
     this.cache = null;
     this.listeners.forEach(function (fn) { try { fn(); } catch (e) { } });

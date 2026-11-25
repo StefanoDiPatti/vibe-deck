@@ -75,12 +75,23 @@ async function main() {
       return d.themes.filter(function (t) { return t.custom && t.name === 'Prova e2e'; })[0];
     }, 5000, 'salvataggio').catch(function () { return null; });
     report.check('nuovo tema salvato', saved && saved.style === 'classic' && saved.palette.accent === '#ff00aa', saved ? saved.id : 'non trovato');
+    const before = (await s.api('GET', '/api/config')).themes.map(function (t) { return t.id; });
+    report.check('di base sul tablet c’è solo il predefinito', before.join(',') === 'classic', before.join(','));
+    report.check('pulsante "Mostra sul tablet" sul tema salvato', (await cdp.eval('document.getElementById("th-send").textContent')) === 'Mostra sul tablet');
+    await hand.click('#th-send');
+    await waitFor(function () { return cdp.eval('document.querySelectorAll("#th-tablet-list [data-unsend]").length===1'); }, 4000, 'mandato').catch(function () {});
     const cfg = await s.api('GET', '/api/config');
     const onTablet = cfg.themes.filter(function (t) { return saved && t.id === saved.id; })[0];
     report.check('il tablet riceve il tema con la sua versione', onTablet && onTablet.v && onTablet.sw[2] === '#ff00aa');
     const css = await (await fetch(s.base + '/theme-css/' + (saved ? saved.id : 'x') + '.css')).text();
     report.check('CSS del tema generato dal server', css.length > 2000 && css.indexOf('#ff00aa') >= 0, css.length + ' caratteri');
 
+    for (const id of ['neon', 'material']) { await hand.choose('#th-pick', id); await hand.click('#th-send'); await sleep(400); }
+    await hand.choose('#th-pick', 'brutal');
+    report.check('al massimo 3 temi sul tablet: il quarto è bloccato', await cdp.eval('document.getElementById("th-send").disabled&&/pieno/.test(document.getElementById("th-send").textContent)&&document.getElementById("th-tablet-count").textContent==="3 / 3"'));
+    await hand.click('#th-tablet-list [data-unsend="material"]');
+    await sleep(400);
+    report.check('togli dal tablet con la ×', (await s.api('GET', '/api/control/themes', null, CTRL)).tablet.join(',') === (saved ? saved.id : '') + ',neon');
     await hand.choose('#th-pick', 'neon');
     await hand.click('#th-presets [data-preset="forest"]');
     await hand.click('#th-save');
@@ -180,7 +191,8 @@ async function main() {
       await sleep(400);
     };
     await tap('#settings-btn');
-    report.check('menu: i temi salvati compaiono', await cdp.eval('document.querySelectorAll(".set-themes .theme-opt").length===6'));
+    const menuIds = await cdp.eval('[].map.call(document.querySelectorAll(".set-themes .theme-opt"),function(n){return n.getAttribute("data-theme");}).join(",")');
+    report.check('menu del tablet: predefinito + i temi mandati dal pannello', menuIds === 'classic,neon,' + (saved ? saved.id : '') || menuIds === 'classic,' + (saved ? saved.id : '') + ',neon', menuIds);
     fs.writeFileSync(path.join(OUT, 'themes-tablet-menu.png'), Buffer.from((await cdp.send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
     await tap('.theme-opt[data-theme="' + (saved ? saved.id : 'x') + '"]');
     const applied = await waitFor(function () { return cdp.eval('(function(){var l=document.getElementById("custom-theme-css");return !!l&&l.sheet&&getComputedStyle(document.body).backgroundColor==="rgb(23, 17, 28)";})()'); }, 6000, 'tema').catch(function () { return false; });

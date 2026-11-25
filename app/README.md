@@ -153,7 +153,7 @@ Every theme is a **style** (shapes, corners, fonts: the four above) plus a **pal
 - pick a theme and change its colors: a **preset** (the four originals plus Nordic, Dracula, Forest, Sunset, Solarized, Paper), each in a **Dark** and a **Light** version (the switch next to *Preset*: on a preset you picked it swaps to the other version), or **one color at a time** with the RGB picker or the hex code;
 - **New theme** makes a theme of your own: name, style and palette (for example the Neo-brutalist shapes with the Dracula colors);
 - the preview on the right is the real tablet, with live data; a note warns when text and background have too little contrast;
-- **Save**: on the tablet the theme shows up in the gear menu (a tablet already using it updates by itself). **Original colors** / **Delete theme** undo it;
+- **Save**, then **Show on the tablet**: the tablet gear menu lists the **default** theme (Classic) plus up to **3 themes** you send from here (the × removes one). A tablet already using a theme updates by itself. **Original colors** / **Delete theme** undo it;
 - **Export** / **Import** save and load a theme as a `.json` file (`{ "vibeDeckTheme": 1, "name", "style", "palette" }`), ready to share.
 
 The **control panel** uses the same themes: the picker at the top lists the four styles and your themes, and a theme with your colors restyles the panel too.

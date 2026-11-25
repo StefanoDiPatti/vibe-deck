@@ -285,6 +285,7 @@ app.get('/api/control/themes', controlOnly, route(function () { return themes.fo
 app.post('/api/control/themes/css', controlOnly, route(function (req) { const b = req.body || {}; return { css: themes.draftCss(b.style, b.palette) }; }));
 app.post('/api/control/themes/save', controlOnly, route(function (req) { const r = themes.save(req.body); return Object.assign(r, themes.forControl()); }));
 app.post('/api/control/themes/reset', controlOnly, route(function (req) { const r = themes.reset(String((req.body || {}).id || '')); return Object.assign(r, themes.forControl()); }));
+app.post('/api/control/themes/tablet', controlOnly, route(function (req) { themes.setTablet((req.body || {}).ids); return themes.forControl(); }));
 app.get('/api/control/themes/export', controlOnly, route(function (req) { return themes.exportTheme(String(req.query.id || '')); }));
 app.post('/api/control/themes/import', controlOnly, route(function (req) { const r = themes.importTheme(req.body); return Object.assign(r, themes.forControl()); }));
 app.get('/api/control/widgets', controlOnly, route(function () { return widgetStore.list(); }));
