@@ -67,10 +67,17 @@
     <section class="card wide" id="home-card">
       <div class="card-head">
         <div>
-          <h2>HOME</h2>
-          <p class="hint">Costruisci la pagina <b>HOME</b> del tablet con i widget delle altre pagine. <b>Trascina</b> un widget per spostarlo, trascina i suoi <b>bordi o angoli</b> per ingrandirlo o rimpicciolirlo: si muove a scatti di una cella e si ferma contro gli altri widget. Le celle tratteggiate sono libere.</p>
+          <h2>Pagine con widget</h2>
+          <p class="hint">Costruisci la <b>HOME</b> o una <b>pagina tua</b> con i widget delle altre pagine: le pagine nuove finiscono tra le <b>disponibili</b>, da mettere nella barra del tablet. <b>Trascina</b> un widget per spostarlo, trascina i suoi <b>bordi o angoli</b> per ingrandirlo o rimpicciolirlo: si muove a scatti di una cella e si ferma contro gli altri widget. Le celle tratteggiate sono libere.</p>
         </div>
         <span id="hm-state" class="pill"></span>
+      </div>
+      <div id="hm-targets" class="chips hm-targets" role="tablist" aria-label="Pagina da modificare"></div>
+      <div id="hm-meta" class="hm-meta" hidden>
+        <label class="hm-field">Nome <input id="hm-title" type="text" maxlength="16" spellcheck="false" placeholder="ES. GIOCHI"></label>
+        <label class="hm-field hm-desc">Descrizione <input id="hm-desc" type="text" maxlength="120" placeholder="Cosa c'è in questa pagina"></label>
+        <div class="hm-field hm-iconf">Icona <button id="hm-icon" class="hm-icon-btn" type="button" aria-expanded="false" title="Scegli l'icona"></button></div>
+        <div id="hm-icons" class="hm-icons" hidden></div>
       </div>
 
       <div class="hm-layout">
@@ -81,13 +88,14 @@
             <span id="hm-free" class="hm-free"></span>
           </div>
           <div class="hm-frame">
-            <div class="preview-label">HOME sul tablet</div>
+            <div id="hm-label" class="preview-label">HOME sul tablet</div>
             <div id="hm-board" class="hm-board"></div>
           </div>
           <div class="row-actions">
             <button id="hm-save" class="btn primary" type="button">Salva HOME</button>
             <button id="hm-undo" class="btn ghost" type="button">Annulla modifiche</button>
             <button id="hm-reset" class="btn ghost" type="button" title="Torna alla HOME dei file (config/defaults/pages/main.json o la tua copia in config/pages/)">Torna alla HOME predefinita</button>
+            <button id="hm-delete" class="btn ghost danger" type="button" hidden>Elimina pagina</button>
           </div>
         </div>
         <aside class="hm-side">

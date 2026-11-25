@@ -194,6 +194,7 @@ function normalizeDock(raw, layout, osKey) {
     p = forOs(p, osKey);
     if (!p) return;
     p = require('./home').apply(p, layout);
+    p = require('./custom-pages').shared.expand(p);
     seenPages[p.id] = true;
     let cols = clampInt(p.columns, 1, 8, columns);
     let rws = clampInt(p.rows, 1, 6, rows);

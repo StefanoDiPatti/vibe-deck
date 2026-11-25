@@ -72,12 +72,13 @@
       const li = document.createElement('li');
       li.className = 'item';
       li.dataset.id = p.id;
-      const tags = on && p.id === home ? '<span class="tag">INIZIALE</span>' : '';
+      const tags = (on && p.id === home ? '<span class="tag">INIZIALE</span>' : '') + (p.custom ? '<span class="tag mine">TUA</span>' : '');
       li.innerHTML =
         '<span class="grip" aria-hidden="true">' + icon('drag') + '</span>' +
         '<span class="ico">' + icon(p.icon) + '</span>' +
         '<span class="txt"><span class="name">' + esc(p.title) + tags + '</span>' +
         '<span class="desc" title="' + esc(p.description) + '">' + esc(p.description || '—') + '</span></span>' +
+        (p.custom || p.id === 'main' ? '<button class="ibtn edit" data-act="edit" title="Modifica i widget" aria-label="Modifica ' + esc(p.title) + '">' + icon('settings') + '</button>' : '') +
         (on
           ? '<span class="updown">' +
               '<button class="ibtn" data-act="up" title="Su" aria-label="Sposta su"' + (i === 0 ? ' disabled' : '') + '>' + icon('up') + '</button>' +
@@ -116,6 +117,7 @@
       case 'home': home = id; render(); break;
       case 'remove': move(id, 'off'); break;
       case 'add': move(id, 'on', tabs.length); break;
+      case 'edit': hmGoto(id, true); break;
     }
   });
 
@@ -446,6 +448,51 @@
   let hmSaved = '';
   let hmKey = '';
   let hmOp = null;
+  let hmTarget = 'main';
+  const HM_NO_ICON = ['drag', 'up', 'down', 'close', 'add', 'back', 'undo', 'redo', 'cut', 'minimize', 'voldn', 'check'];
+  const hmIsMain = () => hmTarget === 'main';
+  const hmWhere = () => hmIsMain() ? 'HOME' : 'pagina';
+  function hmSource() {
+    const ed = info.homeEditor;
+    if (hmIsMain()) return { columns: ed.columns, rows: ed.rows, tiles: ed.tiles };
+    const p = (info.customPages || []).find((x) => x.id === hmTarget);
+    if (p) return p;
+    hmTarget = hmTarget === 'new' ? 'new' : 'main';
+    if (hmIsMain()) return hmSource();
+    return { title: '', icon: 'apps', description: '', columns: 6, rows: 4, tiles: [] };
+  }
+  function hmLoad() {
+    const src = hmSource();
+    hm = { columns: src.columns, rows: src.rows, tiles: src.tiles.map((t) => ({ id: t.id, x: t.x, y: t.y, w: t.w, h: t.h })) };
+    if (!hmIsMain()) Object.assign(hm, { title: src.title || '', icon: src.icon || 'apps', description: src.description || '' });
+    hmSaved = hmTarget === 'new' ? '' : hmSnap();
+    hmKey = '';
+  }
+  function hmGoto(id, scroll) {
+    if (id !== hmTarget && hm && hmSnap() !== hmSaved && !confirm('Ci sono modifiche non salvate a questa pagina. Le perdi?')) return;
+    hmTarget = id;
+    hm = null;
+    renderHome();
+    if (scroll) $('home-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (id === 'new') setTimeout(() => $('hm-title').focus(), 300);
+  }
+  function renderTargets() {
+    const list = [{ id: 'main', title: 'HOME', icon: 'home' }].concat(info.customPages || []);
+    $('hm-targets').innerHTML = list.map((p) => '<button class="chip' + (p.id === hmTarget ? ' on' : '') + '" type="button" role="tab" aria-selected="' + (p.id === hmTarget) + '" data-hmgo="' + esc(p.id) + '">' + icon(p.icon) + esc(p.title) + '</button>').join('') +
+      '<button class="chip hm-new' + (hmTarget === 'new' ? ' on' : '') + '" type="button" data-hmgo="new">' + icon('add') + 'Nuova pagina</button>';
+  }
+  function renderMeta() {
+    const on = !hmIsMain();
+    $('hm-meta').hidden = !on;
+    if (!on) return;
+    if (document.activeElement !== $('hm-title')) $('hm-title').value = hm.title;
+    if (document.activeElement !== $('hm-desc')) $('hm-desc').value = hm.description;
+    $('hm-icon').innerHTML = icon(hm.icon) + '<span>' + esc(hm.icon) + '</span>';
+    if (!$('hm-icons').hidden) {
+      const names = (window.Icons && Icons.names ? Icons.names() : []).filter((n) => HM_NO_ICON.indexOf(n) < 0);
+      $('hm-icons').innerHTML = names.map((n) => '<button type="button" class="hm-ic' + (n === hm.icon ? ' on' : '') + '" data-hmicon="' + esc(n) + '" title="' + esc(n) + '" aria-label="Icona ' + esc(n) + '">' + icon(n) + '</button>').join('');
+    }
+  }
   const hmSnap = () => JSON.stringify(hm);
   const hmCat = (id) => (info.homeEditor.catalog || []).find((c) => c.id === id) ||
     { id: id, widget: id, label: id, icon: 'apps', page: '', description: '', w: 2, h: 2, minW: 1, minH: 1 };
@@ -462,18 +509,19 @@
   function renderHome() {
     const ed = info.homeEditor;
     if (!ed) { $('home-card').hidden = true; return; }
-    if (!hm || hmSnap() === hmSaved) {
-      hm = { columns: ed.columns, rows: ed.rows, tiles: ed.tiles.map((t) => ({ id: t.id, x: t.x, y: t.y, w: t.w, h: t.h })) };
-      hmSaved = hmSnap();
-    }
+    if (!hm || (hmSnap() === hmSaved && hmTarget !== 'new')) hmLoad();
     if (hmOp) return;
-    const key = JSON.stringify(ed) + '|' + hmSnap() + '|' + hmSaved;
+    const key = JSON.stringify(ed) + '|' + JSON.stringify(info.customPages || []) + '|' + hmTarget + '|' + hmSnap() + '|' + hmSaved + '|' + $('hm-icons').hidden;
     if (key === hmKey) return;
     hmKey = key;
     const L = ed.limits;
     const changed = hmSnap() !== hmSaved;
-    $('hm-state').textContent = changed ? 'NON SALVATA' : ed.custom ? 'PERSONALIZZATA' : 'PREDEFINITA';
-    $('hm-state').className = 'pill' + (changed ? ' warn' : ed.custom ? ' ok' : '');
+    const mine = !hmIsMain() && hmTarget !== 'new';
+    $('hm-state').textContent = hmTarget === 'new' ? 'NUOVA' : changed ? 'NON SALVATA' : mine ? 'TUA' : ed.custom ? 'PERSONALIZZATA' : 'PREDEFINITA';
+    $('hm-state').className = 'pill' + (changed ? ' warn' : mine || ed.custom ? ' ok' : '');
+    renderTargets();
+    renderMeta();
+    $('hm-label').textContent = (hmIsMain() ? 'HOME' : (hm.title || 'Pagina nuova')) + ' sul tablet';
     const opts = (min, max, v) => { let h = ''; for (let i = min; i <= max; i++) h += '<option value="' + i + '"' + (i === v ? ' selected' : '') + '>' + i + '</option>'; return h; };
     $('hm-cols').innerHTML = opts(L.minCols, L.maxCols, hm.columns);
     $('hm-rows').innerHTML = opts(L.minRows, L.maxRows, hm.rows);
@@ -488,7 +536,7 @@
       const c = hmCat(t.id);
       return '<div class="hm-w" data-k="' + k + '" style="grid-column:' + (t.x + 1) + ' / span ' + t.w + ';grid-row:' + (t.y + 1) + ' / span ' + t.h + '" title="' + esc(c.label + ' · ' + c.description + ' · minimo ' + c.minW + '×' + c.minH) + '">' +
         '<span class="bi">' + icon(c.icon) + '</span><span class="bl">' + esc(c.label) + '</span><span class="bs">' + t.w + ' × ' + t.h + (c.page ? ' · ' + esc(c.page) : '') + '</span>' +
-        '<button class="hm-x" type="button" data-hmrm="' + k + '" title="Togli dalla HOME" aria-label="Togli ' + esc(c.label) + '">' + icon('close') + '</button>' + handles + '</div>';
+        '<button class="hm-x" type="button" data-hmrm="' + k + '" title="Togli dalla ' + hmWhere() + '" aria-label="Togli ' + esc(c.label) + '">' + icon('close') + '</button>' + handles + '</div>';
     }).join('');
     board.innerHTML = cells + tiles + '<div id="hm-ghost" class="hm-ghost" hidden></div>';
     const used = hm.tiles.reduce((n, t) => n + t.w * t.h, 0);
@@ -504,14 +552,33 @@
         const there = inHome.indexOf(c.id) >= 0;
         const big = c.minW > hm.columns || c.minH > hm.rows;
         return '<button class="hm-cat" type="button" data-hmadd="' + esc(c.id) + '"' + (there || big ? ' disabled' : '') +
-          ' title="' + esc(there ? 'Già nella HOME' : big ? 'Serve una griglia di almeno ' + c.minW + ' × ' + c.minH : c.description) + '">' + icon(c.icon) +
-          '<span><b>' + esc(c.label) + '</b><small>' + esc(there ? 'già nella HOME' : c.description) + '</small></span>' +
+          ' title="' + esc(there ? 'Già nella ' + hmWhere() : big ? 'Serve una griglia di almeno ' + c.minW + ' × ' + c.minH : c.description) + '">' + icon(c.icon) +
+          '<span><b>' + esc(c.label) + '</b><small>' + esc(there ? 'già nella ' + hmWhere() : c.description) + '</small></span>' +
           (there ? '' : '<em>' + c.w + '×' + c.h + '</em>') + '</button>';
       }).join('') + '</div>').join('');
-    $('hm-save').disabled = !changed || !hm.tiles.length;
-    $('hm-undo').disabled = !changed;
-    $('hm-reset').hidden = !ed.custom;
+    $('hm-save').disabled = !(changed || hmTarget === 'new') || !hm.tiles.length || (!hmIsMain() && !String(hm.title || '').trim());
+    $('hm-save').textContent = hmIsMain() ? 'Salva HOME' : hmTarget === 'new' ? 'Crea pagina' : 'Salva pagina';
+    $('hm-undo').disabled = !changed || hmTarget === 'new';
+    $('hm-reset').hidden = !hmIsMain() || !ed.custom;
+    $('hm-delete').hidden = !mine;
   }
+
+  document.addEventListener('click', (e) => {
+    const go = e.target.closest('[data-hmgo]');
+    if (go) return hmGoto(go.getAttribute('data-hmgo'));
+    if (e.target.closest('#hm-icon')) {
+      $('hm-icons').hidden = !$('hm-icons').hidden;
+      $('hm-icon').setAttribute('aria-expanded', String(!$('hm-icons').hidden));
+      hmKey = '';
+      return renderHome();
+    }
+    const ic = e.target.closest('[data-hmicon]');
+    if (ic) { hm.icon = ic.getAttribute('data-hmicon'); $('hm-icons').hidden = true; hmKey = ''; renderHome(); }
+  });
+  document.addEventListener('input', (e) => {
+    if (e.target.id === 'hm-title') { hm.title = e.target.value.toUpperCase(); hmKey = ''; renderHome(); }
+    else if (e.target.id === 'hm-desc') { hm.description = e.target.value; hmKey = ''; renderHome(); }
+  });
 
   document.addEventListener('click', (e) => {
     const add = e.target.closest('[data-hmadd]');
@@ -601,11 +668,28 @@
   $('hm-save').addEventListener('click', async () => {
     $('hm-save').disabled = true;
     try {
-      info = await api('POST', '/api/control/home', hm);
+      if (hmIsMain()) {
+        info = await api('POST', '/api/control/home', { columns: hm.columns, rows: hm.rows, tiles: hm.tiles });
+        toast('HOME salvata: il tablet si aggiorna da solo', 'ok');
+      } else {
+        const isNew = hmTarget === 'new';
+        info = await api('POST', '/api/control/pages/save', Object.assign({ id: isNew ? '' : hmTarget }, hm));
+        hmTarget = info.savedPage;
+        toast(isNew ? 'Pagina creata: la trovi tra le disponibili in "Pagine del tablet", aggiungila alla barra' : 'Pagina salvata: il tablet si aggiorna da solo', 'ok');
+      }
       hm = null;
-      toast('HOME salvata: il tablet si aggiorna da solo', 'ok');
       adopt(false);
     } catch (err) { toast(err.message, 'err'); hmKey = ''; renderHome(); }
+  });
+  $('hm-delete').addEventListener('click', async () => {
+    if (!confirm('Elimino la pagina ' + hm.title + '? Sparisce anche dal tablet.')) return;
+    try {
+      info = await api('POST', '/api/control/pages/remove', { id: hmTarget });
+      hmTarget = 'main';
+      hm = null;
+      toast('Pagina eliminata', 'ok');
+      adopt(false);
+    } catch (err) { toast(err.message, 'err'); }
   });
   $('hm-undo').addEventListener('click', () => { hm = null; hmKey = ''; renderHome(); });
   $('hm-reset').addEventListener('click', async () => {
