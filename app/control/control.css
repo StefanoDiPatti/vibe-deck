@@ -296,6 +296,11 @@ button.mk-tag.sw:hover { border-color: var(--accent); }
 .th-field select, .th-field input[type=text] { height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--field); color: var(--text); font: inherit; font-size: 14px; }
 .th-h { margin: 16px 0 10px; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
 .th-presets { margin-bottom: 4px; }
+.th-hrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0 10px; }
+.th-hrow .th-h { margin: 0; }
+.th-mode { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: calc(var(--r-ctl) + 3px); background: var(--panel-2); }
+.th-mode button { height: 28px; padding: 0 14px; border: 0; border-radius: var(--r-ctl); background: transparent; color: var(--muted); font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
+.th-mode button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
 .th-preset { padding-left: 8px; }
 .th-sw { display: inline-flex; height: 18px; border-radius: 4px; overflow: hidden; border: 1px solid rgba(0, 0, 0, .4); }
 .th-sw i { width: 9px; height: 100%; }

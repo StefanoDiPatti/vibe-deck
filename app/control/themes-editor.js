@@ -8,6 +8,8 @@
     const c = [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16) / 255).map((v) => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
   }
+  function isDark(p) { return lum(p.bg) < lum(p.text); }
+  function samePal(a, b) { return !!a && !!b && Object.keys(a).every((k) => a[k] === b[k]); }
   function contrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
   function swatches(p) { return '<span class="th-sw" aria-hidden="true">' + [p.bg, p.surface, p.accent, p.text].map((c) => '<i style="background:' + c + '"></i>').join('') + '</span>'; }
 
@@ -70,6 +72,7 @@
       this.draft = new ThemeDraft();
       this.preview = new TabletPreview($('th-frame'), $('th-frame-box'));
       this.cssTimer = null;
+      this.mode = 'dark';
       this.seq = 0;
       this.draft.subscribe((what) => this.onDraft(what));
       this.bind();
@@ -94,7 +97,11 @@
         const b = e.target.closest('[data-preset]');
         if (!b) return;
         const p = this.data.presets.find((x) => x.id === b.dataset.preset);
-        if (p) this.draft.usePalette(p.palette);
+        if (p) this.draft.usePalette(p[this.mode]);
+      });
+      $('th-mode').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-mode]');
+        if (b) this.setMode(b.dataset.mode);
       });
       $('th-colors').addEventListener('input', (e) => {
         const tok = e.target.dataset.tok;
@@ -131,9 +138,25 @@
       $('th-name').select();
     }
 
+    matchPreset(mode) { return this.data.presets.find((p) => samePal(p[mode], this.draft.palette)); }
+
+    setMode(mode) {
+      if (mode === this.mode) return;
+      const match = this.matchPreset(this.mode);
+      this.mode = mode;
+      if (match) this.draft.usePalette(match[mode]);
+      else this.renderPresets();
+    }
+
+    renderPresets() {
+      $('th-mode').querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === this.mode)));
+      const on = this.matchPreset(this.mode);
+      $('th-presets').innerHTML = this.data.presets.map((p) => '<button class="chip th-preset' + (on === p ? ' on' : '') + '" type="button" data-preset="' + esc(p.id) + '" title="Usa i colori ' + esc(p.name) + (this.mode === 'light' ? ' chiari' : ' scuri') + '">' + swatches(p[this.mode]) + esc(p.name) + '</button>').join('');
+    }
+
     onDraft(what) {
-      if (what === 'load') this.renderAll();
-      else if (what === 'color') { this.renderColors(); this.renderChecks(); }
+      if (what === 'load') { this.mode = isDark(this.draft.palette) ? 'dark' : 'light'; this.renderAll(); }
+      else if (what === 'color') { this.renderColors(); this.renderChecks(); this.renderPresets(); }
       this.renderState();
       if (what !== 'meta') this.schedulePreview();
     }
@@ -146,7 +169,7 @@
       $('th-meta').hidden = !custom;
       $('th-name').value = d.name;
       $('th-style').innerHTML = this.data.styles.map((s) => '<option value="' + s.id + '"' + (s.id === d.style ? ' selected' : '') + '>' + esc(s.name) + '</option>').join('');
-      $('th-presets').innerHTML = this.data.presets.map((p) => '<button class="chip th-preset" type="button" data-preset="' + esc(p.id) + '" title="Usa i colori ' + esc(p.name) + '">' + swatches(p.palette) + esc(p.name) + '</button>').join('');
+      this.renderPresets();
       $('th-colors').innerHTML = this.data.tokens.map((t) =>
         '<div class="th-color"><input type="color" data-tok="' + t.id + '" aria-label="' + esc(t.label) + '">' +
         '<span class="th-cl"><b>' + esc(t.label) + '</b><small>' + esc(t.hint) + '</small></span>' +
@@ -198,6 +221,7 @@
 
     adopt(r, id) {
       this.data = { themes: r.themes, styles: r.styles, presets: r.presets, tokens: r.tokens };
+      if (window.DockTheme && window.DockTheme.adopt) window.DockTheme.adopt(r.themes);
       this.pick(id);
     }
 

@@ -12,7 +12,7 @@ function tmpService() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-themes-'));
   return { svc: new ThemeService({ file: path.join(dir, 'themes.json') }), dir: dir };
 }
-const SUNSET = presets.EXTRA.filter(function (p) { return p.id === 'sunset'; })[0].palette;
+const SUNSET = presets.find('sunset', 'dark');
 
 test('palette: 10 colori #rrggbb, il resto è rifiutato', function () {
   assert.strictEqual(palette.IDS.length, 10);
@@ -30,7 +30,7 @@ test('ricolorazione: i colori della palette vanno nei colori nuovi, le ombre ner
 });
 
 test('ricolorazione verso una palette chiara: il bianco diventa scuro', function () {
-  const paper = presets.EXTRA.filter(function (p) { return p.id === 'paper'; })[0].palette;
+  const paper = presets.find('paper', 'light');
   const rc = new palette.PaletteRecolorer(CLASSIC, paper);
   assert.strictEqual(rc.color('#ffffff'), '#000000');
   assert.strictEqual(rc.color('#0b0f14'), paper.bg);
@@ -42,10 +42,22 @@ test('stili: 4 nel registro, ognuno con la sua palette completa', function () {
   assert.strictEqual(registry.get('neon').palette().accent, '#41d1ff');
 });
 
-test('preset: uno per stile più quelli nuovi, tutti validi', function () {
+test('preset: uno per stile più quelli nuovi, ognuno in versione scura e chiara, tutti leggibili', function () {
+  const color = require('../server/themes/color');
   const all = presets.all();
-  assert.ok(all.length >= 8);
-  all.forEach(function (p) { assert.ok(palette.clean(p.palette), p.id); });
+  assert.strictEqual(all.length, 10);
+  all.forEach(function (p) {
+    ['dark', 'light'].forEach(function (mode) {
+      const pal = palette.clean(p[mode]);
+      assert.ok(pal, p.id + ' ' + mode);
+      const bg = color.parse(pal.bg).rgb, text = color.parse(pal.text).rgb, surface = color.parse(pal.surface).rgb;
+      assert.strictEqual(color.luminance(bg) < color.luminance(text), mode === 'dark', p.id + ' ' + mode + ': sfondo e testo al contrario');
+      assert.ok(color.contrast(bg, text) >= 4.5, p.id + ' ' + mode + ': testo su sfondo');
+      assert.ok(color.contrast(surface, text) >= 4.5, p.id + ' ' + mode + ': testo sui riquadri');
+    });
+  });
+  assert.deepStrictEqual(presets.find('style-neon', 'dark'), registry.get('neon').palette());
+  assert.deepStrictEqual(presets.find('style-brutal', 'light'), registry.get('brutal').palette());
 });
 
 test('servizio: temi di base senza CSS extra finché non cambi i colori', function () {

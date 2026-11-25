@@ -136,7 +136,13 @@
             <label class="th-field">Nome <input id="th-name" type="text" maxlength="40" spellcheck="false"></label>
             <label class="th-field">Stile <select id="th-style"></select></label>
           </div>
-          <h3 class="th-h">Preset</h3>
+          <div class="th-hrow">
+            <h3 class="th-h">Preset</h3>
+            <div id="th-mode" class="th-mode" role="group" aria-label="Versione dei preset">
+              <button type="button" data-mode="dark" aria-pressed="true">Scuro</button>
+              <button type="button" data-mode="light" aria-pressed="false">Chiaro</button>
+            </div>
+          </div>
           <div id="th-presets" class="chips th-presets"></div>
           <h3 class="th-h">Colori</h3>
           <div id="th-colors" class="th-colors"></div>
