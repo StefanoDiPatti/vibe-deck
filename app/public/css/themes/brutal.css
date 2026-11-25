@@ -15,6 +15,7 @@ svg.ic { fill: #111111; }
 .set-tog { background: #bdb5a3; }
 .set-tog i { background: #111111; }
 .set-awake.on .set-tog { background: #4d9dff; }
+.set-full svg.ic { fill: #2b2b2b; }
 .set-desc { color: #5a5446; }
 #banner { background: #ff6b5b; color: #111111; }
 .tile { background: #ffffff; border: 1px solid #111111; }

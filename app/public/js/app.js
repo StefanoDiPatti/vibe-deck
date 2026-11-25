@@ -708,7 +708,8 @@
     }
     html += '<div class="theme-h set-h2">SCHERMO</div>' +
       '<div class="theme-opt set-awake' + (D.store.get('awake', false) ? ' on' : '') + '" data-awake="1">' + 'Sempre attivo' + '<span class="set-tog"><i></i></span></div>' +
-      '<div class="set-desc">Niente schermata con l\'ora per il risparmio energetico.</div>';
+      '<div class="set-desc">Niente schermata con l\'ora per il risparmio energetico.</div>' +
+      '<div class="theme-opt set-full" data-full="1">' + Icons.html('fullscreen') + 'Schermo intero</div>';
     setMenu.innerHTML = html + '</div></div>';
     document.body.appendChild(setMenu);
     var lst = setMenu.querySelector('.set-themes');
@@ -716,6 +717,7 @@
     D.bindTap(setMenu, {
       scrollable: true,
       onTap: function (t) {
+        if (D.closestAttr(t, 'data-full', setMenu)) { closeSettings(); fullScreen(); return; }
         var aw = D.closestAttr(t, 'data-awake', setMenu);
         if (aw) {
           var on = !D.store.get('awake', false);
@@ -734,21 +736,12 @@
   D.bindTap(setBtn, { onTap: function () { if (setMenu) closeSettings(); else openSettings(); } });
   I18n.watch();
 
-  function clock() {
-    var n = new Date();
-    D.setText(D.$('clock'), D.pad(n.getHours()) + ':' + D.pad(n.getMinutes()));
+  function fullScreen() {
+    var de = document.documentElement;
+    var req = de.requestFullscreen || de.webkitRequestFullscreen || de.webkitRequestFullScreen;
+    if (req) req.call(de);
+    else window.scrollTo(0, 1);
   }
-  setInterval(clock, 10000);
-  clock();
-
-  D.bindTap(D.$('clock'), {
-    onTap: function () {
-      var de = document.documentElement;
-      var req = de.requestFullscreen || de.webkitRequestFullscreen || de.webkitRequestFullScreen;
-      if (req) req.call(de);
-      else window.scrollTo(0, 1);
-    }
-  });
   D.bindTap(D.$('home-btn'), { onTap: function () { if (app.cfg) showPage(app.cfg.dock.home); } });
 
   document.addEventListener('touchmove', function (e) {
