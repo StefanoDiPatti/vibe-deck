@@ -150,9 +150,22 @@
     },
     key(p, value, set) { return h('input', { type: 'text', placeholder: 'es. F5', value: value || '', oninput: (e) => set(e.target.value.trim().toUpperCase() || undefined) }); },
     icon(p, value, set) {
-      const input = trackFocus(h('input', { type: 'text', list: 'ed-icons', placeholder: 'es. sun, cpu', value: value || '', oninput: (e) => { set(e.target.value || undefined); swatch.innerHTML = icon(e.target.value); } }));
-      const swatch = h('span', { class: 'ed-swatch', html: icon(value) });
-      return h('span', { class: 'ed-icon' }, [input, swatch]);
+      const grid = h('div', { class: 'ed-icongrid', hidden: true, role: 'listbox', 'aria-label': 'Icone' });
+      const fill = () => {
+        const q = input.value.trim().toLowerCase();
+        const list = ((catalog && catalog.icons) || []).filter((i) => !q || i.name.indexOf(q) >= 0 || i.name === input.value);
+        grid.innerHTML = list.length ? list.map((i) => '<button type="button" class="ed-ic' + (i.name === input.value ? ' on' : '') + '" data-icon="' + esc(i.name) + '" title="' + esc(i.name) + '">' + icon(i.name) + '<small>' + esc(i.name) + '</small></button>').join('') : '<p class="small">Nessuna icona con "' + esc(q) + '"</p>';
+      };
+      const choose = (name) => { input.value = name; set(name || undefined); swatch.innerHTML = icon(name); grid.hidden = true; };
+      const input = trackFocus(h('input', { type: 'text', placeholder: 'es. sun, cpu', value: value || '', autocomplete: 'off',
+        onfocus: () => { fill(); grid.hidden = false; },
+        oninput: (e) => { set(e.target.value || undefined); swatch.innerHTML = icon(e.target.value); fill(); grid.hidden = false; },
+        onkeydown: (e) => { if (e.key === 'Escape') grid.hidden = true; } }));
+      const swatch = h('button', { type: 'button', class: 'ed-swatch', title: 'Scegli un\'icona', html: icon(value), onclick: () => { fill(); grid.hidden = !grid.hidden; } });
+      grid.addEventListener('mousedown', (e) => e.preventDefault());
+      grid.addEventListener('click', (e) => { const b = e.target.closest('[data-icon]'); if (b) choose(b.dataset.icon); });
+      input.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== swatch) grid.hidden = true; }, 150));
+      return h('span', { class: 'ed-icon' }, [input, swatch, grid]);
     },
     json(p, value, set) {
       const ta = h('textarea', { rows: 4, spellcheck: 'false' });
@@ -554,7 +567,6 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       catalog = await res.json();
     } catch (e) { $('ed-shapes').innerHTML = '<p class="small">The editor could not load (' + esc(e.message) + ').</p>'; return; }
-    $('ed-icons').innerHTML = catalog.icons.map((i) => '<option value="' + esc(i.name) + '">' + (i.picture ? 'illustration' : 'icon') + '</option>').join('');
     preview = new Preview($('ed-frame'));
     finish = new Finish();
     $('ed-frame').src = 'preview/index.html';
