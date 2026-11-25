@@ -45,7 +45,7 @@
     'Caricamento…': 'Loading…', 'Carico…': 'Loading…', 'Errore': 'Error', 'Non disponibili': 'Not available',
     'Su questo sistema non è supportato': 'Not supported on this system',
     'Classico': 'Classic', 'Neo-brutalista': 'Neo-brutalist', 'Lingua': 'Language',
-    'Impostazioni': 'Settings', 'Sempre attivo': 'Always on',
+    'Impostazioni': 'Settings', 'Aggiorna': 'Refresh', 'Sempre attivo': 'Always on',
     'Niente schermata con l\'ora per il risparmio energetico.': 'No power-saving clock screen.'
   });
 

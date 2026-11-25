@@ -7,6 +7,8 @@ const { registry, CLASSIC } = require('./styles');
 const { ThemeStore, NAME_MAX, ID_RE } = require('./store');
 
 const FORMAT = 1;
+const DEFAULT_ID = 'classic';
+const MAX_TABLET = 3;
 
 function bad(msg) { return Object.assign(new Error(msg), { code: 'BAD_REQUEST' }); }
 
@@ -78,9 +80,25 @@ class ThemeService {
     return (h >>> 0).toString(36);
   }
 
+  tabletIds() {
+    const self = this;
+    return this.store.tablet().filter(function (id, i, a) { return id !== DEFAULT_ID && a.indexOf(id) === i && self.resolve(id); }).slice(0, MAX_TABLET);
+  }
+
+  setTablet(ids) {
+    if (!Array.isArray(ids)) throw bad('Serve una lista di temi');
+    const self = this;
+    const clean = ids.map(String).filter(function (id, i, a) { return id !== DEFAULT_ID && a.indexOf(id) === i; });
+    clean.forEach(function (id) { if (!self.resolve(id)) throw bad('Tema sconosciuto: ' + id); });
+    if (clean.length > MAX_TABLET) throw bad('Sul tablet al massimo ' + MAX_TABLET + ' temi oltre al predefinito');
+    this.store.write(this.store.entries(), clean);
+    return clean;
+  }
+
   forTablet() {
     const self = this;
-    return this.all().map(function (t) {
+    const ids = [DEFAULT_ID].concat(this.tabletIds());
+    return ids.map(function (id) { return self.resolve(id); }).filter(Boolean).map(function (t) {
       return { id: t.id, name: t.name, style: t.style, custom: t.custom, v: self.version(t), sw: [t.palette.bg, t.palette.surface, t.palette.accent] };
     });
   }
@@ -92,7 +110,10 @@ class ThemeService {
       themes: this.all(),
       styles: registry.all().map(function (s) { return s.info(); }),
       presets: presets.all(),
-      tokens: palette.TOKENS
+      tokens: palette.TOKENS,
+      tablet: this.tabletIds(),
+      defaultId: DEFAULT_ID,
+      maxTablet: MAX_TABLET
     };
   }
 
@@ -148,7 +169,7 @@ class ThemeService {
     const entries = Object.assign({}, this.store.entries());
     if (!entries[id]) return { id: id, removed: false };
     delete entries[id];
-    this.store.write(entries);
+    this.store.write(entries, this.store.tablet().filter(function (x) { return x !== id || !ID_RE.test(id); }));
     return { id: id, removed: true };
   }
 
@@ -164,4 +185,4 @@ class ThemeService {
   }
 }
 
-module.exports = { ThemeService: ThemeService, CssGenerator: CssGenerator, FORMAT: FORMAT };
+module.exports = { ThemeService: ThemeService, CssGenerator: CssGenerator, FORMAT: FORMAT, DEFAULT_ID: DEFAULT_ID, MAX_TABLET: MAX_TABLET };

@@ -90,6 +90,11 @@
     }
 
     bind() {
+      $('th-send').addEventListener('click', () => this.toggleTablet());
+      $('th-tablet-list').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-unsend]');
+        if (b) this.sendTablet(this.data.tablet.filter((id) => id !== b.dataset.unsend));
+      });
       $('th-pick').addEventListener('change', (e) => this.leave(() => this.pick(e.target.value), () => { e.target.value = this.draft.theme.id; }));
       $('th-name').addEventListener('input', (e) => this.draft.setName(e.target.value));
       $('th-style').addEventListener('change', (e) => this.draft.setStyle(e.target.value));
@@ -206,6 +211,7 @@
       $('th-reset').hidden = !t || !t.id || (!t.custom && !t.modified);
       $('th-reset').textContent = t && t.custom ? 'Elimina tema' : 'Colori originali';
       $('th-export').disabled = !t || !t.id;
+      this.renderTablet();
     }
 
     schedulePreview() {
@@ -220,7 +226,7 @@
     }
 
     adopt(r, id) {
-      this.data = { themes: r.themes, styles: r.styles, presets: r.presets, tokens: r.tokens };
+      this.data = { themes: r.themes, styles: r.styles, presets: r.presets, tokens: r.tokens, tablet: r.tablet || [], defaultId: r.defaultId, maxTablet: r.maxTablet };
       if (window.DockTheme && window.DockTheme.adopt) window.DockTheme.adopt(r.themes);
       this.pick(id);
     }
@@ -230,7 +236,35 @@
       try {
         const r = await api('POST', '/api/control/themes/save', { id: d.theme.id, name: d.name, style: d.style, palette: d.palette });
         this.adopt(r, r.id);
-        toast('Tema salvato: sul tablet lo scegli dalla rotella accanto all\'orario', 'ok');
+        toast(this.data.tablet.indexOf(r.id) >= 0 || r.id === this.data.defaultId ? 'Tema salvato: il tablet si aggiorna da solo' : 'Tema salvato. Per averlo sul tablet premi "Mostra sul tablet"', 'ok');
+      } catch (e) { toast(e.message, 'err'); }
+    }
+
+    renderTablet() {
+      const d = this.data, t = this.draft.theme;
+      const name = (id) => ((d.themes.find((x) => x.id === id) || {}).name || id);
+      $('th-tablet-list').innerHTML = '<span class="chip th-fixed" title="Sempre sul tablet">' + esc(name(d.defaultId)) + ' · predefinito</span>' +
+        d.tablet.map((id) => '<span class="chip on">' + esc(name(id)) + '<button type="button" class="th-unsend" data-unsend="' + esc(id) + '" title="Togli dal tablet" aria-label="Togli ' + esc(name(id)) + ' dal tablet">×</button></span>').join('');
+      $('th-tablet-count').textContent = d.tablet.length + ' / ' + d.maxTablet;
+      const btn = $('th-send');
+      const on = !!t && d.tablet.indexOf(t.id) >= 0;
+      btn.disabled = !t || !t.id || t.id === d.defaultId || (!on && d.tablet.length >= d.maxTablet);
+      btn.textContent = !t || !t.id ? 'Salvalo per mandarlo al tablet' : t.id === d.defaultId ? 'Sempre sul tablet' : on ? 'Togli dal tablet' : d.tablet.length >= d.maxTablet ? 'Tablet pieno (' + d.maxTablet + ')' : 'Mostra sul tablet';
+    }
+
+    toggleTablet() {
+      const t = this.draft.theme, list = this.data.tablet.slice();
+      const i = list.indexOf(t.id);
+      if (i >= 0) list.splice(i, 1); else list.push(t.id);
+      this.sendTablet(list);
+    }
+
+    async sendTablet(ids) {
+      try {
+        const r = await api('POST', '/api/control/themes/tablet', { ids: ids });
+        this.data.tablet = r.tablet || [];
+        this.renderTablet();
+        toast('Sul tablet: ' + [this.data.defaultId].concat(this.data.tablet).map((id) => (this.data.themes.find((x) => x.id === id) || {}).name || id).join(', '), 'ok');
       } catch (e) { toast(e.message, 'err'); }
     }
 

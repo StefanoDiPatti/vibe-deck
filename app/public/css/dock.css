@@ -29,9 +29,14 @@ svg.ic { fill: #ffffff; display: inline-block; vertical-align: middle; }
 }
 .tb-right { position: absolute; right: 12px; top: 0; height: 44px; }
 #mini { color: #8b9bab; font-size: 14px; margin-right: 16px; }
-#settings-btn { display: inline-block; width: 40px; height: 44px; text-align: center; margin-right: 6px; vertical-align: top; }
-#settings-btn svg.ic { width: 24px; height: 24px; fill: #9fb3c8; margin-top: -3px; }
-#settings-btn.pressed svg.ic { fill: #3d8bfd; }
+#settings-btn, #refresh-btn { display: inline-block; width: 40px; height: 44px; text-align: center; margin-right: 6px; vertical-align: top; }
+#home-btn { display: inline-block; height: 100%; vertical-align: top; }
+#refresh-btn { margin: 0 0 0 4px; }
+#settings-btn svg.ic, #refresh-btn svg.ic { width: 24px; height: 24px; fill: #9fb3c8; margin-top: -3px; }
+#settings-btn.pressed svg.ic, #refresh-btn.pressed svg.ic { fill: #3d8bfd; }
+#refresh-btn.spin svg.ic { fill: #3d8bfd; -webkit-animation: rfspin 0.8s linear infinite; animation: rfspin 0.8s linear infinite; }
+@-webkit-keyframes rfspin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes rfspin { 100% { transform: rotate(360deg); } }
 .theme-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 70; }
 .theme-menu { position: absolute; right: 10px; top: 50px; width: 270px; padding: 10px; background: #141c25; border: 1px solid #2a3746; border-radius: 14px;
   -webkit-box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55); }
@@ -153,7 +158,7 @@ body.rot {
   -webkit-transform: rotate(90deg) translateY(-100%); transform: rotate(90deg) translateY(-100%);
 }
 body.phone #topbar { height: 38px; line-height: 38px; font-size: 14px; }
-body.phone .tb-left, body.phone .tb-right, body.phone #settings-btn { height: 38px; }
+body.phone .tb-left, body.phone .tb-right, body.phone #settings-btn, body.phone #refresh-btn { height: 38px; }
 body.phone #banner { top: 38px; }
 body.phone #stage { top: 38px; bottom: 54px; }
 body.phone.no-tabs #stage { bottom: 0; }

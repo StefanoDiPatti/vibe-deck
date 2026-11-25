@@ -63,13 +63,14 @@ test('preset: uno per stile più quelli nuovi, ognuno in versione scura e chiara
 test('servizio: temi di base senza CSS extra finché non cambi i colori', function () {
   const { svc } = tmpService();
   assert.strictEqual(svc.cssFor('classic'), '');
-  assert.strictEqual(svc.forTablet().length, 4);
+  assert.deepStrictEqual(svc.forTablet().map(function (t) { return t.id; }), ['classic']);
   assert.ok(svc.forTablet().every(function (t) { return t.v === ''; }));
 });
 
 test('servizio: colori tuoi su un tema di base, poi colori originali', function () {
   const { svc } = tmpService();
   const r = svc.save({ id: 'neon', palette: SUNSET });
+  svc.setTablet(['neon']);
   assert.strictEqual(r.id, 'neon');
   const t = svc.forTablet().filter(function (x) { return x.id === 'neon'; })[0];
   assert.ok(t.v);
@@ -90,7 +91,8 @@ test('servizio: tema nuovo, nome obbligatorio, id unico, esporta e importa', fun
   const b = svc.save({ name: 'Il mio tema', style: 'classic', palette: SUNSET });
   assert.strictEqual(a.id, 'u-il-mio-tema');
   assert.strictEqual(b.id, 'u-il-mio-tema-2');
-  assert.strictEqual(svc.forTablet().length, 6);
+  assert.strictEqual(svc.all().length, 6);
+  assert.strictEqual(svc.forTablet().length, 1);
   const ex = svc.exportTheme(a.id);
   assert.deepStrictEqual(Object.keys(ex), ['vibeDeckTheme', 'name', 'style', 'palette']);
   assert.throws(function () { svc.importTheme({ name: 'x' }); }, /vibeDeckTheme/);
@@ -106,6 +108,21 @@ test('servizio: id strani o file rovinato non rompono niente', function () {
   fs.writeFileSync(path.join(dir, 'themes.json'), '{ "themes": { "../x": { "name": "a" }, "u-ok": { "name": "Ok", "style": "classic", "palette": { "bg": "nope" } } } }');
   assert.strictEqual(svc.resolve('../x'), null);
   assert.strictEqual(svc.resolve('u-ok'), null);
-  assert.strictEqual(svc.forTablet().length, 4);
+  assert.strictEqual(svc.forTablet().length, 1);
   assert.strictEqual(svc.cssFor('../x'), '');
+});
+
+test('tablet: il predefinito più al massimo 3 temi scelti; un tema eliminato sparisce anche da lì', function () {
+  const { svc } = tmpService();
+  const a = svc.save({ name: 'Uno', style: 'classic', palette: SUNSET });
+  assert.deepStrictEqual(svc.setTablet(['neon', a.id, 'classic', 'neon']), ['neon', a.id]);
+  assert.deepStrictEqual(svc.forTablet().map(function (t) { return t.id; }), ['classic', 'neon', a.id]);
+  assert.throws(function () { svc.setTablet(['neon', 'material', 'brutal', a.id]); }, /al massimo 3/);
+  assert.throws(function () { svc.setTablet(['boh']); }, /sconosciuto/);
+  svc.save({ id: 'neon', palette: SUNSET });
+  assert.deepStrictEqual(svc.forControl().tablet, ['neon', a.id]);
+  svc.reset(a.id);
+  assert.deepStrictEqual(svc.forControl().tablet, ['neon']);
+  svc.reset('neon');
+  assert.deepStrictEqual(svc.forControl().tablet, ['neon']);
 });

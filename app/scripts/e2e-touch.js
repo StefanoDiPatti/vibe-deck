@@ -185,6 +185,16 @@ async function runDevice(cdp, dev) {
   await sleep(500);
   const firstOk = i0 > 0 ? (await pageId(cdp)) === tabs[i0 - 1] : (await pageId(cdp)) === 'main';
   check('swipe: prima pagina / nessun tocco', firstOk && (await api('GET', '/api/demo/actions')).length === nAct, 'pagina=' + (await pageId(cdp)));
+  const rb = await cdp.eval('(function(){var n=document.getElementById("refresh-btn"),h=document.getElementById("host");if(!n||!n.querySelector("svg"))return null;var b=n.getBoundingClientRect(),c=h.getBoundingClientRect();return {x:b.left+b.width/2,y:b.top+b.height/2,w:b.width,hostRight:c.right,hostTop:c.top,vw:innerWidth,vh:innerHeight};})()');
+  const nextToHost = rb && (rot ? rb.y > rb.hostTop && rb.x > rb.vw / 2 : rb.x > rb.hostRight && rb.x < rb.vw / 3);
+  check('pulsante aggiorna accanto al nome del PC', nextToHost, JSON.stringify(rb));
+  if (rb) {
+    await cdp.eval('window.__prima=1;true');
+    await finger.tap(rb.x, rb.y);
+    const reloaded = await waitFor(function () { return cdp.eval('!window.__prima&&!!window.D&&document.querySelectorAll("#stage .tile").length>0'); }, 15000, 'ricarica').catch(function () { return false; });
+    check('tocco su aggiorna: la pagina si ricarica', reloaded);
+    await sleep(600);
+  }
   await cdp.eval('location.hash="";D.store.set("page","main");location.reload();true');
   await waitFor(function () { return cdp.eval(tileExpr('PROSSIMI GIORNI', 'return t.querySelectorAll(".sh-row").length>=7;')); }, 20000, 'ritorno a main');
   await sleep(600);

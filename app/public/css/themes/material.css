@@ -5,7 +5,7 @@ svg.ic { fill: #e9e9ee; }
 #status-dot.on { background: #7fd99a; }
 #page-title { color: #c4c6cf; }
 #mini { color: #8e9099; }
-#settings-btn svg.ic { fill: #c4c6cf; }
+#settings-btn svg.ic, #refresh-btn svg.ic { fill: #c4c6cf; }
 .theme-menu { background: #1d2024; border: 1px solid #3a3d42; }
 .theme-h { color: #8e9099; }
 .theme-opt { background: #272a2f; }
