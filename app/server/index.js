@@ -23,6 +23,8 @@ const shapes = require('./shapes');
 const events = require('./events');
 const webhooks = require('./webhooks');
 const rules = require('./rules');
+const permissions = require('./permissions');
+const claudeHooks = require('./claude-hooks');
 const pkg = require('../package.json');
 
 const PORT = parseInt(process.env.PORT, 10) || 8787;
@@ -368,7 +370,13 @@ app.get('/api/control/rules', controlOnly, route(function () { return { rules: r
 app.post('/api/control/rules', controlOnly, route(function (req) { return { rules: rules.save((req.body || {}).rules), options: rules.describe() }; }));
 app.post('/api/control/rules/test', controlOnly, route(function (req) { return rules.test(String((req.body || {}).id || '')); }));
 
+app.get('/api/control/claude-hooks', controlOnly, route(function () { return Object.assign(claudeHooks.status(), { pending: permissions.broker.list().length }); }));
+app.post('/api/control/claude-hooks/install', controlOnly, route(function () { return claudeHooks.install(); }));
+app.post('/api/control/claude-hooks/remove', controlOnly, route(function () { return claudeHooks.uninstall(); }));
+
 app.use('/api', auth.requireToken);
+app.get('/api/permissions', route(function () { return permissions.broker.list(); }));
+app.post('/api/permissions/:id', route(function (req) { return permissions.broker.answer(req.params.id, (req.body || {}).decision); }));
 
 function tabletPower() {
   const t = (config.get('services') || {}).tablet || {};
@@ -531,6 +539,7 @@ function start() {
 
 function shutdown(code) {
   rules.engine.stop();
+  permissions.broker.cancelAll();
   system.stop();
   plugins.hook('stop');
   platform.shutdown();

@@ -37,10 +37,15 @@ svg.ic { fill: #111111; }
 #toast { background: #111111; color: #111111; }
 #toast.ok { background: #2bd96b; }
 #toast.err { background: #ff6b5b; }
-#modal, #pair, #boot, #offline { background: rgba(30, 26, 18, 0.88); }
+#modal, #pair, #boot, #offline, #perm { background: rgba(30, 26, 18, 0.88); }
 .modal-box { background: #fffdf7; border: 1px solid #111111; }
 .modal-body { color: #111111; background: #f4efe3; }
 .modal-close { background: #4d9dff; }
+.perm-box { background: #fffdf7; border: 1px solid #111111; }
+.perm-body { color: #111111; background: #f4efe3; }
+.perm-more { color: #5a5446; }
+.perm-deny { background: #ff6b5b; }
+.perm-allow { background: #2bd96b; }
 .pair-box { background: #fffdf7; border: 1px solid #111111; }
 .pair-msg { color: #2b2b2b; }
 #pair-code { background: #f4efe3; color: #111111; border: 2px solid #111111; }

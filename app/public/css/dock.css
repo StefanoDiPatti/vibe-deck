@@ -184,7 +184,7 @@ body.phone .tile.btn.short .t-label { letter-spacing: 0; }
 #toast.err { background: #8b1d1d; }
 @media (max-width: 600px) { #toast { width: 90%; left: 5%; margin-left: 0; } }
 
-#modal, #pair, #boot, #offline {
+#modal, #pair, #boot, #offline, #perm {
   position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 60; background: rgba(5, 8, 12, 0.88);
 }
 .modal-box {
@@ -201,6 +201,25 @@ body.phone .tile.btn.short .t-label { letter-spacing: 0; }
   position: absolute; right: 14px; bottom: 12px; width: 160px; height: 50px; line-height: 50px; text-align: center;
   background: #3d8bfd; border-radius: 10px; font-weight: bold; letter-spacing: 1px;
 }
+
+.perm-box {
+  position: absolute; left: 8%; right: 8%; top: 8%; bottom: 8%;
+  background: #141c25; border: 1px solid #2a3746; border-radius: 14px; padding: 14px;
+}
+.perm-head { font-weight: bold; font-size: 17px; letter-spacing: 1px; height: 28px; color: #e3b341; }
+.perm-tool { font-weight: bold; font-size: 20px; height: 32px; overflow: hidden; white-space: nowrap; }
+.perm-body {
+  position: absolute; left: 14px; right: 14px; top: 78px; bottom: 90px; overflow: auto; -webkit-overflow-scrolling: touch;
+  font-family: "Droid Sans Mono", Consolas, monospace; font-size: 15px; color: #cfd9e3; white-space: pre-wrap; word-wrap: break-word;
+  background: #0b0f14; border-radius: 8px; padding: 10px; margin: 0;
+}
+.perm-more { position: absolute; left: 14px; bottom: 34px; font-size: 13px; color: #8b9bab; }
+.perm-btn {
+  position: absolute; bottom: 12px; width: 44%; height: 62px; line-height: 62px; text-align: center;
+  border-radius: 10px; font-weight: bold; font-size: 18px; letter-spacing: 1px;
+}
+.perm-deny { left: 14px; background: #8b1d1d; }
+.perm-allow { right: 14px; background: #1e5631; }
 
 .pair-box, #boot .boot-title { text-align: center; }
 .pair-box {

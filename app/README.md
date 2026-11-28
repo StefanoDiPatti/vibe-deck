@@ -245,6 +245,16 @@ Panel card *Regole: quando → allora*, stored in `data/rules.json`. Each rule h
 - Reactions: open a page on the tablet, show a notification, open or close an app, music and volume, open an address, run an allowed command (`commands.json`), press a shortcut.
 - The engine checks every 2 seconds (`server/rules/`: triggers and reactions are registries, so a new one is a class and one `register` line) and listens to the event bus, so webhook events fire rules immediately.
 
+## Claude Code permissions from the tablet
+
+Panel card *Permessi di Claude Code dal tablet*, button **Collega Claude Code**. It adds three command hooks to `~/.claude/settings.json` (a backup is kept as `settings.json.vibe-deck.bak`, an invalid file is never touched, *Scollega* removes only these entries):
+
+- `PermissionRequest`: the tablet shows what Claude Code wants to do (tool, project, command or file) with **Allow** and **Deny**. The hook waits up to 90 seconds; with no answer it prints nothing, so Claude Code asks on the PC as usual. Deny rules of Claude Code still win over an allow from the tablet.
+- `Notification` (`permission_prompt`, `idle_prompt`): raises the `claude-waiting` event.
+- `Stop`: raises the `claude-done` event. Both can be used as triggers in the when/then rules.
+
+The hook script is `scripts/claude-hook.js` (no dependencies, never fails the session: on any error it exits quietly). It reads the webhook key from `data/webhooks.json` and the port from `data/runtime.json`.
+
 ## Music
 
 ### Extension for Apple Music web and YouTube (recommended)

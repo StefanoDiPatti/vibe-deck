@@ -399,10 +399,45 @@
     f();
   } });
 
+  var permQueue = [];
+  function showPerm() {
+    var box = D.$('perm');
+    if (!permQueue.length) { D.addClass(box, 'hidden'); return; }
+    var p = permQueue[0];
+    D.setText(box.querySelector('.perm-tool'), p.title || p.tool || '');
+    D.setText(box.querySelector('.perm-body'), p.summary || '(nessun dettaglio)');
+    D.setText(box.querySelector('.perm-more'), permQueue.length > 1 ? (permQueue.length - 1) + ' in coda' : '');
+    D.removeClass(box, 'hidden');
+  }
+  function addPerm(p) {
+    for (var i = 0; i < permQueue.length; i++) if (permQueue[i].id === p.id) return;
+    permQueue.push(p);
+    D.power.wake();
+    showPerm();
+  }
+  function answerPerm(decision) {
+    var p = permQueue.shift();
+    showPerm();
+    if (!p) return;
+    D.api.post('/api/permissions/' + p.id, { decision: decision }, function (err) {
+      if (err) app.toast(err.message, 'err');
+    });
+  }
+  D.bindTap(D.$('perm-allow'), { onTap: function () { answerPerm('allow'); } });
+  D.bindTap(D.$('perm-deny'), { onTap: function () { answerPerm('deny'); } });
+  function loadPerms() {
+    D.api.get('/api/permissions', function (err, list) {
+      if (err || !list) return;
+      for (var i = 0; i < list.length; i++) addPerm({ id: list[i].id, tool: list[i].tool, title: list[i].project ? list[i].tool + ' · ' + list[i].project : list[i].tool, summary: list[i].summary });
+    });
+  }
+
   function handleEvents(list) {
     for (var i = 0; i < list.length; i++) {
       var e = list[i];
-      if (e.type === 'notify') {
+      if (e.type === 'permission') {
+        addPerm({ id: e.permId, tool: e.tool, title: e.title, summary: e.summary });
+      } else if (e.type === 'notify') {
         var text = e.title && e.message ? e.title + ': ' + e.message : (e.title || e.message);
         app.toast(text, e.kind || 'info', 6000);
       } else if (e.type === 'goto' && e.page && findPage(e.page) && (!app.page || app.page.id !== e.page)) {
@@ -426,7 +461,10 @@
       app.failures = 0;
       app.state = s;
       if (s.events && s.events.length) handleEvents(s.events);
-      if (s.evSeq !== undefined) app.evSeq = s.evSeq;
+      if (s.evSeq !== undefined) {
+        if (app.evSeq === undefined) loadPerms();
+        app.evSeq = s.evSeq;
+      }
       setOnline(true);
       D.setText(D.$('mini'), fmtTop(s));
       if (s.build && BUILD && s.build !== BUILD) { reloadPage(); return; }

@@ -36,13 +36,13 @@ class EventBus {
   }
 }
 
-const TABLET_TYPES = ['notify', 'goto'];
+const TABLET_TYPES = ['notify', 'goto', 'permission'];
 
 function forTablet(bus, since) {
   const asked = parseInt(since, 10);
   if (isNaN(asked)) return { seq: bus.seq, list: [] };
   const list = bus.since(asked).filter(function (e) { return TABLET_TYPES.indexOf(e.type) >= 0; });
-  return { seq: bus.seq, list: list.map(function (e) { return { seq: e.seq, type: e.type, title: e.title, message: e.message, kind: e.kind, page: e.page }; }) };
+  return { seq: bus.seq, list: list.map(function (e) { return { seq: e.seq, type: e.type, title: e.title, message: e.message, kind: e.kind, page: e.page, permId: e.permId, tool: e.tool, summary: e.summary }; }) };
 }
 
 module.exports = { bus: new EventBus(), EventBus: EventBus, forTablet: forTablet, TABLET_TYPES: TABLET_TYPES };

@@ -95,6 +95,10 @@ class Cdp {
   close() { try { this.ws.close(); } catch (e) { } }
 }
 
+function rectOf2(id) {
+  return '(function(){var n=document.getElementById("' + id + '");if(!n)return null;var r=n.getBoundingClientRect();return {x:r.left,y:r.top,w:r.width,h:r.height};})()';
+}
+
 function pageId(cdp) { return cdp.eval('typeof D==="undefined"?"NO-D "+location.href+" "+document.title:D.store.get("page","")'); }
 
 function tileExpr(label, inner) {
@@ -180,6 +184,19 @@ async function runDevice(cdp, dev) {
   check('webhook: il tablet cambia pagina', !!moved, 'pagina=' + (await pageId(cdp)) + ' attesa ' + target);
   await hook('/goto/main');
   await waitFor(async function () { return (await pageId(cdp)) === 'main' ? true : null; }, 10000, 'ritorno').catch(function () { return null; });
+
+  const asked = fetch(BASE + '/hook/' + hookKey + '/permission?wait=60000', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'npm test' }, cwd: '/home/u/vibe-deck' }) }).then(function (r) { return r.json(); });
+  const permText = await waitFor(function () { return cdp.eval('(function(){var p=document.getElementById("perm");return p&&p.className.indexOf("hidden")<0&&p.textContent.indexOf("npm test")>=0?p.textContent:null;})()'); }, 10000, 'permesso').catch(function () { return null; });
+  check('permessi: la richiesta di Claude Code compare sul tablet', !!permText, permText || 'niente');
+  const allow = await cdp.eval(rectOf2('perm-allow'));
+  const deny = await cdp.eval(rectOf2('perm-deny'));
+  check('permessi: pulsanti grandi e separati', allow && deny && Math.min(allow.w, allow.h) >= 48 && Math.max(allow.w, allow.h) >= 120 && (deny.x + deny.w <= allow.x || allow.x + allow.w <= deny.x || deny.y + deny.h <= allow.y || allow.y + allow.h <= deny.y), JSON.stringify({ allow: allow, deny: deny }));
+  const shotPerm = await cdp.send('Page.captureScreenshot', { format: 'png' });
+  fs.writeFileSync(path.join(OUT, dev.name + '-permesso.png'), Buffer.from(shotPerm.data, 'base64'));
+  if (allow) await finger.tap(allow.x + allow.w / 2, allow.y + allow.h / 2);
+  const answer = await Promise.race([asked, sleep(8000).then(function () { return null; })]);
+  check('permessi: il tocco su Consenti arriva a Claude Code', answer && answer.data.decision === 'allow', JSON.stringify(answer));
+  check('permessi: la richiesta sparisce', await cdp.eval('document.getElementById("perm").className.indexOf("hidden")>=0'));
 
   check('niente orario in alto a destra; Schermo intero nel menu della rotella', await cdp.eval('(function(){if(document.getElementById("clock"))return false;document.getElementById("settings-btn").dispatchEvent(new MouseEvent("mousedown",{bubbles:true}));document.getElementById("settings-btn").dispatchEvent(new MouseEvent("mouseup",{bubbles:true}));var ok=!!document.querySelector(".theme-layer [data-full]");document.getElementById("settings-btn").dispatchEvent(new MouseEvent("mousedown",{bubbles:true}));document.getElementById("settings-btn").dispatchEvent(new MouseEvent("mouseup",{bubbles:true}));return ok&&!document.querySelector(".theme-layer");})()'));
   const tabs = await cdp.eval('[].map.call(document.querySelectorAll("#tabs .tab"),function(t){return t.getAttribute("data-page");})');
