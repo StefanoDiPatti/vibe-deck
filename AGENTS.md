@@ -77,6 +77,21 @@ breaking anything. The guide for people is in the [README](README.md), section *
     the Windows helper use `DOCK_DATA_DIR` / `DOCK_CONFIG_DIR` / `DOCK_PLUGINS_DIR` (temporary folders).
     In an environment without Windows the PowerShell helper tests may be skipped: tell the user.
 12. **No personal data** in the repository, screenshots or tests: use `npm run demo` (everything fake).
+13. **Plugin rules (compatibility and security), enforced by `server/plugin-policy.js`**: every plugin is inspected when the
+    deck scans it, and `tests/plugin-policy.test.js` fails if an official plugin breaks one. A plugin that breaks a *security*
+    rule is **not loaded** (it shows as blocked in the panel); *compatibility* problems are reported as warnings and fail the tests
+    for official plugins.
+    - Security: no `eval`, `Function()`, `vm` or string timers; `child_process` only with `"permissions": { "exec": true }`;
+      the network (`fetch`, `http(s)`, `net`, `tls`, `dgram`, `dns`) only with `"permissions": { "network": true }` or the hosts in
+      `permissions.http`; never the access code, the encryption key, the webhook key or the private files of the deck; files are
+      written only under `ctx.dataDir`; plugins that are not official use only `ctx` (no `require('../../server/…')`); nothing
+      is loaded from another site (scripts, styles, fonts, images, requests) on the tablet or in the panel; at most 200 files of
+      512 KB.
+    - Compatibility: tablet scripts (`public/*.js`) are ES5 and tablet CSS (`public/*.css`) has no flexbox, grid, `gap`,
+      variables or `calc()` (rule 2 and 3 apply to plugins too); the plugin declares the `platforms` where it works and the
+      `engine` it needs; Windows-only code degrades with a clear message on Linux.
+    - These checks are static: they stop mistakes and careless code, not a determined attacker. A plugin with code runs with the
+      same access as the deck, so install only code you trust. The market accepts JSON widgets only.
 
 ## Adding a widget
 

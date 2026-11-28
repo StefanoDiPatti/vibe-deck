@@ -20,6 +20,8 @@
       "description": "What the plugin uses: shown before installing.",
       "properties": {
         "http": { "type": "array", "items": { "type": "string" }, "description": "Domains the plugin contacts." },
+        "exec": { "type": "boolean", "description": "true if the plugin starts programs (child_process). Required when its code does." },
+        "network": { "type": "boolean", "description": "true if the plugin code uses the network (fetch, http, sockets). Required when its code does, unless permissions.http lists the hosts." },
         "apps": { "type": "array", "items": { "type": "string" }, "description": "Apps (apps.json ids) its buttons launch." },
         "commands": { "type": "array", "items": { "type": "string" }, "description": "Allowed commands it defines or uses." },
         "local": { "type": "array", "items": { "type": "string" }, "description": "Local resources (e.g. discord-ipc, powershell)." }

@@ -60,12 +60,13 @@ app/plugins/<id>/
   "tags": ["streaming"],
   "platforms": ["windows", "linux"],
   "engine": ">=2.2.0",
-  "permissions": { "http": ["api.example.com"] }
+  "permissions": { "http": ["api.example.com"], "network": false, "exec": false }
 }
 ```
 
 - `version` must be `x.y.z`. `icon` is a name from the icon list (`home music apps mail code github chat check cube film lock play pause stop folder terminal cpu camera settings info desktop robot refresh save keyboard link globe palette person star gamepad power bolt mic radio cloud sun moon calendar` and more in `app/public/js/icons.js`).
 - `category` groups the widgets in the HOME catalog: `system music streaming gaming developer ai communication productivity creative weather finance news science sport home tools fun other`. Without it the first known entry of `tags` is used.
+- `permissions.exec` must be `true` if the code starts programs (`child_process`); `permissions.network` must be `true` if the code uses the network (`fetch`, `http`, sockets) unless every host is listed in `permissions.http`. `permissions.local` is an optional list of short human descriptions of what the plugin touches (`"discord-ipc"`). The deck refuses to load a plugin whose code needs a permission it does not declare.
 - `permissions.http` lists every host the plugin or its JSON widgets contact. A JSON widget with `"source": {"type": "http", "url": …}` is refused if the host is not listed.
 - `platforms`: put only the systems where it really works.
 
@@ -249,12 +250,30 @@ The tablet text is Italian by default. English goes in `lang/en.json`, a flat ma
 
 ## Rules that are checked by tests
 
-- **No comments** anywhere in code, CSS, HTML or JSON. Explain in the README of the plugin or in the pull request.
-- **Tablet code in ES5**, no flexbox in the tablet CSS.
+Every plugin is inspected by the deck (`server/plugin-policy.js`). Breaking a **security** rule means the plugin is **not loaded** and shows as blocked in the panel; breaking a **compatibility** rule is a warning (and a failing test for official plugins).
+
+Security:
+- No `eval`, `Function()`, `vm` or string timers (`setTimeout('code')`).
+- `child_process` only with `"exec": true`; network only with `"network": true` or `permissions.http`.
+- Never read the access code, the encryption key, the webhook key or any private file of the deck (`.env`, `secret-key`, `webhooks.json`).
+- Write files only under `ctx.dataDir`.
+- Use only the `ctx` object: no `require('../../server/…')` (only official plugins may).
+- On the tablet and in the panel nothing is loaded from another site: no CDN scripts, fonts, images, `@import url(http…)`, or requests to other hosts.
+- At most 200 files, each under 512 KB.
+
+Compatibility (old tablets, Android 4.x):
+- Tablet scripts in `public/` are ES5: no arrow functions, `let`/`const`, template strings, classes, spread, `async`/`await`, `Promise`, `fetch`, `classList`, `closest`, `Object.assign`, `Array.find`, `.includes`, `.bind`.
+- Tablet CSS in `public/` has no flexbox, grid, `gap`, CSS variables or `calc()`; use absolute positions, floats and `inline-block`.
+- Declare `platforms` honestly and degrade with a clear message where a feature does not exist on a system.
+
+Other rules:
+- **No comments** anywhere in code, CSS, HTML or JSON.
 - Everything shown in the editor must be **described** (label, description, params). A source without `label`/`fields`, or an action without `params`, fails `tests/catalog.test.js`.
 - A plugin test that touches the Windows helper must stub `media.nowPlaying` and `apps.running` and call `system.stop()` and `platform.shutdown()`, or it hangs on Windows.
 - Never name an action argument `id` (it clashes with the request number of the PowerShell helper).
 - New labels for the editor catalog of the site need an English entry in `app/server/shapes/translate.js` (a test checks it).
+
+These checks are static: they catch mistakes, not a determined attacker. A plugin with code runs with the same access as the deck, so people must install only code they trust.
 
 ## Checklist for the assistant
 
@@ -264,6 +283,7 @@ The tablet text is Italian by default. English goes in `lang/en.json`, a flat ma
 - [ ] Sources and actions have `label`, `description` and typed `params` (and `fields` for sources).
 - [ ] Errors are thrown as `Error` with a message a person can read; nothing can hang (timeouts on network calls).
 - [ ] Secrets are stored with `server/secrets` and never sent to the browser.
+- [ ] `permissions.exec` / `permissions.network` declared when the code needs them; nothing is loaded from another site; files written only under `ctx.dataDir`.
 - [ ] Tablet files are ES5; no flexbox; no comments in any file.
 - [ ] Gave the full content of every file, the folder path, and what to click in the panel to see the widget.
 

@@ -728,6 +728,8 @@ The deck only answers with the access code, the control panel only from `127.0.0
 with the system keychain. Some features (typing text on the PC, letting Claude Code work) give the tablet a lot of power:
 do not share the code. Details: [Security](app/README.md#security).
 
+**Plugins.** Every plugin is checked when the deck starts: one that runs programs or uses the network without declaring it in `plugin.json`, uses `eval`, reads the deck's private files or loads anything from another site is **not loaded**, and tablet scripts must stay ES5 for old tablets. The rules are listed in [AGENTS.md](AGENTS.md) (rule 13). Code plugins run with the same access as the deck, so install only code you trust; the market accepts JSON widgets only.
+
 ## Contributing
 
 Bug reports, ideas and pull requests are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). Every change is
