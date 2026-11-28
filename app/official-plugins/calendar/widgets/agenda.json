@@ -1,0 +1,20 @@
+{
+  "name": "Agenda",
+  "description": "The events of the coming days",
+  "icon": "calendar",
+  "shape": "list",
+  "source": { "type": "calendar.events" },
+  "every": 60,
+  "show": {
+    "label": "AGENDA",
+    "items": "{{events}}",
+    "empty": "Niente in programma",
+    "item": {
+      "icon": "calendar",
+      "title": "{{item.title}}",
+      "sub": "{{item.location}}",
+      "right": "{{item.day}} {{item.time}}"
+    }
+  },
+  "size": { "w": 3, "h": 2, "minW": 2, "minH": 2 }
+}

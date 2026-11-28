@@ -1,0 +1,15 @@
+{
+  "id": "calendar",
+  "name": "Calendar",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "icon": "calendar",
+  "description": "Your agenda from an ICS link (Google Calendar, Apple, Outlook, Nextcloud) or file: next event and the agenda of the coming days",
+  "type": "plugin",
+  "category": "productivity",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.2.0"
+}

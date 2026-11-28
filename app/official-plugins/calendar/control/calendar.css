@@ -1,0 +1,4 @@
+.cal-form { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) auto; gap: 12px; align-items: end; margin: 12px 0; }
+.cal-form label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.cal-form input { height: 40px; padding: 0 10px; border-radius: var(--r-ctl); border: 1px solid var(--line); background: var(--field); color: var(--text); font: inherit; font-size: 14px; text-transform: none; }
+@media (max-width: 760px) { .cal-form { grid-template-columns: minmax(0, 1fr); } }

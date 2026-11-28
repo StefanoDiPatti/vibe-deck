@@ -80,6 +80,16 @@
         <div id="hm-icons" class="hm-icons" hidden></div>
       </div>
 
+      <div id="hm-templates" class="hm-templates">
+        <span class="hm-gname">PARTI DA UN MODELLO</span>
+        <span id="tp-list" class="chips"></span>
+        <span class="hm-tp-tools">
+          <button id="tp-import" class="btn small-btn" type="button" title="Carica un file .json esportato da Vibe Deck">Importa da file</button>
+          <button id="tp-export" class="btn small-btn" type="button" title="Salva la pagina che stai guardando in un file da condividere">Esporta questa pagina</button>
+          <input id="tp-file" type="file" accept=".json,application/json" hidden>
+        </span>
+      </div>
+
       <div class="hm-layout">
         <div class="hm-main">
           <div class="hm-opts">
@@ -295,6 +305,7 @@
   <script src="/control/installed.js"></script>
   <script src="/control/automation.js"></script>
   <script src="/control/rules.js"></script>
+  <script src="/control/templates.js"></script>
   <script src="/control/claude-hooks.js"></script>
   <script src="/control/themes-editor.js"></script>
 </body>

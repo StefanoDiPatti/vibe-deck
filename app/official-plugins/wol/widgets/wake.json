@@ -1,0 +1,21 @@
+{
+  "name": "Wake-on-LAN",
+  "description": "Your devices: tap one to wake it",
+  "icon": "power",
+  "shape": "list",
+  "source": { "type": "wol.devices" },
+  "every": 10,
+  "show": {
+    "label": "WAKE-ON-LAN",
+    "items": "{{devices}}",
+    "empty": "Add devices in the control panel",
+    "item": {
+      "icon": "power",
+      "title": "{{item.name}}",
+      "sub": "{{item.mac}}",
+      "right": "WAKE"
+    }
+  },
+  "tap": { "type": "wol.wake", "device": "{{item.name}}" },
+  "size": { "w": 3, "h": 2, "minW": 2, "minH": 1 }
+}

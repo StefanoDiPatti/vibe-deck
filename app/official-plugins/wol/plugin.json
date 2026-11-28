@@ -1,0 +1,15 @@
+{
+  "id": "wol",
+  "name": "Wake-on-LAN",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "icon": "power",
+  "description": "Wake computers, consoles and NAS on your network from the tablet: devices added in the control panel, a tap-to-wake widget and a wake action for buttons and rules",
+  "type": "plugin",
+  "category": "tools",
+  "platforms": [
+    "windows",
+    "linux"
+  ],
+  "engine": ">=2.2.0"
+}
