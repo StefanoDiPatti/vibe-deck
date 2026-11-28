@@ -22,6 +22,7 @@ const customPages = require('./custom-pages');
 const shapes = require('./shapes');
 const events = require('./events');
 const webhooks = require('./webhooks');
+const rules = require('./rules');
 const pkg = require('../package.json');
 
 const PORT = parseInt(process.env.PORT, 10) || 8787;
@@ -363,6 +364,10 @@ app.post('/api/control/webhooks/test', controlOnly, route(function (req) {
 }));
 app.post('/api/control/webhooks/forget', controlOnly, route(function (req) { webhooks.store.remove(String((req.body || {}).name || '')); return webhookInfo(); }));
 
+app.get('/api/control/rules', controlOnly, route(function () { return { rules: rules.list(), options: rules.describe() }; }));
+app.post('/api/control/rules', controlOnly, route(function (req) { return { rules: rules.save((req.body || {}).rules), options: rules.describe() }; }));
+app.post('/api/control/rules/test', controlOnly, route(function (req) { return rules.test(String((req.body || {}).id || '')); }));
+
 app.use('/api', auth.requireToken);
 
 function tabletPower() {
@@ -511,6 +516,7 @@ function start() {
         banner();
         safeCheck().filter(function (x) { return x.level === 'error'; }).forEach(function (x) { log.warn('config', x.where + ': ' + x.message); });
         plugins.hook('start');
+        rules.engine.start();
         resolve(server);
       });
       server.keepAliveTimeout = 65000;
@@ -524,6 +530,7 @@ function start() {
 }
 
 function shutdown(code) {
+  rules.engine.stop();
   system.stop();
   plugins.hook('stop');
   platform.shutdown();

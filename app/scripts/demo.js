@@ -299,6 +299,7 @@ const server = express();
 server.use(demo);
 server.use(dock);
 server.listen(PORT, '127.0.0.1', function () {
+  require('../server/rules').engine.start();
   console.log('Vibe Deck DEMO (dati finti): http://127.0.0.1:' + PORT + '/?t=' + process.env.DOCK_TOKEN);
   console.log('Pannello: http://127.0.0.1:' + PORT + '/control      Ctrl+C per fermare.');
 });

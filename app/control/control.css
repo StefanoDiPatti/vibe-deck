@@ -359,3 +359,15 @@ button.mk-tag.sw:hover { border-color: var(--accent); }
 .au-tools input[type=text] { width: 220px; height: 30px; font-family: inherit; }
 .au-select { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--field); color: var(--text); font: inherit; font-size: 13px; }
 .au-val { font-family: Consolas, monospace; font-size: 13px; color: var(--text-2); overflow-wrap: anywhere; }
+
+.ru-list { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.ru-row { display: grid; grid-template-columns: auto 1fr auto; gap: 8px 12px; align-items: start; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--sunken); }
+.ru-row.off { opacity: .6; }
+.ru-part { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ru-part b { min-width: 52px; }
+.ru-part select, .ru-part input[type=text], .ru-part input[type=number] { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--field); color: var(--text); font: inherit; font-size: 13px; width: auto; }
+.ru-part input[type=text] { min-width: 120px; font-family: inherit; }
+.ru-side { display: flex; flex-direction: column; gap: 8px; }
+.ru-last { font-size: 12px; color: var(--muted); }
+.ru-last.err { color: var(--bad-text); }
+.ru-empty { color: var(--muted); font-size: 14px; }

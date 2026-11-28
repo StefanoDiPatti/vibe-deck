@@ -147,6 +147,23 @@
       <div id="au-values" class="mk-list"></div>
     </section>
 
+    <section class="card wide" id="rules-card">
+      <div class="card-head">
+        <div>
+          <h2>Regole: quando → allora</h2>
+          <p class="hint">Fai reagire il tablet a quello che succede: se Claude ti aspetta apri la pagina CLAUDE, se parte la musica apri MUSICA, se la CPU è alta mostra un avviso. Una regola scatta quando la condizione <b>diventa vera</b> (non di continuo) e poi aspetta il tempo di pausa.</p>
+        </div>
+        <span id="ru-count" class="pill"></span>
+      </div>
+      <div id="ru-list" class="ru-list"></div>
+      <div class="au-tools">
+        <button id="ru-add" class="btn small-btn" type="button">+ Nuova regola</button>
+        <button id="ru-claude" class="btn small-btn" type="button">Claude ti aspetta → pagina CLAUDE</button>
+        <button id="ru-music" class="btn small-btn" type="button">Parte la musica → pagina MUSICA</button>
+        <button id="ru-save" class="btn primary small-btn" type="button" disabled>Salva le regole</button>
+      </div>
+    </section>
+
     <section class="card wide" id="themes-card">
       <div class="card-head">
         <div>
@@ -262,6 +279,7 @@
   <script src="/control/control.js"></script>
   <script src="/control/installed.js"></script>
   <script src="/control/automation.js"></script>
+  <script src="/control/rules.js"></script>
   <script src="/control/themes-editor.js"></script>
 </body>
 </html>

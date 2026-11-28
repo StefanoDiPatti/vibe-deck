@@ -141,13 +141,20 @@ function goto(page) {
   return { page: id };
 }
 
+function emit(name, data) {
+  if (!NAME_RE.test(String(name))) throw fail('Nome non valido: usa minuscole, numeri, - e _ (massimo 40)');
+  const event = events.bus.publish('event', { name: name, data: data && typeof data === 'object' ? data : {} });
+  return { name: name, seq: event.seq };
+}
+
 function endpoints(base) {
   const k = key();
   return {
     key: k,
     push: base + '/hook/' + k + '/push/<name>',
     notify: base + '/hook/' + k + '/notify',
-    goto: base + '/hook/' + k + '/goto/<page>'
+    goto: base + '/hook/' + k + '/goto/<page>',
+    event: base + '/hook/' + k + '/event/<name>'
   };
 }
 
@@ -171,8 +178,9 @@ function router(express, attempts) {
   r.use(express.urlencoded({ extended: false, limit: '16kb' }));
   r.all('/:key/push/:name', guard(attempts), reply(function (req) { return pushValue(req.params.name, req.body, req.query); }));
   r.all('/:key/notify', guard(attempts), reply(function (req) { return notify(Object.assign({}, req.query, req.body)); }));
+  r.all('/:key/event/:name', guard(attempts), reply(function (req) { return emit(req.params.name, Object.assign({}, req.query, req.body)); }));
   r.all('/:key/goto/:page', guard(attempts), reply(function (req) { return goto(req.params.page); }));
   return r;
 }
 
-module.exports = { key: key, rotate: rotate, store: store, pushValue: pushValue, notify: notify, goto: goto, endpoints: endpoints, router: router, NAME_RE: NAME_RE };
+module.exports = { key: key, rotate: rotate, store: store, pushValue: pushValue, notify: notify, goto: goto, emit: emit, endpoints: endpoints, router: router, NAME_RE: NAME_RE };

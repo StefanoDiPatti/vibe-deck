@@ -227,6 +227,7 @@ Anything on your local network can talk to the tablet. The control panel (card *
 |---|---|
 | `/hook/<key>/notify` | Shows a message on the tablet. `title`, `message` and `kind` (`info`, `ok`, `err`) as JSON, form fields or query string. |
 | `/hook/<key>/goto/<page>` | Opens that page on the tablet. |
+| `/hook/<key>/event/<name>` | Raises a named event that the *when → then* rules can react to (query string or JSON become `data`). |
 | `/hook/<key>/push/<name>` | Stores a value (JSON body, or the query string). Show it in a widget with the data source **Pushed value** (`"source": { "type": "push", "name": "<name>" }`); the fields are the JSON keys, plus `received` and `ageSec`. |
 
 ```bash
@@ -235,6 +236,14 @@ curl -X POST -H "Content-Type: application/json" -d '{"value":42,"unit":"C"}' ht
 ```
 
 Only private network addresses are accepted, wrong keys get a 404 (rate limited). The tablet picks events up on its normal refresh (a few seconds, or when it wakes). Values live in `data/push.json`.
+
+## When → then rules
+
+Panel card *Regole: quando → allora*, stored in `data/rules.json`. Each rule has a **trigger**, a **reaction** and a pause (cooldown). A state trigger fires when its condition *becomes* true, never repeatedly, and not at startup.
+
+- Triggers: music starts, an app opens or closes, CPU above a threshold, a pushed value matches a condition, a time of day, `claude_waiting` and `claude_done` (events named `claude-waiting` and `claude-done`), any webhook event.
+- Reactions: open a page on the tablet, show a notification, open or close an app, music and volume, open an address, run an allowed command (`commands.json`), press a shortcut.
+- The engine checks every 2 seconds (`server/rules/`: triggers and reactions are registries, so a new one is a class and one `register` line) and listens to the event bus, so webhook events fire rules immediately.
 
 ## Music
 
