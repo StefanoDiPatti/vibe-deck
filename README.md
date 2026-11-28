@@ -376,13 +376,11 @@ Then the button: `{ "label": "IP", "icon": "link", "action": { "type": "command"
 No files to write: open the **[widget editor](https://stefanodipatti.github.io/vibe-deck/create.html)** on the site (the
 control panel links it at the top: *Vuoi creare un tuo widget?*):
 
-1. **What to show**: pick a shape (big number, bars, on/off, text, buttons, voice commands, list, slider).
-2. **Where the data comes from**: the PC, data written by hand, an internet address without keys, a file in `data/`, an
-   allowed command. **Try the address** reads an internet source from the browser (when the site allows it), **Show sample
-   data** shows example values for the PC; tap a text field, then a data button, and `{{field}}` is written for you.
-3. **What it shows**: title, value, icon or weather picture, rows of a list…
-4. **What a tap does**: pick an action from the menu.
-5. **Name and size**.
+The editor is one workspace with three columns:
+
+- **Pieces** (left): the **shapes** (big number, bars, on/off, text, buttons, voice commands, list, slider), the **data** (the PC, data written by hand, an internet address without keys, a file in `data/`, an allowed command; **Try the address** reads an internet source from the browser when the site allows it, **Show sample data** shows example values) and the **actions** (with a search box, including the actions of plugins).
+- **Preview and slots** (center): the widget drawn like on the tablet, and under it one **slot** for every part the shape has (title, value, unit, subtitle, bar, icon, what a tap does...). **Drag** a piece onto a slot (a data piece writes `{{field}}` for you, an action sets the tap, dropping a shape on the preview changes the widget, a data piece on a *Rows* slot adds a row). On a touch screen **tap a slot, then a piece**. The **×** empties a slot.
+- **Properties** (right): every setting of the selected slot and of the widget (texts and filters, thresholds and colors, action parameters, name, size, icon). Nothing is hidden: everything you can drag you can also type, and the **JSON** is always available under the preview.
 
 The preview is drawn with the tablet's own code and themes, right in the browser. The draft is kept in the browser. At the end:
 
