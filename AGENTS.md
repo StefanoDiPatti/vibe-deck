@@ -80,6 +80,8 @@ breaking anything. The guide for people is in the [README](README.md), section *
 
 ## Adding a widget
 
+A shorter, task-oriented recipe for an AI assistant (decision table, minimal examples, checklist) is in [`docs/PLUGINS-FOR-AI.md`](docs/PLUGINS-FOR-AI.md): give that file to the assistant together with the idea.
+
 ### First choice: a JSON widget
 
 If a shape (`value`, `bars`, `status`, `text`, `buttons`, `voice`, `list`, `slider`) and a source (`pc`, `static`, `http`,
