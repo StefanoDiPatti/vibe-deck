@@ -9,5 +9,5 @@
   "category": "home",
   "platforms": ["windows", "linux"],
   "engine": ">=2.2.0",
-  "permissions": { "local": ["home-network"] }
+  "permissions": { "network": true, "local": ["home-network"] }
 }

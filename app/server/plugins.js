@@ -1,3 +1,4 @@
+const policy = require('./plugin-policy');
 const fs = require('fs');
 const path = require('path');
 const paths = require('./paths');
@@ -126,6 +127,8 @@ function scan() {
     if (manifest.platforms.indexOf(currentPlatform()) < 0) { entry.active = false; entry.reason = 'non disponibile su questo sistema'; }
     else if (manifest.engine && !versionAtLeast(appVersion(), manifest.engine)) { entry.active = false; entry.reason = 'richiede Vibe Deck ' + manifest.engine + ' o successiva'; }
     else if (official && manifest.type !== 'pack' && off.indexOf(name) >= 0) { entry.active = false; entry.reason = 'spento dal pannello'; entry.off = true; }
+    entry.policy = manifest.type === 'pack' ? [] : policy.inspect(dir, manifest, { official: official });
+    if (entry.active && !official && policy.blocking(entry.policy).length) { entry.active = false; entry.reason = 'bloccato dalle regole di sicurezza: ' + policy.describe(policy.blocking(entry.policy))[0]; entry.blocked = true; }
     catalog.byName[name] = entry;
     catalog.list.push(entry);
   };
@@ -558,7 +561,7 @@ function info() {
     const count = function (sub) { try { return fs.readdirSync(path.join(dir, sub)).filter(function (f) { return /\.json$/i.test(f); }).length; } catch (e) { return 0; } };
     const codeDesc = (p.module && typeof p.module.description === 'string') ? p.module.description : '';
     const hasCode = fs.existsSync(path.join(dir, 'index.js'));
-    const problems = m.problems.slice();
+    const problems = m.problems.slice().concat(policy.describe(entry.policy || []));
     if (m.type === 'pack') problems.push.apply(problems, packProblems(entry, cat));
     if (p.error) problems.push(p.error);
     else if (entry.active && hasCode && !all[name]) problems.push('riavvia la dock per caricare il codice');

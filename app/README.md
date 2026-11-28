@@ -644,6 +644,7 @@ Encryption protects files that get copied, synced or accidentally end up in a ba
 - **Warning:** "type on the PC" and Claude Code sessions let the tablet type text on the PC and make Claude Code work in your folders. That is why the access code matters: do not share it.
 - The browser extension is accepted only from this PC (`127.0.0.1`) and with a header websites cannot send.
 - GitHub token, Claude API key and Ollama stay on the PC; for mail the deck has no credentials (Thunderbird keeps them).
+- **Plugin rules** (`server/plugin-policy.js`): the deck inspects every plugin. A plugin that uses `eval`, runs programs or uses the network without declaring `"permissions": { "exec": true }` / `{ "network": true }` (or listing hosts in `permissions.http`), reads the access code, the encryption key or the webhook key, writes outside its data folder, requires internals of the deck (plugins that are not official), or loads scripts, styles, fonts or images from another site, is **not loaded** and shows as blocked in the panel. Tablet scripts and styles must stay compatible with old browsers (ES5, no flexbox). These checks are static: they catch mistakes, not a determined attacker, so install code plugins only from people you trust. The market accepts JSON widgets only.
 - On Windows the firewall rule only applies to **private** networks. If your network is "Public", the tablet may not connect: set it to private.
 
 ## Troubleshooting
