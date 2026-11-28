@@ -1,0 +1,21 @@
+{
+  "name": "Smart home",
+  "description": "The devices you picked: state at a glance, tap to switch or run",
+  "icon": "bolt",
+  "shape": "list",
+  "source": { "type": "homeassistant.devices" },
+  "every": 3,
+  "show": {
+    "label": "CASA",
+    "items": "{{devices}}",
+    "empty": "{{error|default:Scegli i dispositivi nel pannello}}",
+    "item": {
+      "icon": "{{item.icon}}",
+      "title": "{{item.name}}",
+      "sub": "{{item.domain}}",
+      "right": "{{item.label}}"
+    }
+  },
+  "tap": { "type": "homeassistant.tap", "entity": "{{item.id}}" },
+  "size": { "w": 3, "h": 3, "minW": 2, "minH": 2 }
+}

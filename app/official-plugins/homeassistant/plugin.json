@@ -1,0 +1,13 @@
+{
+  "id": "homeassistant",
+  "name": "Smart home",
+  "version": "1.0.0",
+  "author": "StefanoDiPatti",
+  "icon": "bolt",
+  "description": "Control the smart home from the tablet through Home Assistant (lights, switches, scenes, scripts, sensors; Alexa, Google Home, Hue, Zigbee and the rest come in through it), plus a webhook action for IFTTT, Voice Monkey, Shelly, Tasmota and the like",
+  "type": "plugin",
+  "category": "home",
+  "platforms": ["windows", "linux"],
+  "engine": ">=2.2.0",
+  "permissions": { "local": ["home-network"] }
+}

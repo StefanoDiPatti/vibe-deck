@@ -7,7 +7,10 @@ const DELEGATED = {
   media: { label: 'Musica e volume', params: [{ name: 'command', label: 'Comando', type: 'select', required: true, options: 'media' }] },
   open_url: { label: 'Apri un indirizzo', params: [{ name: 'url', label: 'Indirizzo', type: 'text', required: true }] },
   command: { label: 'Esegui un comando consentito', params: [{ name: 'id', label: 'Comando', type: 'command', required: true }] },
-  hotkey: { label: 'Premi una scorciatoia', params: [{ name: 'keys', label: 'Tasti (es. WIN+D)', type: 'text', required: true }] }
+  hotkey: { label: 'Premi una scorciatoia', params: [{ name: 'keys', label: 'Tasti (es. WIN+D)', type: 'text', required: true }] },
+  'homeassistant.tap': { label: 'Casa: accendi o spegni un dispositivo', params: [{ name: 'entity', label: 'Dispositivo (es. light.salotto)', type: 'text', required: true }] },
+  'homeassistant.webhook': { label: 'Chiama un indirizzo web (webhook)', params: [{ name: 'url', label: 'Indirizzo', type: 'text', required: true }, { name: 'body', label: 'Corpo (facoltativo)', type: 'text' }] },
+  'wol.wake': { label: 'Sveglia un dispositivo (Wake-on-LAN)', params: [{ name: 'device', label: 'Nome o MAC', type: 'text', required: true }] }
 };
 
 class Reaction {
@@ -15,6 +18,7 @@ class Reaction {
   describe() { return { type: this.type, label: this.info.label, params: this.info.params || [] }; }
   validate() { return []; }
   async run() { return { message: null }; }
+  available() { return true; }
 }
 
 class GotoPage extends Reaction {
@@ -32,6 +36,7 @@ class Notify extends Reaction {
 }
 
 class Delegate extends Reaction {
+  available() { return !!require('../actions').HANDLERS[this.type]; }
   validate(p) {
     return this.info.params.filter(function (x) { return x.required && (p[x.name] === undefined || p[x.name] === ''); }).map(function (x) { return 'manca: ' + x.label; });
   }

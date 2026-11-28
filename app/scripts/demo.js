@@ -177,14 +177,14 @@ const shapesRunner = require('../server/shapes').runner;
 const realExecute = shapesRunner.execute;
 shapesRunner.execute = async function (action) {
   demoActions.push(action);
-  if (/^audio\./.test(String(action.type))) return realExecute(action);
+  if (/^(audio|homeassistant)\./.test(String(action.type))) return realExecute(action);
   return { message: 'Demo: ' + action.type };
 };
 demo.get('/api/demo/actions', function (req, res) { ok(res, demoActions); });
 if (process.env.DEMO_DRY === '1') {
   const handlers = require('../server/actions').HANDLERS;
   Object.keys(handlers).forEach(function (type) {
-    if (/^audio\./.test(type)) return;
+    if (/^(audio|homeassistant)\./.test(type)) return;
     handlers[type] = async function (action) {
       demoActions.push(Object.assign({ type: type }, action));
       return { message: 'Demo: ' + type };

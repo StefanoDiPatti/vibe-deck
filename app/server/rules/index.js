@@ -9,7 +9,7 @@ const { reactions } = require('./reactions');
 const MAX_RULES = 50;
 const TICK_MS = 2000;
 const ID_RE = /^[a-z0-9_-]{1,40}$/;
-const PARAM_KEYS = ['app', 'name', 'field', 'op', 'value', 'at', 'page', 'title', 'message', 'command', 'url', 'id', 'keys'];
+const PARAM_KEYS = ['app', 'name', 'field', 'op', 'value', 'at', 'page', 'title', 'message', 'command', 'url', 'id', 'keys', 'entity', 'device', 'body'];
 
 function bad(message) { return Object.assign(new Error(message), { code: 'BAD_REQUEST' }); }
 
@@ -172,7 +172,7 @@ function describe() {
   const commands = config.commands();
   return {
     triggers: triggers.names().map(function (n) { return triggers.get(n).describe(); }),
-    reactions: reactions.names().map(function (n) { return reactions.get(n).describe(); }),
+    reactions: reactions.names().filter(function (n) { return reactions.get(n).available(); }).map(function (n) { return reactions.get(n).describe(); }),
     pages: config.dock().pages.map(function (p) { return { value: p.id, label: p.title }; }),
     apps: Object.keys(apps).sort().map(function (id) { return { value: id, label: apps[id].label || id }; }),
     commands: Object.keys(commands).sort().map(function (id) { return { value: id, label: commands[id].label || id }; }),

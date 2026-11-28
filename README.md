@@ -22,7 +22,7 @@ A small Node.js server runs on the PC (Windows or Linux); the tablet or phone op
 - **Screens**: which monitor apps open on, window zones (like Snap), virtual desktops, drag windows around.
 - **Claude Code**: the desktop app sessions grouped by section; type or dictate on the tablet and the message is sent on the PC. Subscription usage.
 - **Games** picked from the control panel, with their own icons. **Email** from Thunderbird, read-only.
-- **TODO** on Windows Sticky Notes (or a local list on Linux), with dictation. GitHub, Ollama, DeepSeek, Viber, shortcuts for Blender and DaVinci Resolve. Calendar (ICS), Wake-on-LAN, page templates, webhooks, when→then rules and Claude Code permissions from the tablet.
+- **TODO** on Windows Sticky Notes (or a local list on Linux), with dictation. GitHub, Ollama, DeepSeek, Viber, shortcuts for Blender and DaVinci Resolve. Calendar (ICS), Wake-on-LAN, smart home through Home Assistant, page templates, webhooks, when→then rules and Claude Code permissions from the tablet.
 - **Four themes** (Classic, Material, Neon Elgato, Neo-brutalist) on the tablet and in the PC control panel.
 - **Tablet UI in English or Italian**, switched from the gear in the top bar.
 - **Control panel** on the PC to arrange pages and buttons by drag and drop, and a **QR code** to connect a phone.
@@ -248,7 +248,7 @@ Customizations are made **one file at a time**: one page, app or command per fil
 | `config/services.json` | music, Claude, GitHub, Ollama, TODO, tablet timings ([reference](app/README.md#servicesjson)) | no |
 | `config/layout.json` | control panel choices (pages in the bar, button order) | no, the panel writes it |
 | `config/defaults/` | the project defaults: `pages/` (one page per file) and the other JSON files | yes |
-| `official-plugins/<id>/` | **official plugins** shipped with Vibe Deck (one per feature: `blender`, `davinci`, `unreal`, `android`, `browserdev`, `dev`, `claude`, `ollama`, `deepseek`, `github`, `screens`, `audio`, `mail`, `todo`, `pcinfo`, `discord`, `games`, `lol`, `obs`, `twitch`, `meteo`, `viber`, `wol`, `calendar`) and **packs** that group them (`creative`: Blender, DaVinci, Unreal; `developer`: Dev, Claude, Ollama, DeepSeek, GitHub, Android, Browser dev; `pc`: Screens, Audio, Email, TODO, PC info; `gaming`: Discord, Games, League of Legends; `streaming`: OBS, Twitch), each with its `plugin.json` | yes |
+| `official-plugins/<id>/` | **official plugins** shipped with Vibe Deck (one per feature: `blender`, `davinci`, `unreal`, `android`, `browserdev`, `dev`, `claude`, `ollama`, `deepseek`, `github`, `screens`, `audio`, `mail`, `todo`, `pcinfo`, `discord`, `games`, `lol`, `obs`, `twitch`, `meteo`, `viber`, `wol`, `calendar`, `homeassistant`) and **packs** that group them (`creative`: Blender, DaVinci, Unreal; `developer`: Dev, Claude, Ollama, DeepSeek, GitHub, Android, Browser dev; `pc`: Screens, Audio, Email, TODO, PC info; `gaming`: Discord, Games, League of Legends; `streaming`: OBS, Twitch), each with its `plugin.json` | yes |
 | `plugins/<name>/` | **your plugins** (and, later, the ones from the market): extra actions, routes, pages, widgets and icons (see [Plugins](#plugins-new-widgets-and-actions)) | your choice |
 | `schema/` | JSON schemas for the editor (suggestions and field checks) | yes |
 | `data/` | personal data: games, accounts to show, log, encrypted secrets | no |
