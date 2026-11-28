@@ -214,6 +214,7 @@ const WORDS = {
   'Schermo spento': 'Screen off',
   'Modelli Ollama attivi': 'Active Ollama models',
   'Mostra desktop': 'Show desktop',
+  'Dischi del PC': 'PC disks',
   'OBS Studio': 'OBS Studio',
   'Diretta, registrazione, scena in onda e statistiche di OBS': 'Stream, recording, live scene and OBS stats',
   'In diretta': 'Live',
