@@ -88,6 +88,8 @@
       this.id = '';
       this.fields = [];
       this.focus = null;
+      this.slot = null;
+      this.dragging = null;
       this.data = {};
     }
     on(fn) { this.listeners.push(fn); }
@@ -243,7 +245,9 @@
     $('ed-shapes').innerHTML = '';
     catalog.shapes.forEach((s) => {
       $('ed-shapes').appendChild(h('button', {
-        type: 'button', class: 'ed-shape' + (s.name === state.def.shape ? ' on' : ''), 'data-shape': s.name,
+        type: 'button', class: 'ed-shape' + (s.name === state.def.shape ? ' on' : ''), 'data-shape': s.name, draggable: 'true', title: s.description,
+        ondragstart: (e) => startDrag(e, { kind: 'shape', name: s.name }),
+        ondragend: endDrag,
         onclick: () => { if (s.name !== state.def.shape) state.changeShape(s.name); }
       }, [h('b', { text: s.label }), h('span', { text: s.description })]));
     });
@@ -257,7 +261,9 @@
     return fields.map((f) => {
       const insert = f.hint || '{{' + (prefix || '') + f.path + '}}';
       const chip = h('button', {
-        type: 'button', class: 'ed-chip', title: insert,
+        type: 'button', class: 'ed-chip', title: insert, draggable: 'true',
+        ondragstart: (e) => startDrag(e, { kind: 'data', insert: insert, label: f.label || f.path, type: f.type, unit: f.unit || '' }),
+        ondragend: endDrag,
         onclick: () => insertTemplate(insert)
       }, [h('b', { text: f.label || f.path }), h('span', { text: f.type === 'list' || f.type === 'columns' ? (f.type === 'columns' ? 'colonne' : 'lista') + ' · ' + f.count : (f.sample !== undefined && f.sample !== '' ? f.sample : f.unit || TYPE_NAMES[f.type] || f.type) })]);
       const sub = f.item && f.item.length ? h('div', { class: 'ed-subchips' }, chipsFor(f.item, 'item.')) : null;
@@ -402,9 +408,170 @@
     $('ed-title').textContent = state.def.name ? state.def.name : 'New widget';
   }
 
+
+  const DROP_TYPES = ['template', 'text', 'url', 'path', 'icon'];
+  let paletteFilter = '';
+
+  function startDrag(e, payload) {
+    e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = 'copy';
+    document.body.classList.add('ed-dragging');
+    state.dragging = payload;
+  }
+
+  function endDrag() {
+    document.body.classList.remove('ed-dragging');
+    state.dragging = null;
+    document.querySelectorAll('.ed-over').forEach((n) => n.classList.remove('ed-over'));
+  }
+
+  function readDrop(e) {
+    try { return JSON.parse(e.dataTransfer.getData('text/plain')); } catch (x) { return state.dragging || null; }
+  }
+
+  function renderPaletteActions() {
+    const box = $('ed-palette-actions');
+    const q = paletteFilter.trim().toLowerCase();
+    const list = (catalog.actions || []).filter((a) => !q || a.label.toLowerCase().indexOf(q) >= 0 || a.type.indexOf(q) >= 0 || (a.description || '').toLowerCase().indexOf(q) >= 0);
+    box.innerHTML = '';
+    list.forEach((a) => {
+      box.appendChild(h('button', {
+        type: 'button', class: 'ed-act', draggable: 'true', 'data-action': a.type, title: a.description || a.type,
+        ondragstart: (e) => startDrag(e, { kind: 'action', type: a.type, label: a.label }),
+        ondragend: endDrag,
+        onclick: () => applyAction(null, { type: a.type, label: a.label })
+      }, [h('span', { text: a.label }), a.plugin ? h('small', { text: a.plugin }) : null]));
+    });
+    if (!list.length) box.appendChild(h('span', { class: 'ed-help', text: 'No action matches.' }));
+  }
+
+  function slotsFor(info) {
+    const slots = [];
+    (info.show || []).forEach((p) => {
+      if (p.type === 'rows') slots.push({ kind: 'rows', path: 'show.' + p.name, label: p.label });
+      else if (p.type === 'row') (p.item || []).forEach((q) => { if (DROP_TYPES.indexOf(q.type) >= 0) slots.push({ kind: 'field', path: 'show.' + p.name + '.' + q.name, label: q.label }); });
+      else if (DROP_TYPES.indexOf(p.type) >= 0) slots.push({ kind: 'field', path: 'show.' + p.name, label: p.label });
+    });
+    (info.actions || []).forEach((a) => {
+      if (a.list) slots.push({ kind: 'actions-list', path: a.name, label: a.label });
+      else slots.push({ kind: 'action', path: a.name, label: a.label });
+    });
+    return slots;
+  }
+
+  function slotText(slot) {
+    const v = getAt(state.def, slot.path);
+    if (slot.kind === 'action') {
+      if (!v || !v.type) return '';
+      const a = (catalog.actions || []).find((x) => x.type === v.type);
+      return a ? a.label : v.type;
+    }
+    if (slot.kind === 'rows' || slot.kind === 'actions-list') return Array.isArray(v) && v.length ? v.length + (v.length === 1 ? ' item' : ' items') : '';
+    return v === undefined || v === null ? '' : String(v);
+  }
+
+  function propertyInput(path) {
+    return document.querySelector('#editor-card .ed-props [data-path="' + path + '"] input, #editor-card .ed-props [data-path="' + path + '"] textarea, #editor-card .ed-props [data-path="' + path + '"] select');
+  }
+
+  function focusSlot(slot) {
+    state.slot = slot.path;
+    let target = null;
+    if (slot.kind === 'action') target = document.querySelector('#ed-actions .ed-action select');
+    else if (slot.kind === 'field') target = propertyInput(slot.path);
+    else target = document.querySelector(slot.kind === 'rows' ? '#ed-show .ed-block' : '#ed-actions .ed-block');
+    if (target && target.scrollIntoView) target.scrollIntoView({ block: 'nearest' });
+    if (target && target.focus && slot.kind === 'field') target.focus();
+    document.querySelectorAll('.ed-slot').forEach((n) => n.classList.toggle('on', n.dataset.slot === slot.path));
+  }
+
+  function applyData(slot, d) {
+    if (slot.kind === 'rows') {
+      const rows = getAt(state.def, slot.path) || [];
+      const isPct = d.type === 'number' && d.unit === '%';
+      setAt(state.def, slot.path + '.' + rows.length, Object.assign({ label: d.label, value: d.insert }, isPct ? { bar: d.insert } : {}));
+      state.emit('structure');
+      return true;
+    }
+    if (slot.kind !== 'field') { toast('Drop data on a text slot', 'err'); return false; }
+    if (/item\./.test(d.insert) && !/\.item\./.test('.' + slot.path + '.')) { toast('This piece belongs inside a list row', 'err'); return false; }
+    state.set(slot.path, d.insert, 'structure');
+    return true;
+  }
+
+  function applyAction(slot, a) {
+    const info = shapeInfo();
+    const target = slot || slotsFor(info).find((s) => (s.kind === 'action' || s.kind === 'actions-list') && (s.path === state.slot || !state.slot));
+    const chosen = target || slotsFor(info).find((s) => s.kind === 'action' || s.kind === 'actions-list');
+    if (!chosen) { toast('This shape has no action', 'err'); return false; }
+    if (chosen.kind === 'actions-list') {
+      const rows = getAt(state.def, chosen.path) || [];
+      const row = chosen.path === 'buttons' ? { label: 'NEW', action: { type: a.type } } : { say: [], action: { type: a.type } };
+      setAt(state.def, chosen.path + '.' + rows.length, row);
+      state.emit('structure');
+      return true;
+    }
+    state.set(chosen.path, { type: a.type }, 'structure');
+    return true;
+  }
+
+  function dropOnSlot(slot, payload) {
+    if (!payload) return;
+    if (payload.kind === 'data') applyData(slot, payload);
+    else if (payload.kind === 'action') applyAction(slot, payload);
+    else if (payload.kind === 'shape') toast('Drop shapes on the preview', 'err');
+  }
+
+  function renderSlots() {
+    const box = $('ed-slots');
+    if (!box || !catalog) return;
+    const info = shapeInfo();
+    if (!info) return;
+    box.innerHTML = '';
+    slotsFor(info).forEach((slot) => {
+      const text = slotText(slot);
+      const clear = text && slot.kind !== 'rows' && slot.kind !== 'actions-list'
+        ? h('button', { type: 'button', class: 'clear', title: 'Empty this slot', 'aria-label': 'Empty this slot', text: '×', onclick: (e) => { e.stopPropagation(); state.set(slot.path, slot.kind === 'action' ? undefined : '', 'structure'); } }) : null;
+      const el = h('div', {
+        class: 'ed-slot' + (text ? '' : ' empty') + (state.slot === slot.path ? ' on' : ''), 'data-slot': slot.path, role: 'button', tabindex: '0',
+        title: slot.label,
+        onclick: () => focusSlot(slot),
+        onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); focusSlot(slot); } },
+        ondragover: (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; el.classList.add('over'); },
+        ondragleave: () => el.classList.remove('over'),
+        ondrop: (e) => { e.preventDefault(); el.classList.remove('over'); dropOnSlot(slot, readDrop(e)); endDrag(); }
+      }, [h('b', { text: slot.label }), h('span', { text: text || (slot.kind === 'rows' ? 'drop data to add a row' : slot.kind === 'actions-list' ? 'drop an action to add one' : slot.kind === 'action' ? 'drop an action' : 'drop data') }), clear]);
+      box.appendChild(el);
+    });
+  }
+
+  function setupFrameDrop() {
+    const frame = $('ed-frame');
+    const wrap = h('div', { class: 'ed-frame-wrap' });
+    frame.parentNode.insertBefore(wrap, frame);
+    wrap.appendChild(frame);
+    const cover = h('div', {
+      class: 'ed-dropcover', title: 'Drop a shape here',
+      ondragover: (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; cover.classList.add('over'); },
+      ondragleave: () => cover.classList.remove('over'),
+      ondrop: (e) => {
+        e.preventDefault();
+        cover.classList.remove('over');
+        const d = readDrop(e);
+        if (d && d.kind === 'shape' && d.name !== state.def.shape) state.changeShape(d.name);
+        else if (d && d.kind === 'data') { const first = slotsFor(shapeInfo()).find((s) => s.kind === 'field' && !getAt(state.def, s.path)); if (first) dropOnSlot(first, d); else toast('Drop it on one of the slots below', 'err'); }
+        else if (d && d.kind === 'action') applyAction(null, d);
+        endDrag();
+      }
+    }, [h('span', { text: 'Drop here' })]);
+    wrap.appendChild(cover);
+  }
+
   function renderAll() {
     if (!catalog) return;
     renderShapes();
+    renderPaletteActions();
+    renderSlots();
     renderSource();
     renderShow();
     renderActions();
@@ -567,12 +734,14 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       catalog = await res.json();
     } catch (e) { $('ed-shapes').innerHTML = '<p class="small">The editor could not load (' + esc(e.message) + ').</p>'; return; }
+    setupFrameDrop();
     preview = new Preview($('ed-frame'));
+    $('ed-action-search').addEventListener('input', (e) => { paletteFilter = e.target.value; renderPaletteActions(); });
     finish = new Finish();
     $('ed-frame').src = 'preview/index.html';
     state.on((kind) => {
       if (kind === 'structure') renderAll();
-      else { renderJson(false); $('ed-id').textContent = state.id ? 'miei/' + state.id : ''; schedulePreview(); }
+      else { renderJson(false); renderSlots(); $('ed-id').textContent = state.id ? 'miei/' + state.id : ''; schedulePreview(); }
     });
     $('ed-new').addEventListener('click', () => { if (!window.confirm('Start a new widget? The current one is lost.')) return; state.reset(); renderAll(); });
     $('ed-json-apply').addEventListener('click', applyJson);

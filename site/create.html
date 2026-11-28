@@ -24,20 +24,51 @@
     <div class="editor-head">
       <div>
         <h1>Create a widget</h1>
-        <p class="lead">Pick the <b>shape</b>, where the <b>data</b> come from, what it <b>shows</b> and what a <b>tap</b> does. The preview is drawn like on the tablet. At the end, keep it on your deck or propose it to the market.</p>
+        <p class="lead">Drag <b>shapes</b>, <b>data</b> and <b>actions</b> onto your widget and fine-tune everything in the properties. The preview is drawn like on the tablet. At the end, keep it on your deck or propose it to the market.</p>
       </div>
       <span id="ed-state" class="pill"></span>
     </div>
 
     <section class="ed-card" id="editor-card">
-      <div class="ed-layout">
-        <div class="ed-main">
-          <div class="ed-titlebar"><h3 id="ed-title">New widget</h3><code id="ed-id"></code></div>
-          <div class="ed-step"><div class="ed-num">1</div><div class="ed-body"><h3>What do you want to show?</h3><div id="ed-shapes" class="ed-shapes"></div></div></div>
-          <div class="ed-step"><div class="ed-num">2</div><div class="ed-body"><h3>Where do the data come from?</h3><div id="ed-source"></div></div></div>
-          <div class="ed-step"><div class="ed-num">3</div><div class="ed-body"><h3>What it shows</h3><div id="ed-show" class="ed-grid"></div></div></div>
-          <div class="ed-step"><div class="ed-num">4</div><div class="ed-body"><h3>What happens when you use it</h3><div id="ed-actions"></div></div></div>
-          <div class="ed-step"><div class="ed-num">5</div><div class="ed-body"><h3>Name and size</h3><div id="ed-meta"></div></div></div>
+      <div class="ed-titlebar"><h3 id="ed-title">New widget</h3><code id="ed-id"></code></div>
+      <div class="ed-workspace">
+        <aside class="ed-palette" aria-label="Pieces">
+          <h3 class="ed-ptitle">Pieces</h3>
+          <p class="ed-hint">Drag a piece onto the widget, or tap a slot and then a piece.</p>
+          <details open class="ed-group"><summary>Shapes</summary><div id="ed-shapes" class="ed-shapes"></div></details>
+          <details open class="ed-group"><summary>Data</summary><div id="ed-source"></div></details>
+          <details open class="ed-group"><summary>Actions</summary>
+            <input id="ed-action-search" type="text" class="ed-search" placeholder="Search actions" aria-label="Search actions">
+            <div id="ed-palette-actions" class="ed-palette-actions"></div>
+          </details>
+        </aside>
+
+        <div class="ed-stage">
+          <div class="preview-label">Preview on the tablet
+            <select id="ed-theme" aria-label="Theme of the preview">
+              <option value="classic">Classic</option><option value="material">Material</option><option value="neon">Neon</option><option value="brutal">Neo-brutalist</option>
+            </select>
+          </div>
+          <iframe id="ed-frame" class="ed-frame" title="Widget preview"></iframe>
+          <div class="ed-slots-head">Slots <span>drop a piece here</span></div>
+          <div id="ed-slots" class="ed-slots"></div>
+          <ul id="ed-problems" class="ed-problems"></ul>
+          <details class="ed-details">
+            <summary>Sample data</summary>
+            <pre id="ed-sample" class="ed-pre"></pre>
+          </details>
+          <details class="ed-details">
+            <summary>JSON (to write it by hand)</summary>
+            <textarea id="ed-json" class="ed-json" spellcheck="false"></textarea>
+            <button id="ed-json-apply" class="btn ghost small-btn" type="button">Apply the JSON</button>
+          </details>
+        </div>
+
+        <aside class="ed-props" aria-label="Properties">
+          <h3 class="ed-ptitle">Properties</h3>
+          <details open class="ed-group"><summary>What it shows</summary><div id="ed-show" class="ed-grid"></div></details>
+          <details open class="ed-group"><summary>When you use it</summary><div id="ed-actions"></div></details>
+          <details open class="ed-group"><summary>Name and size</summary><div id="ed-meta"></div></details>
 
           <div class="finish" id="finish">
             <h3>Done? Choose where it goes</h3>
@@ -58,24 +89,6 @@
             </div>
             <div class="row-actions"><button id="ed-new" class="btn ghost small-btn" type="button">Start a new widget</button></div>
           </div>
-        </div>
-        <aside class="ed-side">
-          <div class="preview-label">Preview on the tablet
-            <select id="ed-theme" aria-label="Theme of the preview">
-              <option value="classic">Classic</option><option value="material">Material</option><option value="neon">Neon</option><option value="brutal">Neo-brutalist</option>
-            </select>
-          </div>
-          <iframe id="ed-frame" class="ed-frame" title="Widget preview"></iframe>
-          <ul id="ed-problems" class="ed-problems"></ul>
-          <details class="ed-details">
-            <summary>Sample data</summary>
-            <pre id="ed-sample" class="ed-pre"></pre>
-          </details>
-          <details class="ed-details">
-            <summary>JSON (to write it by hand)</summary>
-            <textarea id="ed-json" class="ed-json" spellcheck="false"></textarea>
-            <button id="ed-json-apply" class="btn ghost small-btn" type="button">Apply the JSON</button>
-          </details>
         </aside>
       </div>
     </section>

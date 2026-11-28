@@ -19,6 +19,10 @@ async function clickChip(cdp, hand, label) {
   await hand.click('#' + id);
 }
 
+function dnd(cdp, from, to) {
+  return cdp.eval('(function(){var s=document.querySelector(' + JSON.stringify(from) + '),d=document.querySelector(' + JSON.stringify(to) + ');if(!s||!d)return false;var dt=new DataTransfer();var ev=function(n,t){t.dispatchEvent(new DragEvent(n,{bubbles:true,cancelable:true,dataTransfer:dt}));};ev("dragstart",s);ev("dragenter",d);ev("dragover",d);ev("drop",d);ev("dragend",s);return true;})()');
+}
+
 function frame(cdp, expr) {
   return cdp.eval('(function(){var d=document.getElementById("ed-frame").contentDocument;if(!d)return null;' + expr + '})()');
 }
@@ -128,6 +132,46 @@ async function main() {
     await cdp.send('Page.navigate', { url: SITE_URL + '/submit.html#w=' + b64 });
     const moved = await waitFor(function () { return cdp.eval('/create\\.html$/.test(location.pathname)&&document.getElementById("ed-title")&&document.getElementById("ed-title").textContent==="Condiviso"'); }, 10000, 'vecchio link').catch(function () { return false; });
     report.check('i vecchi link a submit.html arrivano all\'editor', moved);
+
+    report.group('Sito: trascinare pezzi sul widget');
+    await cdp.eval('localStorage.removeItem("vd-draft");true');
+    await cdp.send('Page.navigate', { url: SITE_URL + '/create.html' });
+    await waitFor(function () { return cdp.eval('document.querySelectorAll("#ed-shapes .ed-shape").length===8&&document.querySelectorAll("#ed-slots .ed-slot").length>=3'); }, 20000, 'editor nuovo');
+    report.check('tre colonne: pezzi, anteprima con slot, proprietà', await cdp.eval('!!document.querySelector(".ed-palette")&&!!document.querySelector(".ed-stage #ed-slots")&&!!document.querySelector(".ed-props #ed-show")'));
+    report.check('i pezzi si possono trascinare (forme, dati, azioni)', await cdp.eval('document.querySelector(".ed-shape").draggable&&document.querySelector("#ed-fields .ed-chip").draggable&&document.querySelector("#ed-palette-actions .ed-act").draggable'));
+    await dnd(cdp, '#ed-fields .ed-chip', '[data-slot="show.value"]');
+    const dropped = await waitFor(function () { return cdp.eval('(function(){var s=document.querySelector("[data-slot=\\"show.value\\"] span");return s&&/^\\{\\{.+\\}\\}$/.test(s.textContent)&&document.querySelector(' + JSON.stringify(field('show.value')) + ').value===s.textContent;})()'); }, 4000, 'rilascio dato').then(function () { return true; }, function () { return false; });
+    report.check('un dato trascinato su "Value" scrive il segnaposto e il campo delle proprietà lo mostra', dropped);
+    const live = await waitFor(function () { return frame(cdp, 'return /%|[0-9]/.test(d.body.textContent)&&d.body.textContent.length>3;'); }, 6000, 'anteprima').then(function () { return true; }, function () { return false; });
+    report.check('l\'anteprima si aggiorna dal vivo', live);
+    await dnd(cdp, '#ed-palette-actions .ed-act[data-action="hotkey"]', '[data-slot="tap"]');
+    report.check('un\'azione trascinata su "tap" la imposta', await waitFor(function () { return cdp.eval('document.querySelector("#ed-actions .ed-action select").value==="hotkey"'); }, 4000, 'azione').then(function () { return true; }, function () { return false; }));
+    await dnd(cdp, '.ed-shape[data-shape="list"]', '.ed-dropcover');
+    report.check('una forma trascinata sull\'anteprima cambia il widget', await waitFor(function () { return cdp.eval('document.querySelector(".ed-shape.on").dataset.shape==="list"'); }, 4000, 'forma').then(function () { return true; }, function () { return false; }));
+    await hand.click('.ed-shape[data-shape="bars"]');
+    await waitFor(function () { return cdp.eval('!!document.querySelector("[data-slot=\\"show.rows\\"]")'); }, 4000, 'slot righe');
+    await dnd(cdp, '#ed-fields .ed-chip', '[data-slot="show.rows"]');
+    report.check('un dato su "Rows" aggiunge una riga', await waitFor(function () { return cdp.eval('JSON.parse(document.getElementById("ed-json").value).show.rows.length===2'); }, 4000, 'riga').then(function () { return true; }, function () { return false; }));
+    await hand.click('.ed-shape[data-shape="value"]');
+    await waitFor(function () { return cdp.eval('!!document.querySelector("[data-slot=\\"show.label\\"]")'); }, 4000, 'slot');
+    await hand.click('[data-slot="show.label"]');
+    await clickChip(cdp, hand, 'CPU usage');
+    report.check('tocco: slot e poi dato (senza trascinare, per il touch)', await cdp.eval('document.querySelector(' + JSON.stringify(field('show.label')) + ').value==="{{cpu.usage}}"'));
+    await sleep(700);
+    await hand.click('[data-slot="show.label"] .clear');
+    const cleared = await waitFor(function () { return cdp.eval('document.querySelector("[data-slot=\\"show.label\\"]").classList.contains("empty")'); }, 4000, 'svuota').then(function () { return true; }, function () { return false; });
+    report.check('la X svuota lo slot', cleared, cleared ? '' : await cdp.eval('document.querySelector("[data-slot=\\"show.label\\"]").className+" | "+JSON.stringify(JSON.parse(document.getElementById("ed-json").value).show)'));
+    await dnd(cdp, '#ed-fields .ed-chip', '[data-slot="show.value"]');
+    await cdp.eval('window.scrollTo(0,0);true');
+    await sleep(500);
+    await cdp.screenshot(path.join(OUT, 'editor-canvas.png'));
+    for (const z of [['tablet', 1024, 600, 1, false], ['phone-land', 844, 390, 2, true]]) {
+      await cdp.send('Emulation.setDeviceMetricsOverride', { width: z[1], height: z[2], deviceScaleFactor: z[3], mobile: z[4] });
+      await cdp.send('Page.reload');
+      await waitFor(function () { return cdp.eval('document.querySelectorAll("#ed-slots .ed-slot").length>=3'); }, 20000, 'editor ' + z[0]);
+      report.check('nessuno scorrimento orizzontale sul ' + z[0], await cdp.eval('document.documentElement.scrollWidth<=window.innerWidth+1'));
+      await cdp.screenshot(path.join(OUT, 'editor-canvas-' + z[0] + '.png'));
+    }
 
     report.group('Sito: telefono');
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
