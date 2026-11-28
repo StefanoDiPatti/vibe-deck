@@ -97,6 +97,25 @@ class PcSource extends Source {
   }
 }
 
+class PushSource extends Source {
+  constructor() {
+    super('push', 1, {
+      label: 'Valore inviato',
+      description: 'Un valore mandato da fuori con il webhook (script, Home Assistant, IFTTT...): /hook/<chiave>/push/<nome>',
+      params: [{ name: 'name', label: 'Nome del valore', type: 'text', required: true }]
+    });
+  }
+  validate(src) {
+    return /^[a-z0-9_-]{1,40}$/.test(String(src.name || '')) ? [] : ['"source.name" deve essere un nome con minuscole, numeri, - e _'];
+  }
+  async read(src) {
+    const hit = require('../webhooks').store.get(String(src.name));
+    if (!hit) return { received: false, value: null, ageSec: null };
+    const body = hit.value && typeof hit.value === 'object' && !Array.isArray(hit.value) ? hit.value : { value: hit.value };
+    return Object.assign({}, body, { received: true, ageSec: Math.round((Date.now() - hit.at) / 1000), list: Array.isArray(hit.value) ? hit.value : undefined });
+  }
+}
+
 function hostOf(url) {
   try {
     const u = new URL(url);
@@ -197,7 +216,7 @@ class PluginSourceAdapter extends Source {
   }
 }
 
-[new StaticSource(), new PcSource(), new HttpSource(), new FileSource(), new CommandSource()]
+[new StaticSource(), new PcSource(), new HttpSource(), new FileSource(), new CommandSource(), new PushSource()]
   .forEach(function (s) { sources.register(s.name, s); });
 
 function resolve(type) {

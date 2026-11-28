@@ -126,6 +126,27 @@
       <div id="in-mine" class="mk-list"></div>
     </section>
 
+    <section class="card wide" id="automation-card">
+      <div class="card-head">
+        <div>
+          <h2>Webhook in entrata</h2>
+          <p class="hint">Indirizzi per mandare al tablet dati, notifiche o un cambio di pagina da script, Home Assistant, IFTTT o <code>curl</code>. Funzionano solo dalla tua rete locale e contengono una chiave segreta: non condividerli.</p>
+        </div>
+        <span id="au-count" class="pill"></span>
+      </div>
+      <div id="au-urls" class="au-urls"></div>
+      <div class="au-tools">
+        <input id="au-msg" type="text" placeholder="Messaggio di prova" maxlength="120">
+        <button id="au-notify" class="btn small-btn" type="button">Manda una notifica al tablet</button>
+        <select id="au-page" class="au-select"></select>
+        <button id="au-goto" class="btn small-btn" type="button">Apri questa pagina sul tablet</button>
+        <button id="au-rotate" class="btn small-btn" type="button" title="Gli indirizzi attuali smettono di funzionare">Cambia chiave</button>
+      </div>
+      <h3 class="in-head">Valori ricevuti</h3>
+      <p class="hint">Si usano nei widget con la fonte dati <b>Valore inviato</b> (nome del valore). Esempio: <code>curl -X POST -H "Content-Type: application/json" -d '{"value": 42}' &lt;indirizzo push&gt;/caldaia</code></p>
+      <div id="au-values" class="mk-list"></div>
+    </section>
+
     <section class="card wide" id="themes-card">
       <div class="card-head">
         <div>
@@ -240,6 +261,7 @@
   <script src="/js/icons.js"></script>
   <script src="/control/control.js"></script>
   <script src="/control/installed.js"></script>
+  <script src="/control/automation.js"></script>
   <script src="/control/themes-editor.js"></script>
 </body>
 </html>

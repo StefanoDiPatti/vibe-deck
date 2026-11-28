@@ -20,6 +20,8 @@ const plugins = require('./plugins');
 const home = require('./home');
 const customPages = require('./custom-pages');
 const shapes = require('./shapes');
+const events = require('./events');
+const webhooks = require('./webhooks');
 const pkg = require('../package.json');
 
 const PORT = parseInt(process.env.PORT, 10) || 8787;
@@ -47,6 +49,7 @@ function route(fn) {
 }
 function badRequest(msg) { return Object.assign(new Error(msg), { code: 'BAD_REQUEST' }); }
 
+app.use('/hook', webhooks.router(express, auth.tooManyFrom));
 app.use(auth.tokenFromQuery);
 app.get('/api/health', function (req, res) {
   ok(res, { name: 'vibe-deck', version: pkg.version, platform: platform.name, paired: auth.isAuthorized(req) });
@@ -238,6 +241,12 @@ function safeCheck() {
   try { return configCheck.run(); } catch (e) { return [{ level: 'error', where: 'controllo', message: e.message }]; }
 }
 
+function webhookInfo() {
+  let urls = [];
+  try { urls = JSON.parse(require('fs').readFileSync(path.join(paths.DATA_DIR, 'runtime.json'), 'utf8')).urls || []; } catch (e) { urls = []; }
+  const base = urls[0] || 'http://' + os.hostname() + ':' + PORT;
+  return Object.assign(webhooks.endpoints(base), { values: webhooks.store.list(), pages: config.dock().pages.map(function (p) { return { id: p.id, title: p.title }; }) });
+}
 function controlInfo() {
   const d = config.dock();
   let urls = [];
@@ -345,6 +354,15 @@ app.post('/api/control/home/reset', controlOnly, route(function () { config.save
 plugins.setControl({ only: controlOnly, info: controlInfo });
 plugins.mountControl(app, express, localPage);
 
+app.get('/api/control/webhooks', controlOnly, route(function () { return webhookInfo(); }));
+app.post('/api/control/webhooks/rotate', controlOnly, route(function () { webhooks.rotate(); return webhookInfo(); }));
+app.post('/api/control/webhooks/test', controlOnly, route(function (req) {
+  const b = req.body || {};
+  if (b.page) return webhooks.goto(b.page);
+  return webhooks.notify({ title: 'Vibe Deck', message: b.message || 'Test dal pannello', kind: 'ok' });
+}));
+app.post('/api/control/webhooks/forget', controlOnly, route(function (req) { webhooks.store.remove(String((req.body || {}).name || '')); return webhookInfo(); }));
+
 app.use('/api', auth.requireToken);
 
 function tabletPower() {
@@ -371,9 +389,10 @@ app.get('/api/config', route(function () {
   };
 }));
 
-app.get('/api/state', route(async function () {
+app.get('/api/state', route(async function (req) {
   const [now, running] = await Promise.all([media.nowPlaying(), appsState.running()]);
-  return { version: config.version(), themesV: themes.stamp(), build: clientBuild(), system: system.get(), media: now, apps: running, time: Date.now() };
+  const fresh = events.forTablet(events.bus, req.query.ev);
+  return { events: fresh.list, evSeq: fresh.seq, version: config.version(), themesV: themes.stamp(), build: clientBuild(), system: system.get(), media: now, apps: running, time: Date.now() };
 }));
 
 app.get('/api/shapes/:plugin/:id', route(function (req) {
