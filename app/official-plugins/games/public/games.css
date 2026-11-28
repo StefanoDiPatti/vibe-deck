@@ -5,6 +5,13 @@
 .gm-pic svg.ic { width: 40px; height: 40px; margin-top: 8px; fill: #8b9bab; }
 .gm-item span { display: block; margin-top: 5px; padding: 0 4px; font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gm-item.running:before { content: ""; position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 5px; background: #3fb950; }
+.gm-short .w-head { display: none; }
+.gm-short .gm-list { top: 6px; bottom: 6px; }
+.gm-rows .gm-item { text-align: left; }
+.gm-rows .gm-pic { float: left; margin: 0 8px 0 4px; }
+.gm-rows .gm-item span { margin-top: 0; padding: 0 6px 0 0; font-size: 12px; }
+.gm-one.gm-wide { text-align: left; }
+.gm-one.gm-wide .gm-pic svg.ic { width: 70%; height: 70%; }
 .gm-one { position: absolute; left: 6px; right: 6px; top: 6px; bottom: 6px; border-radius: 10px; background: #172029; text-align: center; overflow: hidden; }
 .gm-one.pressed, .gm-one.busy { background: #26354a; }
 .gm-one .gm-pic { position: absolute; left: 8px; right: 8px; top: 8px; bottom: 26px; width: auto; height: auto; margin: 0; }

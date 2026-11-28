@@ -241,6 +241,19 @@ async function runDevice(cdp, dev) {
   const file = path.join(OUT, dev.name + '.png');
   fs.writeFileSync(file, Buffer.from(shot.data, 'base64'));
   result.screenshot = file;
+
+  await cdp.eval('location.hash="";D.store.set("page","claude");location.reload();true');
+  await waitFor(function () { return cdp.eval('!!document.querySelector(".cl-input")&&!!document.querySelector(".cl-send")'); }, 20000, 'pagina CLAUDE');
+  await sleep(600);
+  const compose = await cdp.eval('(function(){function r(s){var b=document.querySelector(s).getBoundingClientRect();return {l:b.left,t:b.top,r:b.right,b:b.bottom,w:b.width,h:b.height};}return {mic:r(".cl-mic"),input:r(".cl-input"),send:r(".cl-send"),rot:document.body.className.indexOf("rot")>=0,pos:getComputedStyle(document.querySelector(".cl-input")).position};})()');
+  check('CLAUDE: campo largo anche sul browser vecchio (textarea non in position:absolute)', compose.pos !== 'absolute', 'position=' + compose.pos);
+  const ci = compose.input, cs = compose.send, cm = compose.mic;
+  const gapSend = compose.rot ? cs.t - ci.b : cs.l - ci.r;
+  const gapMic = compose.rot ? ci.t - cm.b : ci.l - cm.r;
+  check('CLAUDE: il campo "Scrivi o detta" arriva fino a Invio', gapSend >= 0 && gapSend <= 14 && gapMic >= 0 && gapMic <= 14 && Math.min(ci.w, ci.h) >= 40, 'spazio campo-Invio ' + Math.round(gapSend) + ' px, microfono-campo ' + Math.round(gapMic) + ' px, campo ' + Math.round(ci.w) + 'x' + Math.round(ci.h));
+  const shotClaude = await cdp.send('Page.captureScreenshot', { format: 'png' });
+  fs.writeFileSync(path.join(OUT, dev.name + '-claude.png'), Buffer.from(shotClaude.data, 'base64'));
+  await cdp.eval('D.store.set("page","main");true');
   return result;
 }
 

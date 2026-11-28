@@ -67,6 +67,55 @@ async function singleGame(s, cdp, hand, report) {
   await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
 }
 
+const COVERS = 'window.__covers={game_stardew_valley:"data:image/svg+xml,"+encodeURIComponent(\'<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect width="300" height="400" fill="#3a7d44"/><rect x="20" y="20" width="260" height="360" fill="none" stroke="#fff" stroke-width="10"/></svg>\'),game_hades:"data:image/svg+xml,"+encodeURIComponent(\'<svg xmlns="http://www.w3.org/2000/svg" width="460" height="215"><rect width="460" height="215" fill="#8b1d1d"/><rect x="15" y="15" width="430" height="185" fill="none" stroke="#fff" stroke-width="10"/></svg>\')};' +
+  '(function(p){JSON.parse=function(){var o=p.apply(JSON,arguments);try{var d=o&&o.data&&o.data.dock;if(d&&d.pages)d.pages.forEach(function(pg){if(pg.id==="games")(pg.tiles||[]).forEach(function(t){if(window.__covers[t.id])t.image=window.__covers[t.id];});});}catch(e){}return o;};})(JSON.parse);';
+
+function boxIn(sel) {
+  return '(function(){return [].map.call(document.querySelectorAll("' + sel + '"),function(n){var r=n.getBoundingClientRect();return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height};});})()';
+}
+
+async function gameLayouts(s, cdp, report) {
+  const exe = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-e2e-game-')), 'hades.sh');
+  fs.writeFileSync(exe, 'x');
+  await s.api('POST', '/api/control/games', { path: exe, label: 'Hades' }, CTRL);
+  await s.api('POST', '/api/control/pages/save', { id: '', title: 'Arcade', columns: 6, rows: 4, tiles: [
+    { id: 'game_stardew_valley', x: 0, y: 0, w: 3, h: 1 },
+    { id: 'game_hades', x: 3, y: 0, w: 1, h: 1 },
+    { id: 'games', x: 0, y: 1, w: 3, h: 1 }
+  ] }, CTRL);
+  const info = await s.api('GET', '/api/control/info', null, CTRL);
+  await s.api('POST', '/api/control/layout', { tabs: info.tabs.slice(0, 9).concat(['u-arcade']), home: info.tabs[0] }, CTRL);
+  await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: COVERS });
+
+  const sizes = [[1280, 800, 'tablet'], [1024, 600, 'tablet-small'], [740, 360, 'phone-land'], [360, 740, 'phone-port']];
+  for (let k = 0; k < sizes.length; k++) {
+    const z = sizes[k];
+    report.group('Tablet ' + z[0] + 'x' + z[1] + ': giochi senza tagli');
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: z[0], height: z[1], deviceScaleFactor: 1, mobile: true });
+    await cdp.send('Page.navigate', { url: s.base + '/?t=' + s.token });
+    await waitFor(function () { return cdp.eval('!!(window.D&&document.querySelector("#tabs .tab[data-page=u-arcade]"))'); }, 20000, 'scheda ARCADE');
+    await cdp.eval('location.hash="";D.store.set("page","u-arcade");location.reload();true');
+    await waitFor(function () { return cdp.eval('!!(window.D&&document.querySelector("#stage .w-games .gm-item")&&document.querySelectorAll("#stage .w-game .gm-one").length>=2)'); }, 20000, 'pagina ARCADE');
+    await sleep(800);
+    const rot = await cdp.eval('document.body.className.indexOf("rot")>=0');
+    const tiles = await cdp.eval('[].map.call(document.querySelectorAll("#stage .w-game"),function(n){var o=n.querySelector(".gm-one"),p=o.querySelector(".gm-pic"),t=o.querySelector("span"),R=function(e){var r=e.getBoundingClientRect();return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height};};return {wide:/gm-wide/.test(o.className),one:R(o),pic:R(p),txt:R(t),label:t.textContent,txtFits:t.scrollWidth<=t.clientWidth+1};})');
+    tiles.forEach(function (t, i) {
+      const long = rot ? t.one.h > t.one.w * 1.6 : t.one.w > t.one.h * 1.6;
+      const inside = t.pic.l >= t.one.l - 1 && t.pic.r <= t.one.r + 1 && t.pic.t >= t.one.t - 1 && t.pic.b <= t.one.b + 1;
+      const apart = rot ? (t.txt.b <= t.pic.t + 1 || t.txt.t >= t.pic.b - 1) : (t.txt.l >= t.pic.r - 1 || t.txt.r <= t.pic.l + 1 || t.txt.t >= t.pic.b - 1);
+      const bigEnough = Math.min(t.pic.w, t.pic.h) >= Math.min(t.one.w, t.one.h) * 0.5;
+      report.check('gioco ' + (i + 1) + ' (' + t.label + (long ? ', largo' : '') + '): immagine intera e non minuscola, titolo leggibile e non sopra l\'immagine', inside && apart && bigEnough && t.txt.h >= 10 && (!long || t.wide), JSON.stringify(t));
+    });
+    const list = await cdp.eval(boxIn('#stage .w-games .gm-list'));
+    const items = await cdp.eval(boxIn('#stage .w-games .gm-item'));
+    const pics = await cdp.eval(boxIn('#stage .w-games .gm-pic'));
+    const L = list[0];
+    const cut = items.filter(function (it) { return rot ? (it.l < L.l - 1 || it.r > L.r + 1) : (it.t < L.t - 1 || it.b > L.b + 1); });
+    report.check('I miei giochi 3x1: icone intere (niente taglio in alto/basso)', items.length === 2 && cut.length === 0 && pics.every(function (p) { return p.w >= 20 && p.h >= 20; }), JSON.stringify({ list: L, items: items, pics: pics }));
+    await shot(cdp, 'pages-arcade-' + z[2] + '.png');
+  }
+}
+
 async function webhookCard(s, cdp, hand, report) {
   report.group('Pannello: webhook in entrata');
   await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1400, height: 1000, deviceScaleFactor: 1, mobile: false });
@@ -225,6 +274,8 @@ async function main() {
     report.check('nessun errore JavaScript nel pannello', (await cdp.eval('window.__errors.length')) === 0, JSON.stringify(await cdp.eval('window.__errors')));
 
     await singleGame(s, cdp, hand, report);
+    await gameLayouts(s, cdp, report);
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1400, height: 1000, deviceScaleFactor: 1, mobile: false });
     await webhookCard(s, cdp, hand, report);
     await rulesCard(s, cdp, hand, report);
     await extras(s, cdp, hand, report);
