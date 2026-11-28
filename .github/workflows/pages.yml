@@ -10,6 +10,10 @@ on:
       - app/server/actions/**
       - app/official-plugins/**
       - app/scripts/build-site.js
+      - app/scripts/build-demo.js
+      - app/scripts/demo-shim.js
+      - app/scripts/demo.js
+      - app/server/**
       - docs/screenshots/**
       - .github/workflows/pages.yml
   workflow_dispatch:
@@ -39,6 +43,7 @@ jobs:
       - run: npm ci --omit=dev
         working-directory: app
       - run: node app/scripts/build-site.js _site
+      - run: node app/scripts/build-demo.js _site/demo
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

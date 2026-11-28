@@ -113,6 +113,31 @@ async function rulesCard(s, cdp, hand, report) {
   await waitFor(function () { return cdp.eval('document.getElementById("ru-save").disabled'); }, 5000, 'salvataggio vuoto');
 }
 
+async function extras(s, cdp, hand, report) {
+  report.group('Pannello: modelli, Wake-on-LAN e calendario');
+  await cdp.send('Page.navigate', { url: s.base + '/control' });
+  await waitFor(function () { return cdp.eval('document.querySelectorAll("#tp-list [data-tp]").length>=4'); }, 20000, 'modelli');
+  report.check('modelli pronti nel pannello', true);
+  await hand.click('#tp-list [data-tp="developer"]');
+  const made = await waitFor(function () { return cdp.eval('!!document.querySelector("#hm-targets .chip.on[data-hmgo^=u-]")&&document.querySelectorAll("#hm-board .hm-w").length>=4'); }, 10000, 'pagina dal modello').then(function () { return true; }, function () { return false; });
+  report.check('un modello crea una pagina tua e la apre nell\'editor', made);
+  await cdp.eval('window.scrollTo(0, document.getElementById("home-card").offsetTop - 10);true');
+  await sleep(300);
+  await shot(cdp, 'pages-template.png');
+  const exported = await s.api('GET', '/api/control/pages/export?id=' + (await cdp.eval('document.querySelector("#hm-targets .chip.on").getAttribute("data-hmgo")')), null, CTRL);
+  report.check('l\'esportazione ha il formato e i widget', exported.format === 'vibe-deck-page' && exported.tiles.length >= 4);
+  await hand.fill('#wol-name', 'NAS');
+  await hand.fill('#wol-mac', '00:11:22:33:44:55');
+  await hand.click('#wol-add');
+  report.check('Wake-on-LAN: il dispositivo compare', await waitFor(function () { return cdp.eval('document.querySelectorAll("#wol-list [data-wol-wake]").length===1'); }, 5000, 'wol').then(function () { return true; }, function () { return false; }));
+  await cdp.eval('window.scrollTo(0, document.getElementById("wol-card").offsetTop - 10);true');
+  await sleep(300);
+  await shot(cdp, 'pages-wol-calendar.png');
+  await hand.click('#wol-list [data-wol-del="NAS"]');
+  report.check('Wake-on-LAN: Togli lo elimina', await waitFor(function () { return cdp.eval('document.querySelectorAll("#wol-list [data-wol-wake]").length===0'); }, 5000, 'wol togli').then(function () { return true; }, function () { return false; }));
+  report.check('scheda calendario con il campo del link', await cdp.eval('!!document.getElementById("cal-url")&&!!document.getElementById("cal-save")'));
+}
+
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
   const report = new Report();
@@ -202,6 +227,7 @@ async function main() {
     await singleGame(s, cdp, hand, report);
     await webhookCard(s, cdp, hand, report);
     await rulesCard(s, cdp, hand, report);
+    await extras(s, cdp, hand, report);
   } catch (e) {
     report.check('esecuzione', false, e.message);
   } finally {

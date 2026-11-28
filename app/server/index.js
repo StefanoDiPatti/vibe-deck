@@ -24,6 +24,7 @@ const events = require('./events');
 const webhooks = require('./webhooks');
 const rules = require('./rules');
 const permissions = require('./permissions');
+const templates = require('./templates');
 const claudeHooks = require('./claude-hooks');
 const pkg = require('../package.json');
 
@@ -345,6 +346,18 @@ app.post('/api/control/pages/save', controlOnly, route(function (req) {
   const page = customPages.shared.save(req.body || {}, config.dock().pages.map(function (p) { return p.id; }));
   log.info('control', 'pagina ' + page.id + ' (' + page.title + '): ' + page.tiles.map(function (t) { return t.id + ' ' + t.w + 'x' + t.h; }).join(', '));
   return Object.assign(controlInfo(), { savedPage: page.id });
+}));
+app.get('/api/control/templates', controlOnly, route(function () { return templates.list(); }));
+app.post('/api/control/templates/apply', controlOnly, route(function (req) {
+  const r = templates.apply(String((req.body || {}).id || ''), config.dock().pages.map(function (p) { return p.id; }));
+  log.info('control', 'modello ' + r.page.id + ' applicato');
+  return Object.assign(controlInfo(), { savedPage: r.page.id, skipped: r.skipped });
+}));
+app.get('/api/control/pages/export', controlOnly, route(function (req) { return templates.exportPage(String(req.query.id || '')); }));
+app.post('/api/control/pages/import', controlOnly, route(function (req) {
+  const r = templates.importPage((req.body || {}).template, config.dock().pages.map(function (p) { return p.id; }));
+  log.info('control', 'pagina importata: ' + r.page.id);
+  return Object.assign(controlInfo(), { savedPage: r.page.id, skipped: r.skipped });
 }));
 app.post('/api/control/pages/remove', controlOnly, route(function (req) {
   const id = String((req.body || {}).id || '');

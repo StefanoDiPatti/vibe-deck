@@ -255,6 +255,13 @@ Panel card *Permessi di Claude Code dal tablet*, button **Collega Claude Code**.
 
 The hook script is `scripts/claude-hook.js` (no dependencies, never fails the session: on any error it exits quietly). It reads the webhook key from `data/webhooks.json` and the port from `data/runtime.json`.
 
+## Page templates, Wake-on-LAN, calendar and the online demo
+
+- **Page templates** (panel > *Pagine con widget*): start a page from a ready-made template (Monitor, Dev, Gaming, Streaming, Desk, Home), **export** one of your pages to a `.json` file and **import** a file from someone else. Widgets that are not installed are skipped and listed. Exported files have `"format": "vibe-deck-page"` and only reference widgets by catalog id, so they are safe to share.
+- **Wake-on-LAN** (official plugin `wol`): add devices (name and MAC) in the panel; the *Wake-on-LAN* widget lists them and a tap sends the magic packet to the broadcast addresses of every network card. The action `wol.wake` (`{"device": "NAS"}` or a MAC) works in buttons and rules.
+- **Calendar** (official plugin `calendar`): paste an ICS link (Google, Apple, Outlook, Nextcloud secret address) or the path of a `.ics` file in the panel. Widgets *Next event* and *Agenda*; the source `calendar.events` is available to JSON widgets. Recurring events (daily, weekly with days, monthly, yearly, `COUNT`, `UNTIL`, `EXDATE`) are expanded for the next 14 days. The link stays on the PC (`data/plugins/calendar/`).
+- **Online demo**: `npm run demo:online -- <folder>` runs the demo server, records its answers and writes a static copy of the tablet client with a small shim instead of the API (`scripts/build-demo.js`, `scripts/demo-shim.js`). The Pages workflow publishes it at `/demo/`.
+
 ## Music
 
 ### Extension for Apple Music web and YouTube (recommended)

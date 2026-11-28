@@ -371,3 +371,7 @@ button.mk-tag.sw:hover { border-color: var(--accent); }
 .ru-last { font-size: 12px; color: var(--muted); }
 .ru-last.err { color: var(--bad-text); }
 .ru-empty { color: var(--muted); font-size: 14px; }
+
+.hm-templates { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 12px; }
+.hm-templates .hm-gname { margin: 0; }
+.hm-tp-tools { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
