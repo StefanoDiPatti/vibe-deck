@@ -6,6 +6,7 @@
   "icon": "chat",
   "description": "Chat with DeepSeek from the tablet: write or dictate, the answer arrives while it is written, model choice and account balance (needs a DeepSeek API key, saved encrypted from the panel)",
   "type": "plugin",
+  "category": "ai",
   "platforms": ["windows", "linux"],
   "engine": ">=2.2.0",
   "permissions": { "http": ["api.deepseek.com"] }

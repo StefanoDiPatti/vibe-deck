@@ -6,6 +6,7 @@
   "icon": "github",
   "description": "Your repositories with CI, deploys, pull requests and issues",
   "type": "plugin",
+  "category": "developer",
   "platforms": [
     "windows",
     "linux"

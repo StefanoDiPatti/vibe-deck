@@ -6,6 +6,7 @@
   "icon": "cpu",
   "description": "JSON-only widgets for the PC: CPU, GPU, RAM, network, uptime, open apps, shortcuts and voice commands",
   "type": "plugin",
+  "category": "system",
   "platforms": ["windows", "linux"],
   "engine": ">=2.2.0"
 }

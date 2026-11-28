@@ -43,7 +43,7 @@ function dockData() {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-site-'));
   const script = [
     'const plugins = require(' + JSON.stringify(path.join(APP, 'server', 'plugins')) + ');',
-    'const catalog = require(' + JSON.stringify(path.join(APP, 'server', 'shapes', 'catalog')) + ').catalog();',
+    'const catalog = require(' + JSON.stringify(path.join(APP, 'server', 'shapes', 'catalog')) + ').catalog("en");',
     'const fs = require("fs"); const path = require("path");',
     'const list = plugins.manifests().filter(function (m) { return m.official; });',
     'function count(dir, sub) { try { return fs.readdirSync(path.join(dir, sub)).filter(function (f) { return /\\.json$/.test(f); }).length; } catch (e) { return 0; } }',

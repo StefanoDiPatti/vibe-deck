@@ -1,3 +1,5 @@
+const { categories } = require('./categories');
+
 const HOME_ID = 'main';
 
 const CATALOG = [
@@ -14,6 +16,14 @@ function clamp(v, min, max, def) {
   return Math.max(min, Math.min(max, n));
 }
 
+function pluginTags() {
+  const out = {};
+  try {
+    require('./plugins').manifests().forEach(function (m) { out[m.id] = [m.category].concat(m.tags || []); });
+  } catch (e) { return out; }
+  return out;
+}
+
 function catalog() {
   const out = CATALOG.map(function (c) { return Object.assign({ plugin: '', props: null }, c); });
   let fromPlugins = [];
@@ -21,6 +31,8 @@ function catalog() {
   fromPlugins.forEach(function (c) {
     if (!out.some(function (o) { return o.id === c.id; })) out.push(c);
   });
+  const tags = pluginTags();
+  out.forEach(function (c) { c.category = categories.resolve(c.category, tags[c.plugin], c.page); });
   return out;
 }
 

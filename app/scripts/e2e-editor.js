@@ -48,12 +48,12 @@ async function main() {
     report.check('le fonti di altri plugin non si offrono (un widget deve funzionare da solo)', await cdp.eval('![].slice.call(document.querySelectorAll("[data-ed=source] option")).some(function(o){return o.value.indexOf(".")>=0;})'));
     await hand.click('.ed-shape[data-shape="value"]');
     await hand.click(field('show.value'));
-    await clickChip(cdp, hand, 'Uso CPU');
+    await clickChip(cdp, hand, 'CPU usage');
     report.check('tocco su un dato inserisce il segnaposto', (await cdp.eval('document.querySelector(' + JSON.stringify(field('show.value')) + ').value')) === '{{cpu.usage}}');
     await hand.fill(field('show.unit'), '%');
     await hand.fill(field('show.label'), 'PROCESSORE');
     await hand.click(field('show.bar'));
-    await clickChip(cdp, hand, 'Uso CPU');
+    await clickChip(cdp, hand, 'CPU usage');
     await hand.choose('#ed-actions .ed-action select', 'hotkey');
     await hand.fill(field('tap.keys'), 'CTRL+SHIFT+ESC');
     await hand.fill(field('name'), 'Mia CPU');

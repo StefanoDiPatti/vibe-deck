@@ -583,7 +583,7 @@ Then in the pages: `{ "widget": "weather", "w": 2, "h": 1 }` and `"icon": "sun"`
 
 ## A widget for the HOME
 
-Every plugin widget appears automatically in the HOME catalog (panel > HOME, group *PLUGIN &lt;NAME&gt;*). How it appears
+Every plugin widget appears automatically in the HOME catalog (panel > HOME), split into sections by category (system, music, streaming, gaming, developer, AI, smart home...). The category comes from the `category` of the `home.json` entry or of the widget JSON, then from `category` or the first known entry of `tags` in `plugin.json`, then from the page, otherwise *Other*. How it appears
 is set in `plugins/<name>/home.json` (`npm run new:widget` already creates it; it is reloaded by itself, no restart):
 
 ```json

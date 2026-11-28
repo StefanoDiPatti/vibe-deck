@@ -6,6 +6,7 @@
   "icon": "unreal",
   "description": "Play, compile C++, tools and views for Unreal Editor",
   "type": "plugin",
+  "category": "creative",
   "platforms": [
     "windows",
     "linux"

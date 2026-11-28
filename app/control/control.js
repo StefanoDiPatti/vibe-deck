@@ -546,9 +546,13 @@
 
     const inHome = hm.tiles.map((t) => t.id);
     const groups = {};
-    ed.catalog.forEach((c) => { (groups[c.page || 'ALTRO'] = groups[c.page || 'ALTRO'] || []).push(c); });
-    $('hm-catalog').innerHTML = Object.keys(groups).map((g) =>
-      '<div class="hm-group"><div class="hm-gname">' + esc(g) + '</div>' + groups[g].map((c) => {
+    ed.catalog.forEach((c) => { (groups[c.category || 'other'] = groups[c.category || 'other'] || []).push(c); });
+    const names = {};
+    (ed.categories || []).forEach((k) => { names[k.id] = k.label; });
+    const order = (ed.categories || []).map((k) => k.id).filter((id) => groups[id]);
+    Object.keys(groups).forEach((id) => { if (order.indexOf(id) < 0) order.push(id); });
+    $('hm-catalog').innerHTML = order.map((g) =>
+      '<div class="hm-group" data-category="' + esc(g) + '"><div class="hm-gname">' + esc((names[g] || g).toUpperCase()) + ' · ' + groups[g].length + '</div>' + groups[g].map((c) => {
         const there = inHome.indexOf(c.id) >= 0;
         const big = c.minW > hm.columns || c.minH > hm.rows;
         return '<button class="hm-cat" type="button" data-hmadd="' + esc(c.id) + '"' + (there || big ? ' disabled' : '') +

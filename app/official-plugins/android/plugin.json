@@ -6,6 +6,7 @@
   "icon": "android",
   "description": "adb and logcat: devices, errors and crashes, screenshot, phone screen with scrcpy, React Native",
   "type": "plugin",
+  "category": "developer",
   "platforms": [
     "windows",
     "linux"
