@@ -136,3 +136,15 @@ test('senza intestazione del pannello le API di controllo restano chiuse', async
   const r = await call('GET', '/api/control/webhooks');
   assert.strictEqual(r.status, 403);
 });
+
+test('evento con nome: arriva sul bus con i dati, nome non valido rifiutato', async function () {
+  const key = webhooks.key();
+  const before = events.bus.seq;
+  const ok = await call('POST', '/hook/' + key + '/event/claude-waiting', { session: 'abc' });
+  assert.strictEqual(ok.status, 200);
+  const e = events.bus.since(before).filter(function (x) { return x.type === 'event'; })[0];
+  assert.strictEqual(e.name, 'claude-waiting');
+  assert.strictEqual(e.data.session, 'abc');
+  assert.strictEqual((await call('POST', '/hook/' + key + '/event/NO%20NO')).status, 400);
+  assert.strictEqual(events.forTablet(events.bus, before).list.length, 0, 'gli eventi con nome non vanno al tablet');
+});

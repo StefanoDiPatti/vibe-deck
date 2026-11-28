@@ -86,6 +86,33 @@ async function webhookCard(s, cdp, hand, report) {
   report.check('"Togli" elimina il valore', await waitFor(function () { return cdp.eval('document.querySelectorAll("#au-values [data-au-forget=e2e]").length===0'); }, 5000, 'togli').then(function () { return true; }, function () { return false; }));
 }
 
+async function rulesCard(s, cdp, hand, report) {
+  report.group('Pannello: regole quando → allora');
+  await cdp.send('Page.navigate', { url: s.base + '/control' });
+  await waitFor(function () { return cdp.eval('!!document.getElementById("ru-claude")&&!!document.getElementById("ru-list")'); }, 20000, 'scheda regole');
+  await waitFor(function () { return cdp.eval('document.getElementById("ru-count").textContent.length>0'); }, 10000, 'regole caricate');
+  report.check('all\'inizio nessuna regola e Salva spento', await cdp.eval('document.querySelectorAll("#ru-list .ru-row").length===0&&document.getElementById("ru-save").disabled'));
+  await hand.click('#ru-claude');
+  report.check('l\'esempio "Claude ti aspetta" aggiunge una riga con la pagina CLAUDE', await cdp.eval('(function(){var r=document.querySelector("#ru-list .ru-row");return !!r&&r.querySelector("[data-ru=when][data-p=type]").value==="claude_waiting"&&r.querySelector("[data-ru=then][data-p=page]").value==="claude";})()'));
+  report.check('Salva si accende', await cdp.eval('!document.getElementById("ru-save").disabled'));
+  await cdp.eval('window.scrollTo(0, document.getElementById("rules-card").offsetTop - 10);true');
+  await sleep(300);
+  await shot(cdp, 'pages-rules.png');
+  await hand.click('#ru-save');
+  await waitFor(function () { return cdp.eval('document.getElementById("ru-save").disabled'); }, 5000, 'salvataggio');
+  const key = (await s.api('GET', '/api/control/webhooks', null, CTRL)).key;
+  await fetch(s.base + '/hook/' + key + '/event/claude-waiting', { method: 'POST' });
+  const fired = await waitFor(async function () {
+    const d = await s.api('GET', '/api/control/rules', null, CTRL);
+    return d.rules[0] && d.rules[0].last ? d.rules[0].last : null;
+  }, 8000, 'regola scattata').catch(function () { return null; });
+  report.check('l\'evento di Claude fa scattare la regola', !!fired && fired.ok, JSON.stringify(fired));
+  await hand.click('#ru-list [data-ru-del="0"]');
+  report.check('Togli toglie la riga', await cdp.eval('document.querySelectorAll("#ru-list .ru-row").length===0'));
+  await hand.click('#ru-save');
+  await waitFor(function () { return cdp.eval('document.getElementById("ru-save").disabled'); }, 5000, 'salvataggio vuoto');
+}
+
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
   const report = new Report();
@@ -174,6 +201,7 @@ async function main() {
 
     await singleGame(s, cdp, hand, report);
     await webhookCard(s, cdp, hand, report);
+    await rulesCard(s, cdp, hand, report);
   } catch (e) {
     report.check('esecuzione', false, e.message);
   } finally {
