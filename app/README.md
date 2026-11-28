@@ -242,7 +242,7 @@ Only private network addresses are accepted, wrong keys get a 404 (rate limited)
 Panel card *Regole: quando → allora*, stored in `data/rules.json`. Each rule has a **trigger**, a **reaction** and a pause (cooldown). A state trigger fires when its condition *becomes* true, never repeatedly, and not at startup.
 
 - Triggers: music starts, an app opens or closes, CPU above a threshold, a pushed value matches a condition, a time of day, `claude_waiting` and `claude_done` (events named `claude-waiting` and `claude-done`), any webhook event.
-- Reactions: open a page on the tablet, show a notification, open or close an app, music and volume, open an address, run an allowed command (`commands.json`), press a shortcut.
+- Reactions: open a page on the tablet, show a notification, open or close an app, music and volume, open an address, run an allowed command (`commands.json`), press a shortcut, and (when those plugins are on) switch a smart-home device, call a webhook or wake a device.
 - The engine checks every 2 seconds (`server/rules/`: triggers and reactions are registries, so a new one is a class and one `register` line) and listens to the event bus, so webhook events fire rules immediately.
 
 ## Claude Code permissions from the tablet
@@ -261,6 +261,26 @@ The hook script is `scripts/claude-hook.js` (no dependencies, never fails the se
 - **Wake-on-LAN** (official plugin `wol`): add devices (name and MAC) in the panel; the *Wake-on-LAN* widget lists them and a tap sends the magic packet to the broadcast addresses of every network card. The action `wol.wake` (`{"device": "NAS"}` or a MAC) works in buttons and rules.
 - **Calendar** (official plugin `calendar`): paste an ICS link (Google, Apple, Outlook, Nextcloud secret address) or the path of a `.ics` file in the panel. Widgets *Next event* and *Agenda*; the source `calendar.events` is available to JSON widgets. Recurring events (daily, weekly with days, monthly, yearly, `COUNT`, `UNTIL`, `EXDATE`) are expanded for the next 14 days. The link stays on the PC (`data/plugins/calendar/`).
 - **Online demo**: `npm run demo:online -- <folder>` runs the demo server, records its answers and writes a static copy of the tablet client with a small shim instead of the API (`scripts/build-demo.js`, `scripts/demo-shim.js`). The Pages workflow publishes it at `/demo/`.
+
+## Smart home (Home Assistant, Alexa, Google Home...)
+
+Alexa and Google Home have no public local API that a third-party deck can use, so Vibe Deck talks to **Home Assistant**, which brings in Alexa/Google devices, Hue, Zigbee, Shelly and almost everything else, and has a documented REST API. Official plugin `homeassistant`, panel card *Casa (Home Assistant)*:
+
+1. In Home Assistant create a **long-lived access token** (profile > Security). In the panel enter the address (`http://homeassistant.local:8123`) and the token (stored encrypted, never sent back to the browser).
+2. Pick up to 24 devices from the list. Put the widget **Smart home** in a page: it shows the state of each device, and a tap switches lights, switches, fans and automations, runs scenes and scripts, presses buttons. Locks, alarms and `cover` devices are not tappable, and the services `lock.*`, `alarm_control_panel.*`, `shell_command.*`, `homeassistant.restart` are refused even from custom actions.
+3. Actions for buttons, JSON widgets and rules: `homeassistant.tap` (`{"entity": "light.living"}`), `homeassistant.service` (`{"domain": "light", "service": "turn_on", "entity": "light.living", "data": "{\"brightness_pct\": 40}"}`) and `homeassistant.webhook` (any http(s) address, GET or POST: IFTTT or Voice Monkey to start an Alexa routine, Shelly, Tasmota, a Home Assistant webhook).
+4. Source `homeassistant.entity` (`{"entity": "sensor.temperature"}`) gives state and attributes to any JSON widget.
+
+The other direction works with the incoming webhooks: a Home Assistant automation can notify the tablet or raise an event for the rules.
+
+```yaml
+rest_command:
+  deck_notify:
+    url: "http://PC:8787/hook/KEY/notify"
+    method: POST
+    content_type: "application/json"
+    payload: '{"title": "{{ title }}", "message": "{{ message }}"}'
+```
 
 ## Music
 

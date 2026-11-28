@@ -124,3 +124,12 @@ test('descrizioni per il pannello: tutte le voci hanno etichetta e parametri', f
   d.triggers.concat(d.reactions).forEach(function (x) { assert.ok(x.label && Array.isArray(x.params), x.type); });
   assert.ok(d.pages.some(function (p) { return p.value === FIRST_PAGE; }));
 });
+
+test('reazioni dei plugin: offerte solo se il plugin c\'è, parametri obbligatori controllati', function () {
+  const names = rules.describe().reactions.map(function (r) { return r.type; });
+  assert.ok(names.indexOf('goto') >= 0 && names.indexOf('launch') >= 0);
+  assert.throws(function () { rules.save([rule({ then: { type: 'homeassistant.tap' } })]); }, /manca/);
+  const saved = rules.save([rule({ then: { type: 'wol.wake', device: 'NAS' } })]);
+  assert.strictEqual(saved[0].then.device, 'NAS');
+  rules.save([]);
+});
