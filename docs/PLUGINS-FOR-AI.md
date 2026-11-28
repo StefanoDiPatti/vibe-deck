@@ -7,7 +7,7 @@ This page is meant to be handed to an AI assistant (Claude, ChatGPT, Gemini...) 
 1. Open a new chat with your AI assistant and attach this file.
 2. Describe what you want in one or two sentences, for example: *"A widget that shows my Twitch followers, with a refresh tap"* or *"A button that starts my NAS with Wake-on-LAN"*.
 3. Ask the assistant to answer with the **complete files** and to follow the checklist at the bottom.
-4. Put the folder in `app/plugins/<id>/` (or install the result from the market), restart the deck if there is an `index.js`, and add the widget to a page from the control panel.
+4. Put the folder in `app/plugins/<id>/`, restart the deck if there is an `index.js`, then in the control panel open **Pagine con widget**, choose HOME or **Nuova pagina**, click the widget in the catalog (it is in the section of its category) and press **Salva**. The panel card of the plugin appears at the bottom of the control panel.
 
 A ready prompt:
 
@@ -43,7 +43,7 @@ app/plugins/<id>/
   public/<id>.css
 ```
 
-`<id>`: lowercase letters, digits, `-` and `_`. The folder name must equal `"id"` in `plugin.json`. Ids of official plugins cannot be reused.
+`<id>`: lowercase letters, digits, `-` and `_`. The current app version is `2.2.0`, so `"engine": ">=2.2.0"` is right. The folder name must equal `"id"` in `plugin.json`. Ids of official plugins cannot be reused.
 
 ## plugin.json
 
@@ -92,11 +92,13 @@ app/plugins/<id>/
 }
 ```
 
-- **Shapes**: `value` (big number with unit, bar, warn/hot colors), `bars`, `status` (green or grey dot), `text`, `buttons` (up to 12), `voice`, `list` (scrolling rows, each tappable), `slider`. The exact fields of each are in `app/schema/widget.schema.json` and in the editor on the site (it shows every field with help).
+- **Shapes** and their `show` fields: `value` (`label icon value unit sub bar warn hot`; `value` can be any text, for example `25:00`, not only numbers), `text` (`label icon text sub`: a free text), `bars`, `status` (green or grey dot), `buttons` (up to 12), `voice`, `list` (scrolling rows, each tappable), `slider`. The exact fields of each are in `app/schema/widget.schema.json` and in the editor on the site (it shows every field with help).
 - **Sources** (`"source": {"type": …}`): `pc` (CPU, GPU, RAM, network, open apps), `static` (fixed data), `http` (public JSON, no keys), `file` (a file under `data/`), `command` (an allowed command from `commands.json`), `push` (a value sent with the incoming webhook), or `<plugin>.<name>` (a source of the same plugin, below).
 - **Templates**: `{{path.to.value}}` reads the data, `{{value|filter}}` transforms it. Filters: `round`, `div`, `mul`, `thousands`, `percent`, `bytes`, `duration`, `ago`, `upper`, `lower`, `default:text`, `yesno`, `url`, `count`, `map:name`, `zip`, `first`, `join`, `date`. `{{.}}` is the whole data. Inside lists: `{{item.field}}`.
 - **Actions** (`tap`, `set` for sliders, per row in lists): `{ "type": "open_url" | "open_path" | "launch" | "focus" | "hotkey" | "key" | "text" | "command" | "media" | "macro" | "wait" | "<plugin>.<action>", … }`. `macro` has `steps`.
 - Use `"platforms": ["windows"]` in the widget when it depends on the system.
+- **Refresh**: the tablet **asks** (polling, nothing is pushed). `every` is the number of seconds between two reads of the widget; a source never refreshes faster than its own `every` (plugin sources can go down to `1`). A source is read only while a widget that uses it is on screen, so keep no timers: compute the state lazily inside `read`.
+- `tap` for an action of your plugin is just `{ "type": "<id>.<action>" }` plus the params you declared.
 
 Every widget in `widgets/` shows up automatically in the HOME catalog, in the right category. Nothing else to register.
 
@@ -129,7 +131,7 @@ module.exports = {
 };
 ```
 
-`read(src, ctx)` returns a plain object (or throws an `Error`; the widget shows the message). `src` holds the fields written in the widget JSON. `every` is the minimum seconds between reads. Never block: use `fetch` with a timeout (`AbortController`) for anything that can hang.
+`read(src, ctx)` returns a plain object (or throws an `Error`; the widget shows the message). `fields[].type` is one of `text`, `number`, `boolean`, `list`. Use `params: []` and `fields: []` when there are none. `src` holds the fields written in the widget JSON. `every` is the minimum seconds between reads. Never block: use `fetch` with a timeout (`AbortController`) for anything that can hang.
 
 ## 3. An action in `index.js`
 
@@ -149,7 +151,7 @@ module.exports = {
 };
 ```
 
-Used as `{"type": "<id>.ping", "host": "nas.local"}` in any widget, button or rule. `run(action, ctx)` returns `{ message }` (shown as a toast; `message: null` shows nothing) or throws. Parameter types: `text template number boolean select keys key app command actions json icon url path`. A `select` needs `options: [{ value, label }]`.
+Used as `{"type": "<id>.ping", "host": "nas.local"}` in any widget, button or rule. `params: []` is fine for an action without parameters. `run(action, ctx)` returns `{ message }` (shown as a toast; `message: null` shows nothing) or throws. Parameter types: `text template number boolean select keys key app command actions json icon url path`. A `select` needs `options: [{ value, label }]`.
 
 ## 4. A control-panel card (settings, device lists)
 
@@ -169,7 +171,9 @@ module.exports = {
 };
 ```
 
-`info(ctx)` must return **the plugin's own object**: the panel puts it under the plugin id (`info.<id>`). Do not wrap it again. Routes are mounted at `/api/control/<id>/…`, only reachable from the PC itself. Secrets (tokens, keys) must go through `require('../../server/secrets')` (`loadJson` / `writeJson`, encrypted) and must never be returned by `info`.
+`info(ctx)` must return **the plugin's own object**: the panel puts it under the plugin id (`info.<id>`). Do not wrap it again. Routes are mounted at `/api/control/<id>/…` (so `router.post('/settings', …)` is `POST /api/control/<id>/settings`), only reachable from the PC itself.
+
+How a route works: it is an Express router, `req.body` is already the parsed JSON, `ctx.route(fn)` wraps `fn(req)`: what it returns is sent as `{ ok: true, data }`, and an `Error` it throws is sent as `{ ok: false, error: { code, message } }` (give the error a `code` such as `BAD_REQUEST`). When the card must refresh after the change, return `ctx.controlInfo()` (the **full** info of the panel) and call `Panel.update` with it in the browser. Secrets (tokens, keys) must go through `require('../../server/secrets')` (`loadJson` / `writeJson`, encrypted) and must never be returned by `info`.
 
 `control/<id>.js`:
 
@@ -192,7 +196,7 @@ module.exports = {
 })();
 ```
 
-`Panel` offers `$`, `esc` (always escape what you put in HTML), `icon`, `api(method, url, body)`, `toast(text, kind)`, `card(id, html)`, `register(fn)` (runs on every refresh with the full info), `update(info)` (call with the object a route returned) and `refresh()`. Reuse the existing classes (`card-head`, `hint`, `pill`, `btn`, `btn primary`, `small-btn`, `mk-list`, `mk-row`); put your own CSS in `control/<id>.css` with a plugin prefix.
+`Panel` offers `$`, `esc` (always escape what you put in HTML), `icon`, `api(method, url, body)` (returns a Promise with the `data`, `url` is the absolute path such as `/api/control/<id>/settings`, a failure rejects with an `Error` whose message you can show with `toast(err.message, 'err')`), `toast(text, kind)` (`'ok'` or `'err'`), `card(id, html)`, `register(fn)` (runs on every refresh with the **full** info, so read `info.<id>`), `update(info)` (pass the full info that a route returned with `ctx.controlInfo()`) and `refresh()`. The control panel is in **Italian**: write the texts of the card in Italian. Reuse the existing classes (`card-head`, `hint`, `pill`, `btn`, `btn primary`, `small-btn`, `mk-list`, `mk-row`); put your own CSS in `control/<id>.css` with a plugin prefix.
 
 ## 5. A tablet widget (only if no shape fits)
 
@@ -241,7 +245,7 @@ The widget name in `home.json` must be registered by the plugin's own script. Th
 
 ## Translations
 
-The tablet text is Italian by default. English goes in `lang/en.json`, a flat map from the Italian text (as shown) to English. Widget titles are shown in capitals, so list them as they appear (`"PROSSIMO EVENTO": "NEXT EVENT"`).
+The tablet text is Italian by default. English goes in `lang/en.json`, a flat map from the Italian text (as shown) to English. It also translates text that comes from the data (a source that returns `"PAUSA"` can be translated with `"PAUSA": "BREAK"`). Widget titles are shown in capitals, so list them as they appear (`"PROSSIMO EVENTO": "NEXT EVENT"`).
 
 ## Rules that are checked by tests
 
