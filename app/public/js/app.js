@@ -29,13 +29,13 @@
   }
 
   var toastTimer = null;
-  app.toast = function (msg, kind) {
+  app.toast = function (msg, kind, ms) {
     if (!msg) return;
     var t = D.$('toast');
     D.setText(t, msg);
     t.className = 'show ' + (kind || '');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.className = ''; }, kind === 'err' ? 4000 : 2200);
+    toastTimer = setTimeout(function () { t.className = ''; }, ms || (kind === 'err' ? 4000 : 2200));
   };
 
   function showModal(title, body) {
@@ -399,9 +399,21 @@
     f();
   } });
 
+  function handleEvents(list) {
+    for (var i = 0; i < list.length; i++) {
+      var e = list[i];
+      if (e.type === 'notify') {
+        var text = e.title && e.message ? e.title + ': ' + e.message : (e.title || e.message);
+        app.toast(text, e.kind || 'info', 6000);
+      } else if (e.type === 'goto' && e.page && findPage(e.page) && (!app.page || app.page.id !== e.page)) {
+        showPage(e.page);
+      }
+    }
+  }
+
   function poll() {
     clearTimeout(app.pollTimer);
-    D.api.get('/api/state', function (err, s) {
+    D.api.get('/api/state' + (app.evSeq !== undefined ? '?ev=' + app.evSeq : ''), function (err, s) {
       if (err) {
         if (err.status === 401) return;
         var wait = BACKOFF[Math.min(app.failures, BACKOFF.length - 1)];
@@ -413,6 +425,8 @@
       }
       app.failures = 0;
       app.state = s;
+      if (s.events && s.events.length) handleEvents(s.events);
+      if (s.evSeq !== undefined) app.evSeq = s.evSeq;
       setOnline(true);
       D.setText(D.$('mini'), fmtTop(s));
       if (s.build && BUILD && s.build !== BUILD) { reloadPage(); return; }

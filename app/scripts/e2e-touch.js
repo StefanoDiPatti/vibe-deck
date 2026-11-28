@@ -168,6 +168,19 @@ async function runDevice(cdp, dev) {
 
   check('slider non cambia pagina', (await pageId(cdp)) === 'main', 'pagina=' + (await pageId(cdp)));
 
+  const hookKey = (await api('GET', '/api/control/webhooks', null, { 'X-Dock-Control': '1' })).key;
+  const hook = function (what, body) { return fetch(BASE + '/hook/' + hookKey + what, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) }); };
+  await hook('/notify', { title: 'E2E', message: 'ciao dal webhook' });
+  const toast = await waitFor(function () { return cdp.eval('(function(){var t=document.getElementById("toast");return t&&/show/.test(t.className)&&t.textContent.indexOf("ciao dal webhook")>=0?t.textContent:null;})()'); }, 10000, 'notifica').catch(function () { return null; });
+  check('webhook: la notifica compare sul tablet', !!toast, toast || 'nessun toast');
+  const pageTabs = await cdp.eval('[].map.call(document.querySelectorAll("#tabs .tab"),function(t){return t.getAttribute("data-page");})');
+  const target = pageTabs.filter(function (t) { return t !== 'main'; })[0];
+  await hook('/goto/' + target);
+  const moved = await waitFor(async function () { return (await pageId(cdp)) === target ? true : null; }, 10000, 'cambio pagina').catch(function () { return null; });
+  check('webhook: il tablet cambia pagina', !!moved, 'pagina=' + (await pageId(cdp)) + ' attesa ' + target);
+  await hook('/goto/main');
+  await waitFor(async function () { return (await pageId(cdp)) === 'main' ? true : null; }, 10000, 'ritorno').catch(function () { return null; });
+
   check('niente orario in alto a destra; Schermo intero nel menu della rotella', await cdp.eval('(function(){if(document.getElementById("clock"))return false;document.getElementById("settings-btn").dispatchEvent(new MouseEvent("mousedown",{bubbles:true}));document.getElementById("settings-btn").dispatchEvent(new MouseEvent("mouseup",{bubbles:true}));var ok=!!document.querySelector(".theme-layer [data-full]");document.getElementById("settings-btn").dispatchEvent(new MouseEvent("mousedown",{bubbles:true}));document.getElementById("settings-btn").dispatchEvent(new MouseEvent("mouseup",{bubbles:true}));return ok&&!document.querySelector(".theme-layer");})()'));
   const tabs = await cdp.eval('[].map.call(document.querySelectorAll("#tabs .tab"),function(t){return t.getAttribute("data-page");})');
   const st = await cdp.eval('(function(){var r=document.getElementById("stage").getBoundingClientRect();return {x:r.left,y:r.top,w:r.width,h:r.height};})()');

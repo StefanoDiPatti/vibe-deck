@@ -119,5 +119,6 @@ module.exports = {
   requireToken: requireToken,
   tokenFromQuery: tokenFromQuery,
   pairHandler: pairHandler,
+  tooManyFrom: function (req) { return tooManyAttempts(normalizeIp(req.socket.remoteAddress)); },
   generateToken: generateToken
 };

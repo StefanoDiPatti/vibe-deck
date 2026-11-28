@@ -350,3 +350,12 @@ button.mk-tag.sw:hover { border-color: var(--accent); }
 .th-fixed { border-style: dashed; }
 .th-unsend { margin-left: 4px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: transparent; color: inherit; font-size: 16px; line-height: 1; cursor: pointer; }
 .th-unsend:hover { background: var(--bad); color: var(--on-accent); }
+
+.au-urls { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 12px; }
+.au-url { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.au-url b { min-width: 92px; }
+.au-url code { flex: 1; min-width: 200px; overflow-wrap: anywhere; padding: 6px 10px; }
+.au-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.au-tools input[type=text] { width: 220px; height: 30px; font-family: inherit; }
+.au-select { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--field); color: var(--text); font: inherit; font-size: 13px; }
+.au-val { font-family: Consolas, monospace; font-size: 13px; color: var(--text-2); overflow-wrap: anywhere; }

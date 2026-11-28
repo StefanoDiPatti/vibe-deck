@@ -67,6 +67,25 @@ async function singleGame(s, cdp, hand, report) {
   await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
 }
 
+async function webhookCard(s, cdp, hand, report) {
+  report.group('Pannello: webhook in entrata');
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1400, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await cdp.send('Page.navigate', { url: s.base + '/control' });
+  await waitFor(function () { return cdp.eval('document.querySelectorAll("#au-urls .au-url").length>=3'); }, 20000, 'scheda webhook');
+  const key = (await s.api('GET', '/api/control/webhooks', null, CTRL)).key;
+  report.check('indirizzi con la chiave nascosta', await cdp.eval('document.getElementById("au-urls").textContent.indexOf(' + JSON.stringify(key) + ')<0'));
+  await hand.click('#au-show');
+  report.check('"Mostra la chiave" la svela', await cdp.eval('document.getElementById("au-urls").textContent.indexOf(' + JSON.stringify(key) + ')>=0'));
+  await fetch(s.base + '/hook/' + key + '/push/e2e', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: 7 }) });
+  await waitFor(async function () { await cdp.eval('window.Automation.reload();true'); return cdp.eval('document.querySelectorAll("#au-values [data-au-forget=e2e]").length===1'); }, 10000, 'valore ricevuto');
+  report.check('il valore ricevuto compare nell\'elenco', true);
+  await cdp.eval('window.scrollTo(0, document.getElementById("automation-card").offsetTop - 10);true');
+  await sleep(300);
+  await shot(cdp, 'pages-webhook.png');
+  await hand.click('#au-values [data-au-forget=e2e]');
+  report.check('"Togli" elimina il valore', await waitFor(function () { return cdp.eval('document.querySelectorAll("#au-values [data-au-forget=e2e]").length===0'); }, 5000, 'togli').then(function () { return true; }, function () { return false; }));
+}
+
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
   const report = new Report();
@@ -154,6 +173,7 @@ async function main() {
     report.check('nessun errore JavaScript nel pannello', (await cdp.eval('window.__errors.length')) === 0, JSON.stringify(await cdp.eval('window.__errors')));
 
     await singleGame(s, cdp, hand, report);
+    await webhookCard(s, cdp, hand, report);
   } catch (e) {
     report.check('esecuzione', false, e.message);
   } finally {

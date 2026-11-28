@@ -219,6 +219,23 @@ From the tablet: tap a server, then a channel to join it; tap a person in your r
 
 Webcam and Go Live use two undocumented Discord commands (`TOGGLE_VIDEO`, `TOGGLE_SCREENSHARE`) and one extra permission: if you had already connected the deck, press **Riautorizza** (re-authorize) in the panel. If Discord does not grant that permission, authorization goes on without it, and CAM and LIVE stay off. Without any setup MIC and AUDIO still work, through Discord's default shortcuts (Ctrl+Shift+M / Ctrl+Shift+D). Credentials live in `data/discord.json`, on this PC only.
 
+## Incoming webhooks
+
+Anything on your local network can talk to the tablet. The control panel (card *Webhook in entrata*) shows three addresses that contain a secret key (kept in `data/webhooks.json`, changeable with *Cambia chiave*):
+
+| Address | What it does |
+|---|---|
+| `/hook/<key>/notify` | Shows a message on the tablet. `title`, `message` and `kind` (`info`, `ok`, `err`) as JSON, form fields or query string. |
+| `/hook/<key>/goto/<page>` | Opens that page on the tablet. |
+| `/hook/<key>/push/<name>` | Stores a value (JSON body, or the query string). Show it in a widget with the data source **Pushed value** (`"source": { "type": "push", "name": "<name>" }`); the fields are the JSON keys, plus `received` and `ageSec`. |
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"title":"Build","message":"done","kind":"ok"}' http://PC:8787/hook/KEY/notify
+curl -X POST -H "Content-Type: application/json" -d '{"value":42,"unit":"C"}' http://PC:8787/hook/KEY/push/boiler
+```
+
+Only private network addresses are accepted, wrong keys get a 404 (rate limited). The tablet picks events up on its normal refresh (a few seconds, or when it wakes). Values live in `data/push.json`.
+
 ## Music
 
 ### Extension for Apple Music web and YouTube (recommended)
