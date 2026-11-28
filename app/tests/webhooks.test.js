@@ -16,6 +16,12 @@ const { app } = require('../server/index.js');
 const events = require('../server/events');
 const webhooks = require('../server/webhooks');
 const { sources } = require('../server/shapes/sources');
+const media = require('../server/services/media');
+const appsService = require('../server/services/apps');
+const system = require('../server/services/system');
+
+media.nowPlaying = async function () { return { supported: false, active: false }; };
+appsService.running = async function () { return {}; };
 
 let server;
 let base;
@@ -24,7 +30,11 @@ test.before(function () {
     server = app.listen(0, '127.0.0.1', function () { base = 'http://127.0.0.1:' + server.address().port; resolve(); });
   });
 });
-test.after(function () { server.close(); });
+test.after(function () {
+  server.close();
+  system.stop();
+  require('../server/platform').shutdown();
+});
 
 async function call(method, url, body, headers) {
   const res = await fetch(base + url, { method: method, headers: Object.assign({ 'Content-Type': 'application/json' }, headers || {}), body: body ? JSON.stringify(body) : undefined });
