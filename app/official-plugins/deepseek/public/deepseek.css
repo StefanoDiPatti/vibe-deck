@@ -6,7 +6,7 @@
 .ds-mic svg.ic { width: 30px; height: 30px; }
 .ds-mic.on { background: #e5534b; }
 .ds-mic.pressed { -webkit-transform: scale(0.94); transform: scale(0.94); }
-.ds-form .ds-input { left: 66px; }
+.ds-form { padding-left: 66px; }
 .ds-send { background: #4d6bfe; }
 .ds-send.ds-stop { background: #8b1d1d; }
 .msg.ds-thinking { color: #8b9bab; font-style: italic; }
