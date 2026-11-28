@@ -19,6 +19,12 @@ const events = require('../server/events');
 const webhooks = require('../server/webhooks');
 const hooks = require('../server/claude-hooks');
 const { PermissionBroker, summarize } = require('../server/permissions');
+const media = require('../server/services/media');
+const appsService = require('../server/services/apps');
+const system = require('../server/services/system');
+
+media.nowPlaying = async function () { return { supported: false, active: false }; };
+appsService.running = async function () { return {}; };
 
 let server;
 let base;
@@ -34,7 +40,11 @@ test.before(function () {
     });
   });
 });
-test.after(function () { server.close(); });
+test.after(function () {
+  server.close();
+  system.stop();
+  require('../server/platform').shutdown();
+});
 
 async function call(method, url, body, headers) {
   const res = await fetch(base + url, { method: method, headers: Object.assign({ 'Content-Type': 'application/json', 'X-Dock-Token': 'TESTCODE' }, headers || {}), body: body ? JSON.stringify(body) : undefined });
