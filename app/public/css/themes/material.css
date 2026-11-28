@@ -36,10 +36,15 @@ svg.ic { fill: #e9e9ee; }
 #toast { background: #32353a; color: #e9e9ee; }
 #toast.ok { background: #1f5135; }
 #toast.err { background: #93000a; }
-#modal, #pair, #boot, #offline { background: rgba(12, 14, 18, 0.88); }
+#modal, #pair, #boot, #offline, #perm { background: rgba(12, 14, 18, 0.88); }
 .modal-box { background: #1d2024; border: 1px solid #3a3d42; }
 .modal-body { color: #e2e2e6; background: #111318; }
 .modal-close { background: #1f5a96; }
+.perm-box { background: #1d2024; border: 1px solid #3a3d42; }
+.perm-body { color: #e2e2e6; background: #111318; }
+.perm-more { color: #8e9099; }
+.perm-deny { background: #93000a; }
+.perm-allow { background: #1f5135; }
 .pair-box { background: #1d2024; border: 1px solid #3a3d42; }
 .pair-msg { color: #c4c6cf; }
 #pair-code { background: #111318; color: #e9e9ee; border: 2px solid #3a3d42; }

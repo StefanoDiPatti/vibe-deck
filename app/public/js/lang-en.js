@@ -23,6 +23,7 @@
   });
 
   I18n.add({
+    'Claude Code chiede il permesso': 'Claude Code asks for permission', 'NEGA': 'DENY', 'CONSENTI': 'ALLOW', '(nessun dettaglio)': '(no details)',
     'Musica, stato del PC e TODO delle Memo': 'Music, PC status and TODO from Sticky Notes',
     'Musica, stato del PC e TODO': 'Music, PC status and TODO',
     'Brano in riproduzione e coda della playlist': 'Now playing and playlist queue',

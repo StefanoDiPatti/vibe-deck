@@ -178,6 +178,9 @@ function router(express, attempts) {
   r.use(express.urlencoded({ extended: false, limit: '16kb' }));
   r.all('/:key/push/:name', guard(attempts), reply(function (req) { return pushValue(req.params.name, req.body, req.query); }));
   r.all('/:key/notify', guard(attempts), reply(function (req) { return notify(Object.assign({}, req.query, req.body)); }));
+  r.post('/:key/permission', guard(attempts), function (req, res) {
+    require('./permissions').broker.request(req.body, parseInt(req.query.wait, 10) || 0).then(function (data) { res.json({ ok: true, data: data }); });
+  });
   r.all('/:key/event/:name', guard(attempts), reply(function (req) { return emit(req.params.name, Object.assign({}, req.query, req.body)); }));
   r.all('/:key/goto/:page', guard(attempts), reply(function (req) { return goto(req.params.page); }));
   return r;

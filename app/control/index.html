@@ -164,6 +164,21 @@
       </div>
     </section>
 
+    <section class="card wide" id="hooks-card">
+      <div class="card-head">
+        <div>
+          <h2>Permessi di Claude Code dal tablet</h2>
+          <p class="hint">Quando Claude Code chiede il permesso per un comando o per modificare un file, sul tablet compare la richiesta con <b>Consenti</b> e <b>Nega</b>. Se non rispondi entro 90 secondi decide il PC come sempre (la finestra normale di Claude Code). Le regole di Claude Code che negano un'azione valgono comunque. Serve un gancio (hook) nel file <code>~/.claude/settings.json</code>: lo aggiunge questo pulsante, con una copia di sicurezza, e lo toglie quando vuoi. Aggiunge anche <b>Claude ti aspetta</b> e <b>Claude ha finito</b> alle regole.</p>
+        </div>
+        <span id="hk-state" class="pill"></span>
+      </div>
+      <div class="au-tools">
+        <button id="hk-install" class="btn primary small-btn" type="button">Collega Claude Code</button>
+        <button id="hk-remove" class="btn small-btn" type="button">Scollega</button>
+        <span id="hk-file" class="hint"></span>
+      </div>
+    </section>
+
     <section class="card wide" id="themes-card">
       <div class="card-head">
         <div>
@@ -280,6 +295,7 @@
   <script src="/control/installed.js"></script>
   <script src="/control/automation.js"></script>
   <script src="/control/rules.js"></script>
+  <script src="/control/claude-hooks.js"></script>
   <script src="/control/themes-editor.js"></script>
 </body>
 </html>
