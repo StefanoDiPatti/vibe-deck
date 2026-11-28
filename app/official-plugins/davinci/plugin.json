@@ -6,6 +6,7 @@
   "icon": "film",
   "description": "Shortcut page for DaVinci Resolve",
   "type": "plugin",
+  "category": "creative",
   "platforms": [
     "windows",
     "linux"

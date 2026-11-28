@@ -18,14 +18,16 @@ const DEVICES = [
   { name: 'phone-portrait', width: 390, height: 844, dpr: 3 }
 ];
 
+const WINDOWS = process.platform === 'win32';
+
 const HOME = {
   columns: 6, rows: 5,
   tiles: [
     { id: 'meteo.adesso', x: 0, y: 0, w: 3, h: 1 }, { id: 'audio.volume', x: 3, y: 0, w: 3, h: 1 },
-    { id: 'meteo.settimana', x: 0, y: 1, w: 3, h: 2 }, { id: 'pcinfo.dischi', x: 3, y: 1, w: 3, h: 2 },
-    { id: 'pcinfo.scorciatoie', x: 0, y: 3, w: 3, h: 2 }, { id: 'audio.microfono', x: 3, y: 3, w: 3, h: 1 },
+    { id: 'meteo.settimana', x: 0, y: 1, w: 3, h: 2 },
+    { id: 'audio.microfono', x: 3, y: 3, w: 3, h: 1 },
     { id: 'pcinfo.cpu', x: 3, y: 4, w: 3, h: 1 }
-  ]
+  ].concat(WINDOWS ? [{ id: 'pcinfo.dischi', x: 3, y: 1, w: 3, h: 2 }, { id: 'pcinfo.scorciatoie', x: 0, y: 3, w: 3, h: 2 }] : [{ id: 'pcinfo.ram', x: 3, y: 1, w: 3, h: 1 }])
 };
 
 function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
@@ -110,7 +112,7 @@ async function runDevice(cdp, dev) {
   await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
   await cdp.send('Page.navigate', { url: BASE + '/?t=' + TOKEN + '&page=main' });
   await waitFor(function () { return cdp.eval(tileExpr('PROSSIMI GIORNI', 'return t.querySelectorAll(".sh-row").length>=7;')); }, 20000, 'lista meteo');
-  await waitFor(function () { return cdp.eval(tileExpr('DISCHI', 'return t.querySelectorAll(".sh-row").length>=1;')); }, 20000, 'lista dischi');
+  if (WINDOWS) await waitFor(function () { return cdp.eval(tileExpr('DISCHI', 'return t.querySelectorAll(".sh-row").length>=1;')); }, 20000, 'lista dischi');
   await sleep(600);
 
   const listSel = '.sh-list';
@@ -132,22 +134,25 @@ async function runDevice(cdp, dev) {
     await cdp.eval(tileExpr('PROSSIMI GIORNI', 't.querySelector(".sh-list").scrollTop=0;return true;'));
   }
 
-  const before = (await api('GET', '/api/demo/actions')).length;
-  const row = await cdp.eval(rectOf('DISCHI', '.sh-row'));
-  await finger.tap(row.x + row.w / 2, row.y + row.h / 2);
-  const afterRow = await waitFor(async function () { const a = await api('GET', '/api/demo/actions'); return a.length > before ? a : null; }, 4000, 'tocco riga disco').catch(function () { return null; });
-  check('tocco riga disco', afterRow && afterRow[afterRow.length - 1].type === 'open_path', afterRow ? JSON.stringify(afterRow[afterRow.length - 1]) : 'nessuna azione');
+  if (WINDOWS) {
+    const before = (await api('GET', '/api/demo/actions')).length;
+    const row = await cdp.eval(rectOf('DISCHI', '.sh-row'));
+    await finger.tap(row.x + row.w / 2, row.y + row.h / 2);
+    const afterRow = await waitFor(async function () { const a = await api('GET', '/api/demo/actions'); return a.length > before ? a : null; }, 4000, 'tocco riga disco').catch(function () { return null; });
+    check('tocco riga disco', afterRow && afterRow[afterRow.length - 1].type === 'open_path', afterRow ? JSON.stringify(afterRow[afterRow.length - 1]) : 'nessuna azione');
 
-  const n1 = (await api('GET', '/api/demo/actions')).length;
-  const btn = await cdp.eval(rectOf('SCORCIATOIE', '.sh-btn', 1));
-  if (!btn) check('tocco pulsante scorciatoie', false, 'pulsante non trovato');
-  else {
-    await cdp.eval(tileExpr('SCORCIATOIE', 'var b=t.querySelectorAll(".sh-btn")[1];window.__ev=[];["touchstart","touchmove","touchend","touchcancel","click"].forEach(function(k){b.addEventListener(k,function(e){var p=e.changedTouches&&e.changedTouches[0];window.__ev.push(k+(p?"@"+Math.round(p.clientX)+","+Math.round(p.clientY):""));},true);});return true;'));
-    await finger.tap(btn.x + btn.w / 2, btn.y + btn.h / 2);
-    const afterBtn = await waitFor(async function () { const a = await api('GET', '/api/demo/actions'); return a.length > n1 ? a : null; }, 4000, 'tocco pulsante').catch(function () { return null; });
-    const last = afterBtn && afterBtn[afterBtn.length - 1];
-    const under = last ? '' : await cdp.eval('(function(){var n=document.elementFromPoint(' + (btn.x + btn.w / 2) + ',' + (btn.y + btn.h / 2) + ');return n?(n.tagName+"."+n.className.baseVal+n.className):"niente";})()');
-    check('tocco pulsante scorciatoie', last && last.type === 'hotkey' && last.keys.join('+') === 'WIN+D', last ? JSON.stringify(last) : 'nessuna azione; sotto il dito: ' + under + ' ' + JSON.stringify(btn) + ' eventi: ' + JSON.stringify(await cdp.eval('window.__ev')));
+    const n1 = (await api('GET', '/api/demo/actions')).length;
+    const btn = await cdp.eval(rectOf('SCORCIATOIE', '.sh-btn', 1));
+    if (!btn) check('tocco pulsante scorciatoie', false, 'pulsante non trovato');
+    else {
+      await cdp.eval(tileExpr('SCORCIATOIE', 'var b=t.querySelectorAll(".sh-btn")[1];window.__ev=[];["touchstart","touchmove","touchend","touchcancel","click"].forEach(function(k){b.addEventListener(k,function(e){var p=e.changedTouches&&e.changedTouches[0];window.__ev.push(k+(p?"@"+Math.round(p.clientX)+","+Math.round(p.clientY):""));},true);});return true;'));
+      await finger.tap(btn.x + btn.w / 2, btn.y + btn.h / 2);
+      const afterBtn = await waitFor(async function () { const a = await api('GET', '/api/demo/actions'); return a.length > n1 ? a : null; }, 4000, 'tocco pulsante').catch(function () { return null; });
+      const last = afterBtn && afterBtn[afterBtn.length - 1];
+      const under = last ? '' : await cdp.eval('(function(){var n=document.elementFromPoint(' + (btn.x + btn.w / 2) + ',' + (btn.y + btn.h / 2) + ');return n?(n.tagName+"."+n.className.baseVal+n.className):"niente";})()');
+      check('tocco pulsante scorciatoie', last && last.type === 'hotkey' && last.keys.join('+') === 'WIN+D', last ? JSON.stringify(last) : 'nessuna azione; sotto il dito: ' + under + ' ' + JSON.stringify(btn) + ' eventi: ' + JSON.stringify(await cdp.eval('window.__ev')));
+    }
+
   }
 
   await api('POST', '/api/shapes/audio/volume/set', { value: 20 });
@@ -228,6 +233,8 @@ async function main() {
     await cdp.open;
     await cdp.send('Page.enable');
     await cdp.send('Runtime.enable');
+    await cdp.send('Page.navigate', { url: BASE + '/api/health' });
+    await sleep(300);
     for (const dev of DEVICES) {
       let r;
       try { r = await runDevice(cdp, dev); } catch (e) { r = { device: dev.name, checks: [{ name: 'pagina', ok: false, detail: e.message }] }; }

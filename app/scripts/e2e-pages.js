@@ -18,6 +18,8 @@ async function singleGame(s, cdp, hand, report) {
   await s.api('POST', '/api/control/games', { path: exe, label: 'Stardew Valley' }, CTRL);
   await cdp.send('Page.navigate', { url: s.base + '/control' });
   await waitFor(function () { return cdp.eval('document.querySelectorAll("#hm-targets [data-hmgo]").length>=2'); }, 20000, 'editor pagine');
+  report.check('il catalogo è diviso in sezioni per categoria', await cdp.eval('document.querySelectorAll("#hm-catalog .hm-group[data-category]").length>=3'));
+  report.check('il gioco sta nella sezione Giochi', await cdp.eval('!!document.querySelector("#hm-catalog .hm-group[data-category=gaming] [data-hmadd=game_stardew_valley]")'));
   report.check('il gioco è nel catalogo dei widget', await cdp.eval('!!document.querySelector("#hm-catalog [data-hmadd=game_stardew_valley]")'));
   report.check('il widget generico "game" non è nel catalogo', await cdp.eval('!document.querySelector("#hm-catalog [data-hmadd=game]")'));
   await hand.click('#hm-targets [data-hmgo="new"]');

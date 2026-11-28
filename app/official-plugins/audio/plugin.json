@@ -6,6 +6,7 @@
   "icon": "volup",
   "description": "Outputs and microphones (default, volume, mute), the volume of every app playing audio, volume sliders and the audio.mixer source for JSON widgets",
   "type": "plugin",
+  "category": "system",
   "platforms": [
     "windows",
     "linux"

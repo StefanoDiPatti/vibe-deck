@@ -158,6 +158,7 @@ function catalog() {
       plugin: e.plugin,
       page: 'PLUGIN ' + e.plugin.toUpperCase(),
       label: def.name,
+      category: typeof def.category === 'string' ? def.category : '',
       icon: def.icon || ICONS[def.shape] || 'apps',
       description: typeof def.description === 'string' ? def.description : 'Widget del plugin ' + e.plugin,
       w: Math.max(minW, clamp(size.w, 1, 8, 2)),

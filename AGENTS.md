@@ -174,7 +174,7 @@ Edit the generated files:
   };
   ```
 
-- **`home.json`**: how it appears in the HOME catalog (name, icon, description, proposed and minimum size, `props`).
+- **`home.json`**: how it appears in the HOME catalog (name, icon, description, proposed and minimum size, `props`, optional `category`).
   Entries that depend on the user's data (one per game, for example) come from `hooks.homeWidgets()` in `index.js`.
 - **`pages/*.json`**: plugin pages (like the default ones; the user adds them from the panel).
 

@@ -6,6 +6,7 @@
   "icon": "live",
   "description": "Control OBS Studio from the tablet: go live and stop, record, switch scenes, mute audio sources, virtual camera, replay buffer, program preview and stats (obs-websocket, built into OBS 28+)",
   "type": "plugin",
+  "category": "streaming",
   "platforms": ["windows", "linux"],
   "engine": ">=2.2.0",
   "permissions": { "local": ["obs-websocket"] }

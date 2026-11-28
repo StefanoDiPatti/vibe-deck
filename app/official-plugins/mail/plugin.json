@@ -6,6 +6,7 @@
   "icon": "mail",
   "description": "Inbox of the Thunderbird accounts chosen in the control panel, message reading, opening Thunderbird on the PC",
   "type": "plugin",
+  "category": "communication",
   "platforms": [
     "windows",
     "linux"

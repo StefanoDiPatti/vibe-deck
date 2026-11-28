@@ -225,6 +225,7 @@ function homeEditor(d) {
   }
   return {
     catalog: home.catalog(),
+    categories: require('./categories').categories.list(),
     limits: home.LIMITS,
     custom: !!saved,
     columns: main ? main.columns : 6,
@@ -266,7 +267,7 @@ app.get('/api/control/qr', controlOnly, route(async function (req) {
   return { link: link, svg: await pairing.svg(link) };
 }));
 app.get('/api/control/info', controlOnly, route(async function () { await plugins.controlPrepare(); return controlInfo(); }));
-app.get('/api/control/catalog', controlOnly, route(function () { return require('./shapes/catalog').catalog(); }));
+app.get('/api/control/catalog', controlOnly, route(function (req) { return require('./shapes/catalog').catalog(req.query.lang); }));
 app.post('/api/control/shapes/sample', controlOnly, route(function (req) {
   const b = req.body || {};
   return shapes.sample(b.plugin, b.source, { allowHost: b.allowHost === true });

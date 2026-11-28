@@ -6,6 +6,7 @@
   "icon": "chat",
   "description": "Chat with the local Ollama models from the tablet",
   "type": "plugin",
+  "category": "ai",
   "platforms": [
     "windows",
     "linux"

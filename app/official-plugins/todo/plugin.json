@@ -6,6 +6,7 @@
   "icon": "check",
   "description": "Your tasks on the HOME: Windows Sticky Notes (or a local list), with priorities, notes, dictation and sync",
   "type": "plugin",
+  "category": "productivity",
   "platforms": [
     "windows",
     "linux"

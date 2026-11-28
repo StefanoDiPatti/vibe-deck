@@ -35,7 +35,7 @@ function appVersion() {
 function readManifest(name, dir, official) {
   const file = path.join(dir, 'plugin.json');
   const m = { id: name, name: name, version: '', description: '', author: '', type: 'plugin', platforms: PLATFORMS.slice(),
-    engine: '', icon: '', includes: [], permissions: {}, official: official, hasManifest: false, problems: [] };
+    engine: '', icon: '', tags: [], category: '', includes: [], permissions: {}, official: official, hasManifest: false, problems: [] };
   let data;
   try { data = require('./config').parseJson(fs.readFileSync(file, 'utf8')); } catch (e) {
     if (e.code !== 'ENOENT') m.problems.push('plugin.json non valido: ' + e.message);
@@ -49,6 +49,8 @@ function readManifest(name, dir, official) {
   if (typeof data.description === 'string') m.description = data.description;
   if (typeof data.author === 'string') m.author = data.author;
   if (typeof data.icon === 'string' && /^[a-z0-9_-]{1,40}$/.test(data.icon)) m.icon = data.icon;
+  if (Array.isArray(data.tags)) m.tags = data.tags.filter(function (t) { return typeof t === 'string'; });
+  if (typeof data.category === 'string') m.category = data.category;
   if (VERSION_RE.test(data.version || '')) m.version = data.version;
   else m.problems.push('"version" deve essere nel formato 1.0.0');
   if (data.type !== undefined) {
@@ -437,6 +439,7 @@ function homeEntry(name, id, widget, d, int) {
     icon: typeof d.icon === 'string' && d.icon ? d.icon : 'apps',
     description: typeof d.description === 'string' ? d.description : 'Widget del plugin ' + name,
     w: Math.max(minW, int(d.w, 1, 8, 2)), h: Math.max(minH, int(d.h, 1, 6, 2)), minW: minW, minH: minH,
+    category: typeof d.category === 'string' ? d.category : '',
     props: d.props && typeof d.props === 'object' && !Array.isArray(d.props) ? d.props : null
   };
 }

@@ -6,6 +6,7 @@
   "icon": "headset",
   "description": "Servers, voice channels with who is inside and who is talking, mute/deafen, webcam, Go Live, per-person volume and mute just for you",
   "type": "plugin",
+  "category": "communication",
   "platforms": [
     "windows",
     "linux"

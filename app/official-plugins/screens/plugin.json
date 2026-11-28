@@ -6,6 +6,7 @@
   "icon": "layout",
   "description": "PC monitors, window layouts, the monitor apps open on, virtual desktops (switch, create, close, move windows) and their shortcut guide",
   "type": "plugin",
+  "category": "system",
   "platforms": [
     "windows",
     "linux"

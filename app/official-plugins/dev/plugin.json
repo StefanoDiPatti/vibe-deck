@@ -6,6 +6,7 @@
   "icon": "code",
   "description": "VS Code, Claude Code, terminal, git status, OpenClaw and editor shortcuts",
   "type": "plugin",
+  "category": "developer",
   "platforms": [
     "windows",
     "linux"

@@ -1,6 +1,7 @@
 const plugins = require('../plugins');
 const config = require('../config');
 const template = require('./template');
+const translate = require('./translate');
 const descriptors = require('../actions/descriptors');
 const { shapes } = require('./shapes');
 const { sources, resolve } = require('./sources');
@@ -77,8 +78,8 @@ class CatalogBuilder {
   build() { return this.out; }
 }
 
-function catalog() {
-  return new CatalogBuilder().shapes().sources().actions().filters().icons().choices().build();
+function catalog(lang) {
+  return translate.translate(new CatalogBuilder().shapes().sources().actions().filters().icons().choices().build(), lang);
 }
 
 module.exports = { catalog: catalog, CatalogBuilder: CatalogBuilder };
